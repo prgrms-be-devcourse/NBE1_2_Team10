@@ -38,9 +38,7 @@ like  `feat/#12userService`
 # 💬 Commit Message 컨벤션
 
 <aside>
-❗
-
-커밋 메시지 = 제목 + 본문 + 꼬리말
+❗커밋 메시지 = 제목 + 본문 + 꼬리말
 
 각 파트는 2번의 개행을 통해 구분 (= 하나의 빈 줄)
 
