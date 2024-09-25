@@ -27,9 +27,9 @@ https://tech.kakao.com/posts/498
 
 # 🎋 Branch 컨벤션
 
-- 커밋 태그/기능명(Camel case / 최대한 간단히)
+- 커밋 태그/이슈번호+기능명 ⇒ 이슈 트래커 브랜치 사용 시
 
-like  `feat/userService`
+like  `feat/userService_#12`
 
 ---
 <br>
