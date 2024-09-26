@@ -28,10 +28,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
 
+    // DTO validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
     // Caching
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
 
     // JWT tokens
     implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.12.5'

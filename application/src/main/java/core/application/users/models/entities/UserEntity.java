@@ -1,11 +1,15 @@
 package core.application.users.models.entities;
 
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 import java.util.UUID;
 
-@Data
+@Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@ToString
 public class UserEntity {
     private UUID     userId;
     private String   userEmail;

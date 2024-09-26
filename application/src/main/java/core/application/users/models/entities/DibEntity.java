@@ -1,10 +1,14 @@
 package core.application.users.models.entities;
 
-import lombok.Data;
+import lombok.*;
 
 import java.util.UUID;
 
-@Data
+@Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@ToString
 public class DibEntity {
     private Long   DibId;
     private UUID   userId;

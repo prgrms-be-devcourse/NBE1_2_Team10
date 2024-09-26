@@ -1,11 +1,15 @@
 package core.application.reviews.models.entities;
 
-import lombok.Data;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
+@Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@ToString
 public class ReviewCommentEntity {
     private Long    reviewCommentId;
     private Long    reviewId;
