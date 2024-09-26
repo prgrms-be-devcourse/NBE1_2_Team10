@@ -1,6 +1,6 @@
-package core.application.repositories;
+package core.application.users.repositories;
 
-import core.application.models.entities.DibEntity;
+import core.application.users.models.entities.DibEntity;
 
 import java.util.List;
 import java.util.Optional;

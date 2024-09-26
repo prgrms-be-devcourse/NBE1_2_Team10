@@ -1,7 +1,7 @@
-package core.application.repositories;
+package core.application.movies.repositories;
 
 
-import core.application.models.entities.CommentEntity;
+import core.application.movies.models.entities.CommentEntity;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,7 +1,7 @@
-package core.application.repositories;
+package core.application.users.repositories;
 
-import core.application.models.entities.UserEntity;
-import core.application.models.entities.UserRole;
+import core.application.users.models.entities.UserEntity;
+import core.application.users.models.entities.UserRole;
 
 import java.util.List;
 import java.util.Optional;
@@ -71,7 +71,6 @@ public interface UserRepository {
      *
      * @param userId 유저 ID
      * @return {@link List}{@code <}{@link UserEntity}{@code >} {@code dibEntityList} 가 채워진 {@code UserEntity List}
-     * @see DibRepository#findByUserId(UUID)
      * @see UserEntity#dibEntityList
      */
     List<UserEntity> selectDibsOnUserId(UUID userId);

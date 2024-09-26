@@ -1,7 +1,7 @@
-package core.application.repositories;
+package core.application.reviews.repositories;
 
 
-import core.application.models.entities.ReviewCommentEntity;
+import core.application.reviews.models.entities.ReviewCommentEntity;
 
 import java.util.List;
 import java.util.Optional;

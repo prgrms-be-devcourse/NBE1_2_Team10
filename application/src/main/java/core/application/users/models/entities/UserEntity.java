@@ -1,4 +1,4 @@
-package core.application.models.entities;
+package core.application.users.models.entities;
 
 import lombok.Data;
 
