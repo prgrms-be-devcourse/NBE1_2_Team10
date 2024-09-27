@@ -10,7 +10,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @ToString
 public class DibEntity {
-    private Long   DibId;
+    private Long   dibId;
     private UUID   userId;
     private String movieId;
 }
