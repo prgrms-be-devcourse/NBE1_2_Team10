@@ -1,26 +1,17 @@
 package core.application.users.service;
 
+import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
 
-public class UserService {
-    public String signup (UserDTO user) {
-        return null;
-    }
+public interface UserService {
+    public MessageResponseDTO signup (UserDTO user);
 
     // TokenDTO 추후 반환하는 식으로 수정하게 될 것 같습니다.
-    public String login (String username, String password) {
-        return null;
-    }
+    public MessageResponseDTO login (String username, String password);
 
-    public String logout (UserDTO user) {
-        return null;
-    }
+    public MessageResponseDTO logout (UserDTO user);
 
-    public String updateUserInfo (UserDTO user) {
-        return null;
-    }
+    public MessageResponseDTO updateUserInfo (UserDTO user);
 
-    public String deleteUser (UserDTO user) {
-        return null;
-    }
+    public MessageResponseDTO deleteUser (UserDTO user);
 }
