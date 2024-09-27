@@ -7,7 +7,7 @@ import core.application.movies.models.dto.MainPageMoviesResDTO;
 import core.application.movies.models.dto.MovieDetailResDTO;
 import core.application.movies.models.dto.MovieSimpleResDTO;
 
-public interface MovieServiceInterface {
+public interface MovieService {
 
 	// 추후 기능 분리 시 사용될 예정
 	public List<MainPageMovieResDTO> getMoviesOrderByDib();
