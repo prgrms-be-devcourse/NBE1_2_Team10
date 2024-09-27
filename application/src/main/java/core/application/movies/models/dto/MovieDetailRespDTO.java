@@ -2,7 +2,7 @@ package core.application.movies.models.dto;
 
 import java.util.List;
 
-public class MovieDetailResDTO {
+public class MovieDetailRespDTO {
 	private String movieId;
 
 	private String title;

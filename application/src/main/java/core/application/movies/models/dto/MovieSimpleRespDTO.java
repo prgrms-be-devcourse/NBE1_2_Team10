@@ -1,6 +1,6 @@
 package core.application.movies.models.dto;
 
-public class MovieSimpleResDTO {
+public class MovieSimpleRespDTO {
 	private String movieId;
 
 	private String title;
