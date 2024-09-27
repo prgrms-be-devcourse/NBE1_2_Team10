@@ -2,45 +2,36 @@ package core.application.movies.service;
 
 import java.util.List;
 
-import core.application.movies.models.dto.MainPageMovieResDTO;
+import core.application.movies.constant.Genre;
+import core.application.movies.constant.MovieSearch;
 import core.application.movies.models.dto.MainPageMoviesResDTO;
 import core.application.movies.models.dto.MovieDetailResDTO;
 import core.application.movies.models.dto.MovieSimpleResDTO;
 
 public interface MovieService {
 
-	// 추후 기능 분리 시 사용될 예정
-	public List<MainPageMovieResDTO> getMoviesOrderByDib();
-
-	public List<MainPageMovieResDTO> getMoviesOrderByReview();
-
 	/**
-	 * KMDB를 통해 최신순 영화를 조회한 후, 찜 개수 확인을 위해 영화별로 캐시 영화 테이블에 조회 필요
+	 * 메인 페이지에서 찜 많은 순 영화 10개, 평점 높은 순 영화 10개, 최신순 영화 10개의 정보를 보여준다.
+	 * @return 찜 많은 순, 평점 높은 순, 최신순으로 정렬된 영화 정보
 	 */
-	public List<MainPageMovieResDTO> getMoviesOrderByDate();
-
-	/**
-	 * 찜 많은 순 / 리뷰 많은 순 / 최신순
-	 *
-	 * 찜 많은 순
-	 * 10개
-	 *
-	 * 리뷰 많은 순
-	 * 10개
-	 *
-	 * 최신순
-	 * 10개
-	 */
-
 	public MainPageMoviesResDTO getMainPageMovieInfo();
 
-	public List<MovieSimpleResDTO> searchMovies(Integer page, String sort, String query, String category);
+	/**
+	 * 사용자는 장르, 검색어, 정렬 조건을 이용할 수 있다. <br>
+	 * 정렬 조건과 검색어는 필수이지만, 장르는 선택적으로 사용한다.
+	 *
+	 * @param page 검색 페이지 목록
+	 * @param sort 정렬 조건
+	 * @param query 검색어
+	 * @param genre 영화 장르
+	 * @return 검색한 영화 정보
+	 */
+	public List<MovieSimpleResDTO> searchMovies(Integer page, MovieSearch sort, String query, Genre genre);
 
 	/**
-	 * 영화 상세정보의 찜 개수, 평점을 가져오기 위해서는 캐시 영화 테이블에 접근 필요
-	 * @param movieId
-	 * @param movieSeq
-	 * @return
+	 * 사용자가 영화 상세 페이지에서 필요로 하는 정보를 보내준다.
+	 * @param movieId KMDB API의 DOCID
+	 * @return 영화 상세 페이지에서 필요로하는 영화 정보
 	 */
-	public MovieDetailResDTO getMovieDetailInfo(String movieId, String movieSeq);
+	public MovieDetailResDTO getMovieDetailInfo(String movieId);
 }
