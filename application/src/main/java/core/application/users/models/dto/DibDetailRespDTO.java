@@ -1,6 +1,6 @@
 package core.application.users.models.dto;
 
-public class DibDetailResDTO {
+public class DibDetailRespDTO {
     /*
     * movieId : 찜한 영화 아이디
     * movieTitle : 찜한 영화 제목

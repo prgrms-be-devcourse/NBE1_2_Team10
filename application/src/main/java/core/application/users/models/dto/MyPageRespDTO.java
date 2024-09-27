@@ -5,7 +5,7 @@ import core.application.users.models.entities.UserRole;
 import java.util.List;
 
 
-public class MyPageResDTO {
+public class MyPageRespDTO {
 
     /*
     마이페이지 조회에 사용되는 DTO
@@ -19,6 +19,6 @@ public class MyPageResDTO {
     private String phoneNum;
     private String userName;
     private UserRole role;
-    private List<DibDetailResDTO> dibDTOList;
+    private List<DibDetailRespDTO> dibDTOList;
 
 }
