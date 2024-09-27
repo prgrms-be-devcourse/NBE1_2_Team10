@@ -5,6 +5,11 @@ import lombok.*;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * {@code  ReviewRepository} 와 관련된 엔티티
+ *
+ * @see core.application.reviews.repositories.ReviewRepository
+ */
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
