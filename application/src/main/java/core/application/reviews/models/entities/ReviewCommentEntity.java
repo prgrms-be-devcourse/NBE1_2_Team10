@@ -1,9 +1,15 @@
 package core.application.reviews.models.entities;
 
-import lombok.*;
-
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * {@code ReviewCommentRepository} 와 관련된 엔티티
@@ -16,6 +22,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @ToString
 public class ReviewCommentEntity {
+
     /**
      * 포스팅 리뷰 댓글 ID
      */
@@ -24,8 +31,8 @@ public class ReviewCommentEntity {
     /**
      * 댓글이 달린 포스팅 ID
      */
-    private Long   reviewId;
-    private UUID   userId;
+    private Long reviewId;
+    private UUID userId;
     private String content;
 
     /**
@@ -40,9 +47,13 @@ public class ReviewCommentEntity {
      * <p>
      * {@link #reviewCommentId} 와 동일
      */
-    private Long    commentRef;
-    private int     like;
+    private Long commentRef;
+    private int like;
+
+    @Setter
     private Instant createdAt;
+
+    @Setter
     private boolean isUpdated;
 
     /**
@@ -80,4 +91,35 @@ public class ReviewCommentEntity {
         return this;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ReviewCommentEntity that = (ReviewCommentEntity) o;
+        return like == that.like && isUpdated == that.isUpdated && Objects.equals(
+                reviewCommentId, that.reviewCommentId) && Objects.equals(reviewId, that.reviewId)
+                && Objects.equals(userId, that.userId) && Objects.equals(content,
+                that.content) && Objects.equals(groupId, that.groupId)
+                && Objects.equals(commentRef, that.commentRef) && Objects.equals(
+                createdAt, that.createdAt);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(reviewCommentId);
+        result = 31 * result + Objects.hashCode(reviewId);
+        result = 31 * result + Objects.hashCode(userId);
+        result = 31 * result + Objects.hashCode(content);
+        result = 31 * result + Objects.hashCode(groupId);
+        result = 31 * result + Objects.hashCode(commentRef);
+        result = 31 * result + like;
+        result = 31 * result + Objects.hashCode(createdAt);
+        result = 31 * result + Boolean.hashCode(isUpdated);
+        return result;
+    }
 }
