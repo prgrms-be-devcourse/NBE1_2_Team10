@@ -1,7 +1,10 @@
 package core.application.movies.models.dto;
 
+import lombok.Data;
+
 import java.util.List;
 
+@Data
 public class MovieDetailRespDTO {
 	private String movieId;
 
