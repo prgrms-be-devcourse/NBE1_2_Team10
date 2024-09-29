@@ -35,48 +35,88 @@ like  `feat/#23/userService`
 <br>
 
 # 💬 Commit Message 컨벤션
+```
+커밋 메시지 = 제목 + 본문 + 꼬리말
+    각 파트는 2번의 개행을 통해 구분 (= 하나의 빈 줄)
 
-<aside>
-❗커밋 메시지 = 제목 + 본문 + 꼬리말
-
-각 파트는 2번의 개행을 통해 구분 (= 하나의 빈 줄)
-
-<br>
 제목 = 커밋 태그 + 개조식 구문
-
-like `Feat : Fix UserDTO`
-
-⏬상세한 내용은 아래에서 확인
-
-<br>
 본문 = 상세히 무엇을 왜 변경했는지 작성 (어떻게는 포함 X)
-
-⏬상세한 내용은 아래에서 확인
-
-<br>
 꼬리말 = issue 트래커 번호
-
-⏬상세한 내용은 아래에서 확인
-
-<br>
-
-### **Commit 메시지 예시**
-
-<p align="center"> <img src="https://github.com/user-attachments/assets/36a33143-02dd-4c33-b757-e049337d2658" width="550"/> </p>
-
-**태그 종류**
-
-<p align="center"> <img src="https://github.com/user-attachments/assets/fab20542-708f-44e5-aacb-6296b4ace830" width="550"/> </p>
-
-<p align="center"> <img src="https://github.com/user-attachments/assets/40d93962-89e6-43df-930d-32d9b3afcbfc" width="550"/> </p>
-
-<p align="center"> <img src="https://github.com/user-attachments/assets/f188b740-97bf-47aa-9771-7d9d09fe82c8" width="550"/> </p>
-
-<p align="center"> <img src="https://github.com/user-attachments/assets/52cff5b3-e81f-4311-8017-f4cb0556447c" width="550"/> </p>
+```
 
 <br>
 
-#### 참고한 사이트
+### 타입
+| 태그 이름        | 설명                                                    |
+|:----------------:|:-------------------------------------------------------:|
+| Feat             | 새로운 기능을 추가할 경우                               |
+| Fix              | 버그를 고친 경우                                        |
+| Design           | CSS 등 사용자 UI 디자인 변경                           |
+| !BREAKING CHANGE | 커다란 API 변경의 경우                                  |
+| !HOTFIX          | 급하게 치명적인 버그를 고쳐야 하는 경우                |
+| Style            | 코드 포맷 변경, 세미 콜론 누락, 코드 수정이 없는 경우  |
+| Refactor         | 프로덕션 코드 리팩토링                                  |
+| Comment          | 필요한 주석 추가 및 변경                                |
+| Docs             | 문서를 수정한 경우                                      |
+| Test             | 테스트 추가, 테스트 리팩토링(프로덕션 코드 변경 X)      |
+| Chore            | 빌드 태스크 업데이트, 패키지 매니저 설정(프로덕션 코드 변경 X) |
+| Rename           | 파일 혹은 폴더명을 수정하거나 옮기는 작업만인 경우     |
+| Remove           | 파일을 삭제하는 작업만 수행한 경우                      |
+
+
+<br>
+
+## 제목 작성법
+제목 = 코드 변경 사항에 대한 짧은 요약
+
+```
+1. 처음은 동사 원형으로 시작
+2. 총 글자 수는 50자 이내로 작성
+3. 마지막에 특수문자는 삽입 x
+4. 개조식 구문으로 작성
+```
+
+<br>
+
+예시)
+Feat: "추가 OAuth"<br>
+Feat: "Add OAuth"
+
+<br>
+
+## 본문 작성법
+```
+1. 한 줄 당 72자 내로 작성
+2. 최대한 상세히 작성
+3. 어떻게 변경했는지 보다 무엇을 변경했는지 또는 왜 변경했는지 작성
+```
+
+## 꼬리말 작성법
+```
+1. optional로 이슈 트래커 ID를 작성
+2. "유형: #이슈 번호" 형식으로 사용
+3. 여러 개의 이슈 번호를 적을 때는 쉼표로 구분
+4. 이슈 트래커 유형은 다음 중 하나를 사용
+    - Fixes: bugFix 이슈 번호
+    - Ref: 참고하면 좋은 이슈 번호
+    - Related to: feat(enhancement) 이슈 번호
+ex) Fixes: #45 Ref: #34, #23
+```
+
+## Commit Message 예시
+```
+Feat: "추가 로그인 함수"
+
+로그인 API 개발
+
+Resolves: #123
+Ref: #456
+Related to: #48, #45
+```
+
+<br>
+
+#### 출처
 
 https://overcome-the-limits.tistory.com/entry/협업-협업을-위한-기본적인-git-커밋컨벤션-설정하기#본문은-어떻게-작성하는가
 
