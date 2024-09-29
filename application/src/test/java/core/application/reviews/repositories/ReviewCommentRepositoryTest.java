@@ -91,7 +91,8 @@ class ReviewCommentRepositoryTest {
         log.fine("<- checkNonNullValidation");
 
         // 반환 객체 세부 값들 확인
-        assertThat(result).satisfies(t -> assertThat(result).isNotNull(),
+        assertThat(result).satisfies(
+                t -> assertThat(result).isNotNull(),
                 // pk 가 null 아닌지 확인
                 t -> assertThat(result.getReviewCommentId()).isNotNull(),
 
@@ -138,7 +139,7 @@ class ReviewCommentRepositoryTest {
     @Test
     @DisplayName("주어진 내용 그대로 새로운 댓글 생성")
     void saveNewReviewComment() {
-        log.info("-------------------------- saveNewReviewComment --------------------------");
+        log.info("<- saveNewReviewComment");
 
         ReviewCommentEntity testEntity = genTestEntity(testGroupId, testCommentId, testLikes);
 
@@ -154,14 +155,14 @@ class ReviewCommentRepositoryTest {
                 testEntity.getLike());
 
         log.info(
-                "-------------------------- saveNewReviewComment test passed --------------------------");
+                "-> saveNewReviewComment test passed");
     }
 
     @Test
     @DisplayName("새로운 부모 댓글 생성")
     void saveNewParentReviewComment() {
         log.info(
-                "-------------------------- saveNewParentReviewComment --------------------------");
+                "<- saveNewParentReviewComment");
 
         ReviewCommentEntity testEntity = genTestEntity(testGroupId, testCommentId, testLikes);
 
@@ -178,13 +179,13 @@ class ReviewCommentRepositoryTest {
 
         log.info("ResultEntity : " + result);
         log.info(
-                "-------------------------- saveNewParentReviewComment test passed --------------------------");
+                "-> saveNewParentReviewComment test passed");
     }
 
     @Test
     @DisplayName("새로운 자식 댓글 생성")
     void saveNewChildReviewComment() {
-        log.info("-------------------------- saveNewChildReviewComment --------------------------");
+        log.info("<- saveNewChildReviewComment");
 
         // invalid groupId were given
         ReviewCommentEntity testEntity = genTestEntity(883828L, testCommentId, testLikes);
@@ -203,13 +204,13 @@ class ReviewCommentRepositoryTest {
 
         log.info("ResultEntity : " + result);
         log.info(
-                "-------------------------- saveNewChildReviewComment test passed --------------------------");
+                "-> saveNewChildReviewComment test passed");
     }
 
     @Test
     @DisplayName("댓글 ID 로 검색")
     void findByReviewCommentId() {
-        log.info("-------------------------- findByReviewCommentId --------------------------");
+        log.info("<- findByReviewCommentId");
 
         // DB 에 아무 정보 저장
         ReviewCommentEntity testEntity = reviewCommentRepo.saveNewReviewComment(genTestEntity());
@@ -225,7 +226,7 @@ class ReviewCommentRepositoryTest {
         assertThat(searchResult).isEqualTo(testEntity);
 
         log.info(
-                "-------------------------- findByReviewCommentId test passed --------------------------");
+                "-> findByReviewCommentId test passed");
     }
 
     /**
@@ -250,7 +251,7 @@ class ReviewCommentRepositoryTest {
     @DisplayName("어느 영화 리뷰에 달린 모든 부모 댓글을 검색")
     void findParentCommentByReviewId() {
         log.info(
-                "-------------------------- findParentCommentByReviewId --------------------------");
+                "<- findParentCommentByReviewId");
 
         // 확인 용 데이터 insert
         log.info("Saving new parent review comments");
@@ -276,7 +277,7 @@ class ReviewCommentRepositoryTest {
         assertThat(searchResult).containsAll(testEntities);
 
         log.info(
-                "-------------------------- findParentCommentByReviewId test passed --------------------------");
+                "-> findParentCommentByReviewId test passed");
     }
 
     private final Comparator<ReviewCommentEntity> latestAndIdDescending = Comparator.comparing(
@@ -292,7 +293,7 @@ class ReviewCommentRepositoryTest {
     @Test
     @DisplayName("어느 영화 리뷰의 모든 부모 댓글을 최신순으로 검색")
     void findParentCommentByReviewIdOnDateDescend() {
-        log.info("-------------------------- saveNewReviewComment --------------------------");
+        log.info("<- findParentCommentByReviewIdOnDateDescend");
 
         // 날짜 최신순, id 내림차순
         Comparator<ReviewCommentEntity> requiredOrder = latestAndIdDescending;
@@ -319,14 +320,14 @@ class ReviewCommentRepositoryTest {
         assertThat(searchResult).containsAll(testEntities);
 
         log.info(
-                "-------------------------- saveNewReviewComment test passed --------------------------");
+                "-> findParentCommentByReviewIdOnDateDescend test passed");
     }
 
     @Test
     @DisplayName("어느 영화 리뷰의 모든 부모 댓글을 좋아요 순으로 검색")
     void findParentCommentByReviewIdOnLikeDescend() {
         log.info(
-                "-------------------------- findParentCommentByReviewIdOnLikeDescend --------------------------");
+                "<- findParentCommentByReviewIdOnLikeDescend");
 
         // 좋아요 많은 순, id 내림차순
         Comparator<ReviewCommentEntity> requiredOrder = likesAndIdDescending;
@@ -353,14 +354,14 @@ class ReviewCommentRepositoryTest {
         assertThat(searchResult).containsAll(testEntities);
 
         log.info(
-                "-------------------------- findParentCommentByReviewIdOnLikeDescend test passed --------------------------");
+                "-> findParentCommentByReviewIdOnLikeDescend test passed");
     }
 
     @Test
     @DisplayName("특정 부모 댓글의 모든 자식 댓글을 검색 (최신순 정렬 default)")
     void findChildCommentsByGroupId() {
         log.info(
-                "-------------------------- findChildCommentsByGroupId --------------------------");
+                "<- findChildCommentsByGroupId");
 
         Comparator<ReviewCommentEntity> requiredOrder = latestAndIdDescending;
 
@@ -387,13 +388,13 @@ class ReviewCommentRepositoryTest {
         assertThat(searchResult).containsAll(testEntities);
 
         log.info(
-                "-------------------------- findChildCommentsByGroupId test passed --------------------------");
+                "-> findChildCommentsByGroupId test passed");
     }
 
     @Test
     @DisplayName("DB 의 모든 부모 댓글을 검색")
     void selectAllParentComments() {
-        log.info("-------------------------- selectAllParentComments --------------------------");
+        log.info("<- selectAllParentComments");
 
         Comparator<ReviewCommentEntity> idAcs = Comparator.comparing(
                 ReviewCommentEntity::getReviewCommentId);
@@ -423,13 +424,13 @@ class ReviewCommentRepositoryTest {
         assertThat(searchResult).doesNotContainAnyElementsOf(childTestEntities);
 
         log.info(
-                "-------------------------- selectAllParentComments test passed --------------------------");
+                "-> selectAllParentComments test passed");
     }
 
     @Test
     @DisplayName("DB 의 모든 댓글을 검색")
     void selectAll() {
-        log.info("-------------------------- saveNewReviewComment --------------------------");
+        log.info("<- selectAll");
 
         Comparator<ReviewCommentEntity> idAcs = Comparator.comparing(
                 ReviewCommentEntity::getReviewCommentId);
@@ -453,7 +454,7 @@ class ReviewCommentRepositoryTest {
         assertThat(searchResult).containsAll(testEntities);
 
         log.info(
-                "-------------------------- saveNewReviewComment test passed --------------------------");
+                "-> selectAll test passed");
     }
 
     private static final UUID userId2 = UUID.fromString("cd1fcf52-7e5e-11ef-acea-00d861a152a7");
@@ -462,7 +463,7 @@ class ReviewCommentRepositoryTest {
     @Test
     @DisplayName("특정 댓글의 정보를 변경")
     void editReviewCommentInfo() {
-        log.info("-------------------------- saveNewReviewComment --------------------------");
+        log.info("<- editReviewCommentInfo");
 
         ReviewCommentEntity testEntity = reviewCommentRepo.saveNewReviewComment(genTestEntity());
 
@@ -498,6 +499,6 @@ class ReviewCommentRepositoryTest {
         );
 
         log.info(
-                "-------------------------- saveNewReviewComment test passed --------------------------");
+                "-> editReviewCommentInfo test passed");
     }
 }
