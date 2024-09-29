@@ -91,4 +91,35 @@ public class ReviewCommentEntity {
         return this;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ReviewCommentEntity that = (ReviewCommentEntity) o;
+        return like == that.like && isUpdated == that.isUpdated && Objects.equals(
+                reviewCommentId, that.reviewCommentId) && Objects.equals(reviewId, that.reviewId)
+                && Objects.equals(userId, that.userId) && Objects.equals(content,
+                that.content) && Objects.equals(groupId, that.groupId)
+                && Objects.equals(commentRef, that.commentRef) && Objects.equals(
+                createdAt, that.createdAt);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(reviewCommentId);
+        result = 31 * result + Objects.hashCode(reviewId);
+        result = 31 * result + Objects.hashCode(userId);
+        result = 31 * result + Objects.hashCode(content);
+        result = 31 * result + Objects.hashCode(groupId);
+        result = 31 * result + Objects.hashCode(commentRef);
+        result = 31 * result + like;
+        result = 31 * result + Objects.hashCode(createdAt);
+        result = 31 * result + Boolean.hashCode(isUpdated);
+        return result;
+    }
 }
