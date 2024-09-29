@@ -1,9 +1,15 @@
 package core.application.reviews.models.entities;
 
-import lombok.*;
-
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * {@code ReviewCommentRepository} 와 관련된 엔티티
@@ -16,6 +22,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @ToString
 public class ReviewCommentEntity {
+
     /**
      * 포스팅 리뷰 댓글 ID
      */
@@ -24,8 +31,8 @@ public class ReviewCommentEntity {
     /**
      * 댓글이 달린 포스팅 ID
      */
-    private Long   reviewId;
-    private UUID   userId;
+    private Long reviewId;
+    private UUID userId;
     private String content;
 
     /**
@@ -40,9 +47,13 @@ public class ReviewCommentEntity {
      * <p>
      * {@link #reviewCommentId} 와 동일
      */
-    private Long    commentRef;
-    private int     like;
+    private Long commentRef;
+    private int like;
+
+    @Setter
     private Instant createdAt;
+
+    @Setter
     private boolean isUpdated;
 
     /**
