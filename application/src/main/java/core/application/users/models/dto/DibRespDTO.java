@@ -2,7 +2,8 @@ package core.application.users.models.dto;
 
 import java.util.UUID;
 
-public class DibCancelRespDTO {
+public class DibRespDTO {
+
     /*
     * message : 찜 삭제 완료 메시지
     * userId : 유저 아이디
