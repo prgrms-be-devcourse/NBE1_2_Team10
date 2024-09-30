@@ -1,9 +1,7 @@
 package core.application.movies.service;
 
-import core.application.movies.constant.Genre;
 import core.application.movies.models.dto.MovieDetailRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
-import core.application.movies.repositories.CachedMovieRepository;
 import core.application.movies.repositories.CachedMovieRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -100,7 +96,7 @@ public class MovieServiceImpl implements MovieService {
 
 		// 포스트 링크 저장
 		String imgUrl = resultObject.optString("posters", defaultImgUrl);
-		String resultimgUrl = "";
+		String resultimgUrl = " ";
 		if (!imgUrl.equals(defaultImgUrl)) {
 			resultimgUrl = imgUrl.split("\\|")[0];
 		} else {

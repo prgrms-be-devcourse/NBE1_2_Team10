@@ -1,6 +1,5 @@
 package core.application.movies.models.entities;
 
-import core.application.movies.constant.Genre;
 import lombok.*;
 
 @Getter
@@ -52,39 +51,39 @@ public class CachedMovieEntity {
         this.sumOfRating -= rating;
     }
 
-    public void saveAPIMovieId(String movieId){
-        this.movieId = movieId;
-    }
-
-    public void saveAPITitle(String movieId){
-        this.title = movieId;
-    }
-
-    public void saveAPIPosterUrl(String posterUrl){
-        this.posterUrl = posterUrl;
-    }
-
-    public void saveAPIGenre(String genre){
-        this.genre = genre;
-    }
-
-    public void saveAPIReleaseDate(String releaseDate){
-        this.releaseDate = releaseDate;
-    }
-
-    public void saveAPIPlot(String plot){
-        this.plot = plot;
-    }
-
-    public void saveAPIRunningTime(String runningTime){
-        this.runningTime = runningTime;
-    }
-
-    public void saveAPIActors(String actors){
-        this.actors = actors;
-    }
-
-    public void saveAPIDirector(String director){
-        this.director = director;
-    }
+//    public void saveAPIMovieId(String movieId){
+//        this.movieId = movieId;
+//    }
+//
+//    public void saveAPITitle(String movieId){
+//        this.title = movieId;
+//    }
+//
+//    public void saveAPIPosterUrl(String posterUrl){
+//        this.posterUrl = posterUrl;
+//    }
+//
+//    public void saveAPIGenre(String genre){
+//        this.genre = genre;
+//    }
+//
+//    public void saveAPIReleaseDate(String releaseDate){
+//        this.releaseDate = releaseDate;
+//    }
+//
+//    public void saveAPIPlot(String plot){
+//        this.plot = plot;
+//    }
+//
+//    public void saveAPIRunningTime(String runningTime){
+//        this.runningTime = runningTime;
+//    }
+//
+//    public void saveAPIActors(String actors){
+//        this.actors = actors;
+//    }
+//
+//    public void saveAPIDirector(String director){
+//        this.director = director;
+//    }
 }

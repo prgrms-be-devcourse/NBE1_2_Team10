@@ -1,10 +1,7 @@
 package core.application.movies.models.dto;
 
-import core.application.movies.constant.Genre;
 import core.application.movies.models.entities.CachedMovieEntity;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 public class MovieDetailRespDTO {
