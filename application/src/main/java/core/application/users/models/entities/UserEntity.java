@@ -2,7 +2,6 @@ package core.application.users.models.entities;
 
 import lombok.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -19,9 +18,4 @@ public class UserEntity {
     private String   alias;
     private String   phoneNum;
     private String   userName;
-
-    /**
-     * 해당 유저가 소유한 찜 목록들
-     */
-    private List<DibEntity> dibEntityList;
 }
