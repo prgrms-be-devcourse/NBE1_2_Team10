@@ -2,12 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="core.application.users.mapper.UserMapper">
-    <insert id="saveNewUser">
+    <insert id="saveNewUser" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO user_table(user_email, user_pw, user_name, role, refresh_token, alias, phone_num)
         VALUES (#{userEmail},#{userPw}, #{userName}, #{role}, #{refreshToken}, #{alias}, #{phoneNum})
     </insert>
 
-    <update id="editUserInfo">
+    <update id="editUserInfo" useGeneratedKeys="true" keyProperty="userId">
         UPDATE user_table
         SET user_email = #{userEmail},
             user_pw = #{userPw},

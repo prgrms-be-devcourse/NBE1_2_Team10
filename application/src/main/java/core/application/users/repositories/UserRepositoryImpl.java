@@ -17,10 +17,10 @@ public class UserRepositoryImpl implements UserRepository{
 
     private final UserMapper mapper;
 
+
     @Override
-    public Optional<UserEntity> saveNewUser(UserEntity newUser) {
-        mapper.saveNewUser(newUser);
-        return mapper.findByUserEmail(newUser.getUserEmail());
+    public int saveNewUser(UserEntity newUser) {
+        return mapper.saveNewUser(newUser);
     }
 
     @Override
@@ -59,9 +59,8 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     @Override
-    public Optional<UserEntity> editUserInfo(UUID userId, UserEntity replacement) {
-        mapper.editUserInfo(userId, replacement);
-        return mapper.findByUserId(userId);
+    public int editUserInfo(UUID userId, UserEntity replacement) {
+        return mapper.editUserInfo(userId, replacement);
     }
 
     @Override
