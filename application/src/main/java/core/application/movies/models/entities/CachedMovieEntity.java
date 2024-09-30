@@ -1,7 +1,5 @@
 package core.application.movies.models.entities;
 
-import java.util.List;
-
 import core.application.movies.constant.Genre;
 import lombok.*;
 
@@ -27,4 +25,30 @@ public class CachedMovieEntity {
     private Long   reviewCount;
     private Long   commentCount;
     private Long   sumOfRating;
+
+    public void incrementDibCount() {
+        this.dibCount++;
+    }
+
+    public void decrementDibCount() {
+        this.dibCount--;
+    }
+
+    public void incrementReviewCount() {
+        this.reviewCount++;
+    }
+
+    public void decrementReviewCount() {
+        this.reviewCount--;
+    }
+
+    public void isCommentedWithRating(int rating) {
+        this.commentCount++;
+        this.sumOfRating += rating;
+    }
+
+    public void deleteComment(int rating) {
+        this.commentCount--;
+        this.sumOfRating -= rating;
+    }
 }
