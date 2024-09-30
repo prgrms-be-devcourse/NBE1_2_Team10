@@ -42,12 +42,6 @@
         WHERE user_email = #{userEmail} AND user_pw = #{userPw}
     </select>
 
-    <select id="findByRefreshToken" resultType="core.application.users.models.entities.UserEntity">
-        SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
-        FROM user_table
-        WHERE refresh_token = #{refreshToken}
-    </select>
-
     <select id="findByUserRole" resultType="core.application.users.models.entities.UserEntity">
         SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
         FROM user_table

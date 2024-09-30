@@ -14,7 +14,6 @@ public class UserEntity {
     private String   userEmail;
     private String   userPw;
     private UserRole role;
-    private String   refreshToken;
     private String   alias;
     private String   phoneNum;
     private String   userName;

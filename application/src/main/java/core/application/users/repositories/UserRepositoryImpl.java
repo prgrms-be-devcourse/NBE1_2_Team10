@@ -37,12 +37,6 @@ public class UserRepositoryImpl implements UserRepository{
     public Optional<UserEntity> findByUserEmailAndPassword(String email, String password) {
         return mapper.findByUserEmailAndPassword(email, password);
     }
-
-    @Override
-    public Optional<UserEntity> findByRefreshToken(String refreshToken) {
-        return mapper.findByRefreshToken(refreshToken);
-    }
-
     @Override
     public List<UserEntity> findByUserRole(UserRole role) {
         return mapper.findByUserRole(role);

@@ -13,12 +13,8 @@ import java.util.UUID;
 public interface UserMapper {
     int saveNewUser(UserEntity newUser);
     Optional<UserEntity> findByUserId(UUID userId);
-
     Optional<UserEntity> findByUserEmail(String email);
-
     Optional<UserEntity> findByUserEmailAndPassword(String email, String password);
-
-    Optional<UserEntity> findByRefreshToken(String refreshToken);
     List<UserEntity> findByUserRole(UserRole role);
     List<DibEntity> selectDibsOnUserId(UUID userId);
 

@@ -52,14 +52,6 @@ public interface UserRepository {
     Optional<UserEntity> findByUserEmailAndPassword(String email, String password);
 
     /**
-     * 리프래시 토큰으로 검색
-     *
-     * @param refreshToken 어느 유저에게 발급된 리프래쉬 토큰
-     * @return {@link Optional}{@code <}{@link UserEntity}{@code >}
-     */
-    Optional<UserEntity> findByRefreshToken(String refreshToken);
-
-    /**
      * 특정 권한을 가진 모든 유저를 검색
      *
      * @param role 유저 권한
