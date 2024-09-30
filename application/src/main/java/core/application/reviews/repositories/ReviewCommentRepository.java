@@ -2,7 +2,6 @@ package core.application.reviews.repositories;
 
 
 import core.application.reviews.models.entities.ReviewCommentEntity;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -151,8 +150,15 @@ public interface ReviewCommentRepository {
      * @param update          {@code is_updated} 에 설정할 정보
      * @return {@link ReviewCommentEntity} 변경된 정보
      */
-    ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId, ReviewCommentEntity replacement);
     ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId, ReviewCommentEntity replacement,
             boolean update);
 
+    /**
+     * 특정 포스팅 댓글의 좋아요를 수정
+     *
+     * @param reviewCommentId 수정할 댓글 ID
+     * @param likes           설정할 좋아요 수
+     * @return {@link ReviewCommentEntity} 변경된 정보
+     */
+    ReviewCommentEntity updateReviewCommentLikes(Long reviewCommentId, int likes);
 }
