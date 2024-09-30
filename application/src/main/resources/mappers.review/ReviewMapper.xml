@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="core.application.reviews.repositories.mapper.ReviewMapper">
+
+    <insert id="saveNewReview" parameterType="map" useGeneratedKeys="true" keyProperty="review_id" keyColumn="review_id">
+        INSERT INTO REVIEW_TABLE (review_id, title, content, user_id, movie_id, `like`, created_at, updated_at)
+        VALUES (#{review.reviewId}, #{review.title}, #{review.content}, #{userId}, #{movieId}, #{review.like}, #{review.createdAt}, #{review.updatedAt})
+    </insert>
+
+    <select id="findByReviewId" resultMap="ReviewResultMap">
+        SELECT * FROM REVIEW_TABLE WHERE review_id = #{reviewId}
+    </select>
+
+    <select id="findByMovieId" resultMap="ReviewResultMap">
+        SELECT * FROM REVIEW_TABLE WHERE movie_id = #{movieId}
+    </select>
+
+    <select id="findByMovieIdOnDateDescend" resultMap="ReviewResultMap">
+        SELECT * FROM REVIEW_TABLE WHERE movie_id = #{movieId} ORDER BY created_at DESC
+    </select>
+
+    <select id="findByMovieIdOnLikeDescend" resultMap="ReviewResultMap">
+        SELECT * FROM REVIEW_TABLE WHERE movie_id = #{movieId} ORDER BY like DESC
+    </select>
+
+    <select id="findByMovieIdWithoutContent" resultMap="ReviewResultMap">
+        SELECT review_id, title, user_id, movie_id, `like`, created_at, updated_at
+        FROM REVIEW_TABLE
+        WHERE movie_id = #{movieId}
+    </select>
+
+    <select id="findByMovieIdWithoutContentOnDateDescend" resultMap="ReviewResultMap">
+        SELECT review_id, title, user_id, movie_id, `like`, created_at, updated_at
+        FROM REVIEW_TABLE
+        WHERE movie_id = #{movieId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByMovieIdWithoutContentOnLikeDescend" resultMap="ReviewResultMap">
+        SELECT review_id, title, user_id, movie_id, `like`, created_at, updated_at
+        FROM REVIEW_TABLE
+        WHERE movie_id = #{movieId}
+        ORDER BY like_count DESC
+    </select>
+
+    <select id="findByUserId" resultMap="ReviewResultMap">
+        SELECT * FROM REVIEW_TABLE WHERE user_id = #{userId}
+    </select>
+
+    <select id="selectAll" resultMap="ReviewResultMap">
+        SELECT * FROM REVIEW_TABLE
+    </select>
+
+    <update id="editReviewInfo">
+        UPDATE REVIEW_TABLE
+        SET title = #{replacement.title},
+            content = #{replacement.content},
+            `like` = #{replacement.like},
+            updated_at = #{replacement.updatedAt}
+        WHERE review_id = #{reviewId}
+    </update>
+
+    <delete id="deleteReview">
+        DELETE FROM REVIEW_TABLE WHERE review_id = #{reviewId}
+    </delete>
+
+    <resultMap id="ReviewResultMap" type="core.application.reviews.models.entities.ReviewEntity">
+        <id property="reviewId" column="review_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="userId" column="user_id"/>
+        <result property="movieId" column="movie_id"/>
+        <result property="like" column="`like`"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+</mapper>
+
