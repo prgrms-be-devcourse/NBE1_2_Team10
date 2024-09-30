@@ -27,7 +27,7 @@ public class ReviewEntity {
     private Instant createdAt;
     private Instant updatedAt;
 
-    private Set<UUID> likeUsers = new HashSet<>();
+
 
     /* builder 사용하려면...
      * public static ReviewEntity from(ReviewReqDTO dto) {
@@ -39,13 +39,11 @@ public class ReviewEntity {
 
     public ReviewEntity increaseLikes(UUID userId){
         this.like++;
-        likeUsers.add(userId);
         return this;
     }
 
     public ReviewEntity decreaseLikes(UUID userId){
         this.like--;
-        likeUsers.remove(userId);
         return this;
     }
 }

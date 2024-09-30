@@ -33,7 +33,7 @@ class ReviewCommentRepositoryTest {
     private static final Long reviewId = 2L;
 
     // DB 에 있는 실제 유저의 ID
-    private static final UUID userId = UUID.fromString("c2127ac8-7d74-11ef-a420-027a5d64df30");
+    private static final UUID userId = UUID.fromString("28a771d8-7f15-11ef-a312-2cf05d34871e");
 
     private static final int testSampleNum = 10;
 
