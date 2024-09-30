@@ -17,7 +17,8 @@ public class CachedMovieRepositoryImpl implements CachedMovieRepository {
 
 	@Override
 	public CachedMovieEntity saveNewMovie(CachedMovieEntity movie) {
-		return mapper.save(movie);
+		mapper.save(movie);
+		return movie;
 	}
 
 	@Override
@@ -47,7 +48,8 @@ public class CachedMovieRepositoryImpl implements CachedMovieRepository {
 
 	@Override
 	public CachedMovieEntity editMovie(String movieId, CachedMovieEntity replacement) {
-		return mapper.update(movieId, replacement);
+		mapper.update(movieId, replacement);
+		return replacement;
 	}
 
 	@Override
