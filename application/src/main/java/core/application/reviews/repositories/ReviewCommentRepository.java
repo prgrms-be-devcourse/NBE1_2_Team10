@@ -22,7 +22,6 @@ public interface ReviewCommentRepository {
      */
     ReviewCommentEntity saveNewReviewComment(ReviewCommentEntity reviewComment);
 
-
     // 부모 댓글을 등록
 
     /**
@@ -33,8 +32,8 @@ public interface ReviewCommentRepository {
      * @param reviewComment 등록할 포스팅 댓글 정보
      * @return {@link ReviewCommentEntity} 등록된 정보
      */
-    ReviewCommentEntity saveNewParentReviewComment(Long reviewId, UUID userId, ReviewCommentEntity reviewComment);
-
+    ReviewCommentEntity saveNewParentReviewComment(Long reviewId, UUID userId,
+            ReviewCommentEntity reviewComment);
 
     // 자식 댓글을 등록
 
@@ -46,9 +45,9 @@ public interface ReviewCommentRepository {
      * @param reviewComment 등록할 댓글 정보
      * @return {@link ReviewCommentEntity} 등록된 정보
      */
-    ReviewCommentEntity saveNewChildReviewComment(Long groupId, UUID userId, ReviewCommentEntity reviewComment);
+    ReviewCommentEntity saveNewChildReviewComment(Long groupId, UUID userId,
+            ReviewCommentEntity reviewComment);
     //</editor-fold>
-
 
     //<editor-fold desc="READ">
 
@@ -59,7 +58,6 @@ public interface ReviewCommentRepository {
      * @return {@link Optional}{@code <}{@link ReviewCommentEntity}{@code >}
      */
     Optional<ReviewCommentEntity> findByReviewCommentId(Long reviewCommentId);
-
 
     //<editor-fold desc="부모 댓글 검색">
 
@@ -125,18 +123,36 @@ public interface ReviewCommentRepository {
     List<ReviewCommentEntity> selectAll();
     //</editor-fold>
 
-
     // UPDATE
 
     /**
      * 특정 포스팅 댓글의 정보를 {@code replacement} 정보로 변경
      * <p>
-     * 이 때 {@code content}, {@code commentRef} 만 {@code replacement} 의 것으로 변경.
-     * {@code isUpdated} 는 자동으로 변경.
+     * 이 때 {@code content}, {@code commentRef} 만 {@code replacement} 의 것으로 변경. {@code isUpdated} 는
+     * 자동으로 변경.
      *
      * @param reviewCommentId 정보 변경할 포스팅 댓글의 ID
      * @param replacement     변경할 정보
      * @return {@link ReviewCommentEntity} 변경된 정보
+     * @deprecated use instead {@link #editReviewCommentInfo(Long, ReviewCommentEntity, boolean)}
+     */
+    @Deprecated
+    ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId,
+            ReviewCommentEntity replacement);
+
+    /**
+     * 특정 포스팅 댓글의 정보를 {@code replacement} 정보로 변경
+     * <p>
+     * 이 때 {@code content}, {@code commentRef} 만 {@code replacement} 의 것으로 변경. {@code isUpdated} 는
+     * 자동으로 변경.
+     *
+     * @param reviewCommentId 정보 변경할 포스팅 댓글의 ID
+     * @param replacement     변경할 정보
+     * @param update          {@code is_updated} 에 설정할 정보
+     * @return {@link ReviewCommentEntity} 변경된 정보
      */
     ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId, ReviewCommentEntity replacement);
+    ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId, ReviewCommentEntity replacement,
+            boolean update);
+
 }
