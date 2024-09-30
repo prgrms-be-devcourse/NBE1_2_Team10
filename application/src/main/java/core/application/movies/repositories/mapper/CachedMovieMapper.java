@@ -11,7 +11,7 @@ import core.application.movies.models.entities.CachedMovieEntity;
 @Mapper
 public interface CachedMovieMapper {
 
-	CachedMovieEntity save(CachedMovieEntity movie);
+	void save(CachedMovieEntity movie);
 
 	Optional<CachedMovieEntity> findByMovieId(String movieId);
 
@@ -23,7 +23,7 @@ public interface CachedMovieMapper {
 
 	List<CachedMovieEntity> selectOnAVGRatingDescendLimit(int num);
 
-	CachedMovieEntity update(@Param("movieId") String movieId, @Param("replacement") CachedMovieEntity replacement);
+	void update(@Param("movieId") String movieId, @Param("replacement") CachedMovieEntity replacement);
 
 	void delete(String movieId);
 }
