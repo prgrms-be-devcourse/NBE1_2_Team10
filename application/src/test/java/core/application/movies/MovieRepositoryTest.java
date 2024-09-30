@@ -2,7 +2,6 @@ package core.application.movies;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,7 +44,6 @@ public class MovieRepositoryTest {
 
 		// THEN
 		Optional<CachedMovieEntity> find = repository.findByMovieId(movie.getMovieId());
-		assertThat(find).isPresent();
 		checkEqualMovie(find, movie);
 	}
 
@@ -74,7 +72,6 @@ public class MovieRepositoryTest {
 
 		// THEN
 		Optional<CachedMovieEntity> find = repository.findByMovieId(movieEntity.getMovieId());
-		assertThat(find).isPresent();
 		checkEqualMovie(find, movieEntity);
 	}
 
@@ -82,7 +79,6 @@ public class MovieRepositoryTest {
 	@DisplayName("찜 많은 순, 평점 높은 순으로 영화를 제공한다.")
 	public void order() {
 		// GIVEN
-		List<CachedMovieEntity> list = new ArrayList<>();
 		for (int i = 0; i < 10; i++) {
 			CachedMovieEntity movieEntity = new CachedMovieEntity(
 				"test" + i,
@@ -119,8 +115,8 @@ public class MovieRepositoryTest {
 		assertThat(dib.get(4).getDibCount()).isEqualTo(5);
 	}
 
-
 	private void checkEqualMovie(Optional<CachedMovieEntity> findByRepository, CachedMovieEntity movie) {
+		assertThat(findByRepository).isPresent();
 		assertThat(findByRepository.get()).satisfies(find -> {
 			assertThat(find.getMovieId()).isEqualTo(movie.getMovieId());
 			assertThat(find.getTitle()).isEqualTo(movie.getTitle());

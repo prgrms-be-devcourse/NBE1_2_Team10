@@ -1,7 +1,5 @@
 package core.application.movies.models.entities;
 
-import java.util.List;
-
 import core.application.movies.constant.Genre;
 import lombok.*;
 
