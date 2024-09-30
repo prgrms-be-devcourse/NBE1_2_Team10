@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:privates/private.properties")
 public class PrivateConfig {
     /*  privates/private.properties
       ${database.url}       :   DB url
