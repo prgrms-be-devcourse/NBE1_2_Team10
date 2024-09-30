@@ -3,9 +3,11 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="core.application.reviews.repositories.mapper.ReviewMapper">
 
-    <insert id="saveNewReview" parameterType="map" useGeneratedKeys="true" keyProperty="review_id" keyColumn="review_id">
-        INSERT INTO REVIEW_TABLE (review_id, title, content, user_id, movie_id, `like`, created_at, updated_at)
-        VALUES (#{review.reviewId}, #{review.title}, #{review.content}, #{userId}, #{movieId}, #{review.like}, #{review.createdAt}, #{review.updatedAt})
+    <insert id="saveNewReview" parameterType="map" useGeneratedKeys="true" keyProperty="review.reviewId" keyColumn="review_id">
+        INSERT INTO review_table
+            (movie_id, user_id, title, content, `like`, created_at, updated_at)
+        VALUES
+            (#{movieId}, #{userId}, #{review.title}, #{review.content}, #{review.like}, #{review.createdAt}, #{review.updatedAt})
     </insert>
 
     <select id="findByReviewId" resultMap="ReviewResultMap">
@@ -71,7 +73,7 @@
         <result property="content" column="content"/>
         <result property="userId" column="user_id"/>
         <result property="movieId" column="movie_id"/>
-        <result property="like" column="`like`"/>
+        <result property="like" column="like"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
