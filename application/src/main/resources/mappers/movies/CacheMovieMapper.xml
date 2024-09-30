@@ -6,7 +6,8 @@
     <insert id="save" parameterType="core.application.movies.models.entities.CachedMovieEntity">
         insert into cached_movie_table (movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
                                         director, dib_count, review_count, comment_count, sum_of_rating)
-        values (#{movieId}, #{title}, #{posterUrl}, #{dibCount}, #{reviewCount}, #{commentCount}, #{sumOfRating})
+        values (#{movieId}, #{title}, #{posterUrl}, #{genre}, #{releaseDate}, #{plot}, #{runningTime}, #{actors}, #{director},
+                #{dibCount}, #{reviewCount}, #{commentCount}, #{sumOfRating})
     </insert>
 
     <select id="findByMovieId" resultType="core.application.movies.models.entities.CachedMovieEntity">
@@ -50,17 +51,17 @@
         update cached_movie_table
         set title=#{replacement.title},
             poster_url=#{replacement.posterUrl},
-            gemre=#{replacement.genre},
+            genre=#{replacement.genre},
             release_date=#{replacement.releaseDate},
             plot=#{replacement.plot},
-            running_time=#{replacement.runningTIme},
+            running_time=#{replacement.runningTime},
             actors=#{replacement.actors},
-            directors=#{replacement.director},
+            director=#{replacement.director},
             dib_count=#{replacement.dibCount},
             review_count=#{replacement.reviewCount},
             comment_count=#{replacement.commentCount},
             sum_of_rating=#{replacement.sumOfRating}
-        where movie_id = #{movieId}
+        where movie_id=#{movieId}
     </update>
     
     <delete id="delete">
