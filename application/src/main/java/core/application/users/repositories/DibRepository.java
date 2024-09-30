@@ -20,7 +20,7 @@ public interface DibRepository {
      * @param dib    등록할 찜 목록
      * @return @return {@link DibEntity} 등록된 찜 정보
      */
-    DibEntity saveNewDib(UUID userId, DibEntity dib);
+    int saveNewDib(UUID userId, DibEntity dib);
 
 
     //<editor-fold desc="READ">
@@ -38,7 +38,6 @@ public interface DibRepository {
      *
      * @param movieId 검색할 영화 ID
      * @return {@code Long} 해당 영화가 찜 된 횟수
-     * @see DibEntity#movieId
      */
     Long countMovie(String movieId);
 
@@ -66,5 +65,7 @@ public interface DibRepository {
      * @param userId 유저 ID
      */
     void deleteDib(UUID userId);
+
+    void deleteDib(UUID userId, String movieId);
     //</editor-fold>
 }
