@@ -16,7 +16,6 @@ import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.UpdateProvider;
-import org.springframework.transaction.annotation.Transactional;
 
 @Mapper
 public interface MyBatisReviewCommentRepository extends ReviewCommentRepository {
@@ -185,23 +184,63 @@ public interface MyBatisReviewCommentRepository extends ReviewCommentRepository 
     @ResultMap("ReviewCommentResultMap")
     List<ReviewCommentEntity> selectAll();
 
+
+    /**
+     * 실질적으로 DB 에 {@code update} 하는 {@code MyBatis Query} 용 메서드
+     *
+     * @param reviewCommentId 댓글 ID
+     * @param replacement     변경할 정보
+     * @param update          {@code is_updated} 에 설정할 정보
+     * @return {@code update} 결과
+     * @see ReviewCommentMapperProvider#insertReviewComment
+     */
     @UpdateProvider(type = ReviewCommentMapperProvider.class, method = "editReviewComment")
     int updateReviewCommentEntity(
             @Param("reviewCommentId") Long reviewCommentId,
-            @Param("replacement") ReviewCommentEntity replacement
+            @Param("replacement") ReviewCommentEntity replacement,
+            @Param("isUpdated") boolean update
     );
 
     /**
      * {@inheritDoc}
      *
-     * @see ReviewCommentMapperProvider#editReviewComment
+     * @deprecated use instead {@link #editReviewCommentInfo(Long, ReviewCommentEntity, boolean)}
      */
     @Override
-    @Transactional
-    @UpdateProvider(type = ReviewCommentMapperProvider.class, method = "editReviewComment")
+    @Deprecated
     default ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId,
             ReviewCommentEntity replacement) {
-        int result = updateReviewCommentEntity(reviewCommentId, replacement);
+        return editReviewCommentInfo(reviewCommentId, replacement, true);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    default ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId,
+            ReviewCommentEntity replacement, boolean update) {
+        int result = updateReviewCommentEntity(reviewCommentId, replacement, update);
+        return findByReviewCommentId(reviewCommentId).orElseThrow();
+    }
+
+    /**
+     * 실질적으로 DB 에 리뷰 좋아요 {@code update} 하는 {@code MyBatis Query} 용 메서드
+     *
+     * @param reviewCommentId 댓글 ID
+     * @param likes           변경될 좋아요 수
+     * @return {@code update} 결과
+     * @see ReviewCommentMapperProvider#updateCommentLikes
+     */
+    @UpdateProvider(type = ReviewCommentMapperProvider.class, method = "updateCommentLikes")
+    int updateCommentLikes(@Param("reviewCommentId") Long reviewCommentId,
+            @Param("likes") int likes);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    default ReviewCommentEntity updateReviewCommentLikes(Long reviewCommentId, int likes) {
+        int result = updateCommentLikes(reviewCommentId, likes);
         return findByReviewCommentId(reviewCommentId).orElseThrow();
     }
 }

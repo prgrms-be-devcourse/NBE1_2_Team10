@@ -3,7 +3,6 @@ package core.application.reviews.services;
 import core.application.reviews.exceptions.NoReviewCommentFoundException;
 import core.application.reviews.exceptions.NoReviewFoundException;
 import core.application.reviews.models.entities.ReviewCommentEntity;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -47,7 +46,8 @@ public interface ReviewCommentService {
      * @throws NoReviewFoundException {@code reviewId} 에 해당하는 리뷰를 찾지 못했을 시
      * @author jbw9964
      */
-    ReviewCommentEntity addNewParentReviewComment(Long reviewId, UUID userId, ReviewCommentEntity parentReviewComment)
+    ReviewCommentEntity addNewParentReviewComment(Long reviewId, UUID userId,
+            ReviewCommentEntity parentReviewComment)
             throws NoReviewFoundException;
 
     /**
@@ -76,21 +76,24 @@ public interface ReviewCommentService {
      * @param target 멘션 당할 댓글
      * @return 멘션 정보가 들어간 {@code origin}
      * @author jbw9964
+     * @warning 해당 메서드는 {@code origin}, {@code target} 간 멘션을 엮어줄 뿐, 그것이 DB 에 반영되지 않음.
      * @see ReviewCommentEntity#mentionReviewComment
      */
-    ReviewCommentEntity addReviewCommentMention(ReviewCommentEntity origin, ReviewCommentEntity target);
-
+    ReviewCommentEntity addReviewCommentMention(ReviewCommentEntity origin,
+            ReviewCommentEntity target);
 
     /**
      * 특정 댓글의 내용을 수정하는 서비스
      *
      * @param reviewCommentId    수정할 댓글 ID
+     * @param commentRef         {@code (필요하다면)} 멘션할 댓글 ID
      * @param contentReplacement 수정할 댓글 내용
      * @return {@link ReviewCommentEntity} 수정된 정보
      * @throws NoReviewCommentFoundException {@code reviewCommentId} 에 해당하는 댓글을 찾지 못했을 시
      * @author jbw9964
      */
-    ReviewCommentEntity editReviewComment(Long reviewCommentId, String contentReplacement)
+    ReviewCommentEntity editReviewComment(Long reviewCommentId, Long commentRef,
+            String contentReplacement)
             throws NoReviewCommentFoundException;
 
 
@@ -104,7 +107,8 @@ public interface ReviewCommentService {
      * @throws NoReviewCommentFoundException {@code reviewCommentId} 에 해당하는 댓글을 찾지 못했을 시
      * @author jbw9964
      */
-    ReviewCommentEntity deleteReviewComment(Long reviewCommentId) throws NoReviewCommentFoundException;
+    ReviewCommentEntity deleteReviewComment(Long reviewCommentId)
+            throws NoReviewCommentFoundException;
 
 
     /**
@@ -116,7 +120,8 @@ public interface ReviewCommentService {
      * @author jbw9964
      * @see ReviewCommentEntity#increaseLikes
      */
-    ReviewCommentEntity increaseCommentLike(Long reviewCommentId) throws NoReviewCommentFoundException;
+    ReviewCommentEntity increaseCommentLike(Long reviewCommentId)
+            throws NoReviewCommentFoundException;
 
     /**
      * 특정 댓글의 좋아요를 1 감소시키는 서비스
@@ -127,6 +132,7 @@ public interface ReviewCommentService {
      * @author jbw9964
      * @see ReviewCommentEntity#decreaseLikes
      */
-    ReviewCommentEntity decreaseCommentLike(Long reviewCommentId) throws NoReviewCommentFoundException;
+    ReviewCommentEntity decreaseCommentLike(Long reviewCommentId)
+            throws NoReviewCommentFoundException;
 
 }
