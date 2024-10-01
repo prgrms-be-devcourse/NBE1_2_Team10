@@ -1,10 +1,11 @@
 package core.application.users.models.dto;
 
 import core.application.users.models.entities.UserRole;
+import lombok.Builder;
 
 import java.util.List;
 
-
+@Builder
 public class MyPageRespDTO {
 
     /*

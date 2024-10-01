@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface DibMapper {
     int saveNewDib(UUID userId, DibEntity dib);
     Optional<DibEntity> findByDibId(Long id);
+    List<DibEntity> findByUserId(UUID userId);
     Long countMovie(String movieId);
     List<DibEntity> selectAll();
     void deleteDibByDibId(Long dibId);

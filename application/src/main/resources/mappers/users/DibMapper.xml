@@ -36,7 +36,12 @@
     </select>
 
     <select id="selectAll" resultType="core.application.users.models.entities.DibEntity">
-        SELECT *
+        SELECT dib_id, user_id, movie_id
         FROM dib_table
+    </select>
+    <select id="findByUserId" resultType="core.application.users.models.entities.DibEntity">
+        SELECT dib_id, user_id, movie_id
+        FROM dib_table
+        WHERE user_id = #{userId}
     </select>
 </mapper>

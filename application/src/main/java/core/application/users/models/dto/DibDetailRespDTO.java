@@ -1,5 +1,8 @@
 package core.application.users.models.dto;
 
+import lombok.Builder;
+
+@Builder
 public class DibDetailRespDTO {
 
     /*
