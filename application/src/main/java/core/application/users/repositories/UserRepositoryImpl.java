@@ -53,8 +53,8 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     @Override
-    public int editUserInfo(UUID userId, UserEntity replacement) {
-        return mapper.editUserInfo(userId, replacement);
+    public int editUserInfo(UserEntity replacement) {
+        return mapper.editUserInfo(replacement);
     }
 
     @Override
