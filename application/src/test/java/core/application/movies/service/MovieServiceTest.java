@@ -16,11 +16,9 @@ import core.application.movies.models.dto.MainPageMovieRespDTO;
 import core.application.movies.models.dto.MainPageMoviesRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.CachedMovieRepository;
-import lombok.extern.slf4j.Slf4j;
 
 @SpringBootTest
 @Transactional
-@Slf4j
 public class MovieServiceTest {
 	@Autowired
 	private MovieService movieService;
