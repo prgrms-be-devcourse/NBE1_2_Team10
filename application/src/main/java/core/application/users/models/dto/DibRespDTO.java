@@ -1,7 +1,10 @@
 package core.application.users.models.dto;
 
+import lombok.Builder;
+
 import java.util.UUID;
 
+@Builder
 public class DibRespDTO {
 
     /*
