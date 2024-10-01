@@ -23,7 +23,7 @@
         from cached_movie_table
         order by dib_count desc
     </select>
-    
+
     <select id="selectOnDibOrderDescendLimit" resultType="core.application.movies.models.entities.CachedMovieEntity">
         select movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
                director, dib_count, review_count, comment_count, sum_of_rating
@@ -46,7 +46,15 @@
         order by round(sum_of_rating / comment_count, 1) desc
         limit #{num}
     </select>
-    
+
+    <select id="selectOnReviewCountDescend" resultType="core.application.movies.models.entities.CachedMovieEntity">
+        select movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
+            director, dib_count, review_count, comment_count, sum_of_rating
+        from cached_movie_table
+        order by review_count desc
+            limit #{num}
+    </select>
+
     <update id="update">
         update cached_movie_table
         set title=#{replacement.title},
@@ -63,7 +71,7 @@
             sum_of_rating=#{replacement.sumOfRating}
         where movie_id=#{movieId}
     </update>
-    
+
     <delete id="delete">
         delete from cached_movie_table
         where movie_id = #{movieId}
