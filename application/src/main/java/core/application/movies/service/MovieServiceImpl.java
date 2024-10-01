@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import core.application.movies.constant.Genre;
@@ -34,6 +35,7 @@ public class MovieServiceImpl implements MovieService {
 	private final CachedMovieRepository movieRepository;
 
 	@Override
+	@Transactional(readOnly = true)
 	public MainPageMoviesRespDTO getMainPageMovieInfo() {
 		List<MainPageMovieRespDTO> ratingOrder = movieRepository.selectOnAVGRatingDescend(10).stream()
 			.map(MainPageMovieRespDTO::from)
