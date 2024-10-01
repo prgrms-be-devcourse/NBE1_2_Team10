@@ -28,16 +28,30 @@ public class ReviewCommentMapperProvider {
     }
 
     /**
-     * {@code editReviewCommentInfo} 메서드 {@code MyBatis} 쿼리 생성용 메서드
+     * {@code updateReviewCommentEntity} 메서드 {@code MyBatis} 쿼리 생성용 메서드
      *
-     * @see MyBatisReviewCommentRepository#editReviewCommentInfo
+     * @see MyBatisReviewCommentRepository#updateReviewCommentEntity
      */
     public String editReviewComment() {
         SQL query = new SQL()
                 .UPDATE("REVIEW_COMMENT_TABLE")
                 .SET("content = #{replacement.content}")
                 .SET("comment_ref = #{replacement.commentRef}")
-                .SET("is_updated = true")
+                .SET("is_updated = #{isUpdated}")
+                .WHERE("review_comment_id = #{reviewCommentId}");
+
+        return query.toString();
+    }
+
+    /**
+     * {@code updateCommentLikes} 메서드 {@code MyBatis} 쿼리 생성용 메서드
+     *
+     * @see MyBatisReviewCommentRepository#updateCommentLikes
+     */
+    public String updateCommentLikes() {
+        SQL query = new SQL()
+                .UPDATE("REVIEW_COMMENT_TABLE")
+                .SET("`like` = #{likes}")
                 .WHERE("review_comment_id = #{reviewCommentId}");
 
         return query.toString();
