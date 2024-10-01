@@ -19,7 +19,7 @@ public class CommentRepositoryImpl implements CommentRepository {
 	@Override
 	public CommentEntity saveNewComment(String movieId, UUID userId, CommentEntity comment) {
 		commentMapper.save(movieId, userId, comment);
-		return comment;
+		return findByCommentId(comment.getCommentId()).orElse(null);
 	}
 
 	@Override
