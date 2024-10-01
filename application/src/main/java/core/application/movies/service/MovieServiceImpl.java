@@ -1,17 +1,21 @@
 package core.application.movies.service;
 
+import core.application.movies.constant.Genre;
+import core.application.movies.constant.MovieSearch;
+import core.application.movies.models.dto.MainPageMoviesRespDTO;
 import core.application.movies.models.dto.MovieDetailRespDTO;
+import core.application.movies.models.dto.MovieSimpleRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
-import core.application.movies.repositories.CachedMovieRepositoryImpl;
+import core.application.movies.repositories.CachedMovieRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,8 +32,15 @@ public class MovieServiceImpl implements MovieService {
 
 	private final WebClient webClient;
 
-	@Autowired
-	CachedMovieRepositoryImpl cachedMovieRepository;
+	private final CachedMovieRepository movieRepository;
+
+	public MainPageMoviesRespDTO getMainPageMovieInfo(){
+		return null;
+	}
+
+	public List<MovieSimpleRespDTO> searchMovies(Integer page, MovieSearch sort, String query, Genre genre){
+		return null;
+	}
 
 	/*
 	 * 구현 순서
@@ -45,7 +56,7 @@ public class MovieServiceImpl implements MovieService {
 		MovieDetailRespDTO movieDetailRespDTO = new MovieDetailRespDTO();
 
 		// 1. repositories로 DB에 접근하여 DB에서 데이터 가져오기
-		Optional<CachedMovieEntity> cachedMovieEntity = cachedMovieRepository.findByMovieId(movieId);
+		Optional<CachedMovieEntity> cachedMovieEntity = movieRepository.findByMovieId(movieId);
 
 		// 2. 데이터 있을 경우 return으로 데이터 반환
 		cachedMovieEntity.ifPresent(movieEntity -> {
@@ -139,31 +150,14 @@ public class MovieServiceImpl implements MovieService {
 		JSONArray directorsArray = resultObject.optJSONObject("directors").optJSONArray("director");
 		String resultDirector = directorsArray.getJSONObject(0).optString("directorNm", "감독명");
 
-		CachedMovieEntity cachedMovieEntity = Builder(MovieID, title, resultimgUrl, genre, ReleaseDate, resultPlot, runtime, actorName, resultDirector);
+		CachedMovieEntity cachedMovieEntity = new CachedMovieEntity(MovieID, title, resultimgUrl, genre, ReleaseDate, resultPlot, runtime, actorName, resultDirector, 0L, 0L, 0L, 0L);
 
 		// 3. 비어 있을 경우 API에 접근한 뒤 Entity에 저장 후 DB에 저장
-		cachedMovieRepository.saveNewMovie(cachedMovieEntity);
+		movieRepository.saveNewMovie(cachedMovieEntity);
 
-		// 4. Entity 값을 DTO로 변환 후 return
+		// 4. Entity 값을 DTO로 변환 후 클라이언트에게 return
 		MovieDetailRespDTO movieDetailRespDTO = new MovieDetailRespDTO();
 
 		return movieDetailRespDTO.toDTO(cachedMovieEntity);
-	}
-
-	public static CachedMovieEntity Builder(String movieId, String title, String posterUrl, String genre, String releaseDate, String plot, String runningTime, String actors, String director){
-		return CachedMovieEntity.builder()
-				.movieId(movieId)
-				.title(title)
-				.posterUrl(posterUrl)
-				.genre(genre)
-				.releaseDate(releaseDate)
-				.plot(plot)
-				.runningTime(runningTime)
-				.actors(actors)
-				.director(director)
-				.dibCount(0L)
-				.reviewCount(0L)
-				.commentCount(0L)
-				.sumOfRating(0L).build();
 	}
 }
