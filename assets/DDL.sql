@@ -25,6 +25,12 @@ create table cached_movie_table
         primary key,
     title         varchar(100)     not null comment '영화 제목',
     poster_url    varchar(200)     not null comment '영화 포스터 이미지 url',
+    genre         varchar(50)      not null comment '영화 장르',
+    release_date  varchar(30)      not null comment '영화 개봉일',
+    plot          text             not null comment '영화 줄거리',
+    running_time  varchar(10)      not null comment '영화 상영시간',
+    actors        varchar(180)     not null comment '출연 배우 5명',
+    director      varchar(30)      not null comment '감독',
     dib_count     bigint default 0 not null comment '해당 영화가 찜으로 지정된 수',
     review_count  bigint default 0 not null comment '해당 영화에 달린 리뷰 포스팅 수',
     comment_count bigint default 0 not null comment '해당 영화에 달린 한줄평 수',
@@ -117,3 +123,16 @@ create table review_comment_table
 )
     comment '리뷰 댓글 테이블';
 
+create table comment_like_table (
+    comment_like_id bigint auto_increment primary key,
+    comment_id      bigint not null,
+    user_id         binary(16),
+    constraint foreign key (comment_id) references comment_table (comment_id),
+    constraint foreign key (user_id) references user_table (user_id));
+
+create table comment_dislike_table (
+    comment_dislike_id bigint auto_increment primary key,
+    comment_id      bigint not null,
+    user_id         binary(16),
+    constraint foreign key (comment_id) references comment_table (comment_id),
+    constraint foreign key (user_id) references user_table (user_id));
