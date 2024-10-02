@@ -1,6 +1,5 @@
 package core.application.movies.models.entities;
 
-import core.application.movies.constant.Genre;
 import lombok.*;
 
 @Getter
@@ -15,7 +14,7 @@ public class CachedMovieEntity {
     private String movieId;
     private String title;
     private String posterUrl;
-    private Genre genre;
+    private String genre;
     private String releaseDate;
     private String plot;
     private String runningTime;
