@@ -271,7 +271,7 @@ class ReviewCommentRepositoryTest {
 
         // 검색 결과 reviewCommentId 순으로 정렬해 받음.
         List<ReviewCommentEntity> searchResult = reviewCommentRepo.findParentCommentByReviewId(
-                        reviewId)
+                        reviewId, 0, testSampleNum)
                 .stream()
                 .sorted(Comparator.comparing(ReviewCommentEntity::getReviewCommentId))
                 .toList();
@@ -314,7 +314,7 @@ class ReviewCommentRepositoryTest {
 
         // 검색 결과 받음
         List<ReviewCommentEntity> searchResult = reviewCommentRepo.findParentCommentByReviewIdOnDateDescend(
-                reviewId);
+                reviewId, 0, testSampleNum);
 
         // 모든 검색 결과 not null 확인
         searchResult.forEach(this::checkNonNullValidation);
@@ -327,6 +327,18 @@ class ReviewCommentRepositoryTest {
 
         // 검색 결과에 넣었던 데이터 모두 존재하는지 확인
         assertThat(searchResult).containsAll(testEntities);
+
+        searchResult = reviewCommentRepo.findParentCommentByReviewIdOnDateDescend(reviewId, 1,
+                testSampleNum / 2);
+
+        searchResult.forEach(this::checkNonNullValidation);
+        searchResult.forEach(r -> assertThat(r.getGroupId()).isNull());
+        assertThat(searchResult).isSortedAccordingTo(requiredOrder);
+
+        assertThat(testEntities).containsAll(searchResult);
+        for (int i = 0; i < searchResult.size(); i++) {
+            assertThat(searchResult.get(i)).isEqualTo(testEntities.get(1 + i));
+        }
 
         log.info(
                 "-> findParentCommentByReviewIdOnDateDescend test passed");
@@ -348,7 +360,7 @@ class ReviewCommentRepositoryTest {
 
         // 검색 결과 받음
         List<ReviewCommentEntity> searchResult = reviewCommentRepo.findParentCommentByReviewIdOnLikeDescend(
-                reviewId);
+                reviewId, 0, testSampleNum);
 
         // 모든 검색 결과 not null 확인
         searchResult.forEach(this::checkNonNullValidation);
@@ -382,7 +394,7 @@ class ReviewCommentRepositoryTest {
 
         // 검색 결과 받음
         List<ReviewCommentEntity> searchResult = reviewCommentRepo.findChildCommentsByGroupId(
-                testGroupId);
+                testGroupId, 0, testSampleNum);
 
         // 모든 검색 결과 not null 확인
         searchResult.forEach(this::checkNonNullValidation);
@@ -531,5 +543,31 @@ class ReviewCommentRepositoryTest {
                 r -> assertThat(r.getCreatedAt()).isEqualTo(testEntity.getCreatedAt()),
                 r -> assertThat(r.isUpdated()).isEqualTo(testEntity.isUpdated())
         );
+    }
+
+    @Test
+    @DisplayName("부모 댓글 개수 세기")
+    void countParentCommentByReviewId() {
+        long parentInit = reviewCommentRepo.countParentCommentByReviewId(testReview.getReviewId());
+
+        List<ReviewCommentEntity> testEntityList1 = insertTestEntities(latestAndIdDescending);
+        List<ReviewCommentEntity> testEntityList2 = insertTestEntities(testGroupId, null,
+                latestAndIdDescending);
+
+        assertThat(reviewCommentRepo.countParentCommentByReviewId(testReview.getReviewId()))
+                .isEqualTo(parentInit + testEntityList1.size());
+    }
+
+    @Test
+    @DisplayName("자식 댓글 개수 세기")
+    void countChildCommentByGroupId() {
+        long childInit = reviewCommentRepo.countChildCommentByGroupId(testGroupId);
+
+        List<ReviewCommentEntity> testEntityList1 = insertTestEntities(latestAndIdDescending);
+        List<ReviewCommentEntity> testEntityList2 = insertTestEntities(testGroupId, null,
+                latestAndIdDescending);
+
+        assertThat(reviewCommentRepo.countChildCommentByGroupId(testGroupId))
+                .isEqualTo(childInit + testEntityList2.size());
     }
 }

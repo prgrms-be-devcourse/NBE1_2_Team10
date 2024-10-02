@@ -12,16 +12,38 @@ import java.util.UUID;
 public interface ReviewCommentService {
 
     /**
+     * 특정 포스팅 내 부모 댓글의 개수를 조회하는 서비스
+     *
+     * @param reviewId 영화 후기 포스팅 ID
+     * @return 부모 댓글의 개수
+     */
+    long getNumberOfParentComment(Long reviewId) throws NoReviewFoundException;
+
+    /**
+     * 특정 부모 댓글 아래 자식 댓글의 개수를 조회하는 서비스
+     *
+     * @param groupId 부모 댓글 ID
+     * @return 자식 댓글의 개수
+     */
+    long getNumberOfChildComment(Long groupId) throws NoReviewCommentFoundException;
+
+    boolean doesUserOwnsComment(UUID userId, Long reviewCommentId)
+            throws NoReviewCommentFoundException;
+
+    /**
      * 특정 리뷰 포스팅의 부모 댓글을 불러오는 서비스
      *
      * @param reviewId 리뷰 포스팅 ID
      * @param order    보모 댓글 정렬 순서 {@code (최신순, 좋아요순)}
+     * @param offset   댓글 offset
+     * @param num      가져올 댓글의 개수
      * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      * @throws NoReviewFoundException {@code reviewId} 에 해당하는 리뷰를 찾지 못했을 시
      * @author jbw9964
      * @see ReviewCommentSortOrder
      */
-    List<ReviewCommentEntity> getParentReviewComments(Long reviewId, ReviewCommentSortOrder order)
+    List<ReviewCommentEntity> getParentReviewComments(Long reviewId, ReviewCommentSortOrder order,
+            int offset, int num)
             throws NoReviewFoundException;
 
     /**
@@ -29,11 +51,15 @@ public interface ReviewCommentService {
      * <p>
      * 이 때 불러오는 자식 댓글은 최신순
      *
-     * @param groupId 부모 댓글의 ID
+     * @param reviewId 댓글이 달리는 포스팅 ID
+     * @param groupId  부모 댓글의 ID
+     * @param offset   댓글 offset
+     * @param num      가져올 댓글 개수
      * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      * @author jbw9964
      */
-    List<ReviewCommentEntity> getChildReviewCommentsOnParent(Long groupId);
+    List<ReviewCommentEntity> getChildReviewCommentsOnParent(Long reviewId, Long groupId,
+            int offset, int num);
 
 
     /**
