@@ -25,7 +25,6 @@ public class DibServiceImpl implements DibService {
     @Override
     public DibRespDTO createDib(UUID userId, String movieId) {
         // 현재 유저 불러오기 -> 나중에 로직 수정
-        Optional<UserEntity> user = userRepo.findByUserId(userId);
         Optional<CachedMovieEntity> movie = movieRepo.findByMovieId(movieId);
 
 
@@ -35,7 +34,7 @@ public class DibServiceImpl implements DibService {
                 .movieId(movieId)
                 .build();
 
-        dibRepo.saveNewDib(userId, dib);
+        dibRepo.saveNewDib(userId, movieId);
 
         // dib_count 1 증가하는 로직 추가
         movie.get().incrementDibCount();
