@@ -7,6 +7,7 @@ import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;
 import core.application.users.repositories.UserRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -35,11 +36,10 @@ public class UserServiceImpl implements UserService {
     public MessageResponseDTO login(LoginRequestDTO loginRequestDTO) {
         Optional<UserEntity> user = userRepository.findByUserEmailAndPassword(loginRequestDTO.getUserEmail(), loginRequestDTO.getUserPw());
         MessageResponseDTO messageResponseDTO;
-        if (user.isPresent()) {
-            messageResponseDTO = new MessageResponseDTO(user.get().getUserId(), "login success");
-        } else {
+        if (!user.isPresent()) {
             throw new IllegalArgumentException("Invalid email or password");
         }
+        messageResponseDTO = new MessageResponseDTO(user.get().getUserId(), "login success");
         return messageResponseDTO;
     }
 
