@@ -1,9 +1,11 @@
 package core.application.users.controller;
 
+import core.application.Util.JwtUtil;
 import core.application.users.models.dto.LoginRequestDTO;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
 import core.application.users.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,10 +15,12 @@ import java.util.UUID;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -44,7 +48,7 @@ public class UserController {
      * /users/signout
      */
 
-//    @PostMapping("/signout")
+//    @PostMapping("/signout") // access token과 refresh token 바로 중지
 //    public MessageResponseDTO logout (token? email? userDTO?) {
 //        return null;
 //    }
@@ -65,8 +69,9 @@ public class UserController {
      * /users/delete
      */
 
-    @DeleteMapping("/delete")
-    public MessageResponseDTO deleteUser (@RequestParam UUID userId) {
+    @DeleteMapping("/delete") // access token과 refresh token 바로 중지
+    public MessageResponseDTO deleteUser (HttpServletRequest request) {
+        UUID userId = jwtUtil.getUserId(request.getHeader("Authorization").substring(7));
         return userService.deleteUser(userId);
     }
 
