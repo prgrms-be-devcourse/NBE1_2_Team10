@@ -1,8 +1,8 @@
 package core.application.reviews.controllers;
 
+import core.application.reviews.exceptions.InvalidCommentContentException;
 import core.application.reviews.exceptions.NotCommentOwnerException;
 import core.application.reviews.models.dto.request.CreateCommentReqDTO;
-import core.application.reviews.models.dto.request.EditCommentReqDTO;
 import core.application.reviews.models.dto.response.CreateCommentRespDTO;
 import core.application.reviews.models.dto.response.EditCommentRespDTO;
 import core.application.reviews.models.dto.response.MessageRespDTO;
@@ -17,6 +17,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -95,8 +97,14 @@ public class ReviewCommentController {
     @PostMapping("/comments")
     public CreateCommentRespDTO createComment(
             @PathVariable("reviewId") Long reviewId,
-            @RequestBody CreateCommentReqDTO dtoReq
+            @RequestBody @Validated CreateCommentReqDTO dtoReq,
+            BindingResult bindingResult
     ) {
+
+        if (bindingResult.hasErrors()) {
+            throw new InvalidCommentContentException(
+                    bindingResult.getAllErrors().get(0).getDefaultMessage());
+        }
 
         // TODO 추후 spring security context 에서 유저 아이디 받아야 함.
         // TODO_IMP 추후 spring security context 에서 유저 아이디 받아야 함.
@@ -123,8 +131,14 @@ public class ReviewCommentController {
     @PatchMapping("/comments/{reviewCommentId}")
     public EditCommentRespDTO editComment(
             @PathVariable("reviewCommentId") Long reviewCommentId,
-            @RequestBody EditCommentReqDTO dtoReq
+            @RequestBody @Validated CreateCommentReqDTO dtoReq,
+            BindingResult bindingResult
     ) {
+
+        if (bindingResult.hasErrors()) {
+            throw new InvalidCommentContentException(
+                    bindingResult.getAllErrors().get(0).getDefaultMessage());
+        }
 
         // TODO 추후 spring security context 에서 유저 아이디 받아야 함.
         // TODO_IMP 추후 spring security context 에서 유저 아이디 받아야 함.
@@ -180,8 +194,7 @@ public class ReviewCommentController {
     public MessageRespDTO editLikes(
             @PathVariable("reviewCommentId") Long reviewCommentId,
             @CookieValue(value = COOKIE_NAME, required = false) Cookie cookie,
-            HttpServletResponse resp,
-            @PathVariable String movieId, @PathVariable String reviewId) {
+            HttpServletResponse resp) {
 
         // TODO 로그인 된 유저만 좋아요 증감시킬 수 있어야 함.
         // TODO_IMP 로그인 된 유저만 좋아요 증감시킬 수 있어야 함.

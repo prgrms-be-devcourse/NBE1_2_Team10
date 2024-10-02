@@ -1,15 +1,15 @@
 package core.application.reviews.repositories.mapper;
 
 import core.application.reviews.models.entities.ReviewEntity;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-
+import core.application.reviews.repositories.ReviewRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
-public interface ReviewMapper {
+public interface ReviewMapper extends ReviewRepository {
 
     ReviewEntity saveNewReview(@Param("movieId") String movieId,
                                @Param("userId") UUID userId,
