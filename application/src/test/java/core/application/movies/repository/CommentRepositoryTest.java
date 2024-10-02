@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,9 +15,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import core.application.movies.constant.Genre;
+import core.application.movies.models.dto.CommentRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.models.entities.CommentEntity;
 import core.application.movies.repositories.CachedMovieRepository;
+import core.application.movies.repositories.CommentLikeRepository;
 import core.application.movies.repositories.CommentRepository;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
@@ -33,6 +36,10 @@ public class CommentRepositoryTest {
 	@Autowired
 	private CachedMovieRepository movieRepository;
 	private CommentEntity comment;
+	private UUID userId;
+	private String movieId;
+	@Autowired
+	private CommentLikeRepository commentLikeRepository;
 
 	@BeforeEach
 	public void setUp() {
@@ -45,6 +52,7 @@ public class CommentRepositoryTest {
 			.userName("test")
 			.build();
 		userRepository.saveNewUser(user);
+		userId = userRepository.findByUserEmail("testEmail").get().getUserId();
 
 		CachedMovieEntity movieEntity = new CachedMovieEntity(
 			"test",
@@ -59,6 +67,7 @@ public class CommentRepositoryTest {
 			1L, 1L, 10L, 10L
 		);
 		movieRepository.saveNewMovie(movieEntity);
+		movieId = movieRepository.findByMovieId(movieEntity.getMovieId()).get().getMovieId();
 
 		comment = CommentEntity.builder()
 			.content("내용")
@@ -89,7 +98,7 @@ public class CommentRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("영화 ID로 조회한다.")
+	@DisplayName("로그인하지 않은 사용자가 영화 ID로 조회한다.")
 	public void findByMovieId() {
 		// GIVEN
 		CommentEntity save1 = commentRepository.saveNewComment(comment.getMovieId(), comment.getUserId(),
@@ -100,19 +109,37 @@ public class CommentRepositoryTest {
 			.dislike(1)
 			.rating(10)
 			.movieId("test")
-			.userId(userRepository.findByUserEmail("testEmail").get().getUserId())
+			.userId(userId)
 			.build();
 		CommentEntity save2 = commentRepository.saveNewComment(comment2.getMovieId(), comment2.getUserId(),
 			comment2);
 
 		// WHEN
-		List<CommentEntity> find = commentRepository.findByMovieId(comment.getMovieId());
+		List<CommentRespDTO> finds = commentRepository.findByMovieId(comment.getMovieId(), null, 0);
 
 		// THEN
-		assertThat(find.size()).isEqualTo(2);
-		for (CommentEntity commentEntity : find) {
-			assertThat(commentEntity.getMovieId()).isEqualTo("test");
+		assertThat(finds.size()).isEqualTo(2);
+
+		for (CommentRespDTO find : finds) {
+			assertThat(find.getMovieId()).isEqualTo("test");
 		}
+	}
+
+	@Test
+	@DisplayName("로그인한 사용자가 한줄평 조회 시, 좋아요한 한줄평을 구분한다.")
+	public void findByMovieIdWithUser() {
+		// GIVEN
+		CommentEntity save1 = commentRepository.saveNewComment(comment.getMovieId(), comment.getUserId(),
+			comment);
+		commentLikeRepository.saveCommentLike(comment.getCommentId(), userId);
+
+		// WHEN
+		List<CommentRespDTO> finds = commentRepository.findByMovieId(comment.getMovieId(), userId, 0);
+
+		// THEN
+		assertThat(finds.size()).isEqualTo(1);
+
+		assertThat(finds.get(0).getIsLiked()).isTrue();
 	}
 
 	@Test
@@ -127,13 +154,15 @@ public class CommentRepositoryTest {
 			.movieId("test")
 			.userId(userRepository.findByUserEmail("testEmail").get().getUserId())
 			.build();
+		commentRepository.saveNewComment(comment.getMovieId(), comment.getUserId(), comment);
+		commentRepository.saveNewComment(comment2.getMovieId(), comment2.getUserId(), comment2);
 
 		// WHEN
-		List<CommentEntity> finds = commentRepository.findByMovieIdOnDateDescend("test");
+		List<CommentRespDTO> finds = commentRepository.findByMovieIdOnDateDescend("test", userId, 0);
 
 		// THEN
 		Instant later = finds.get(0).getCreatedAt();
-		for (CommentEntity find : finds) {
+		for (CommentRespDTO find : finds) {
 			assertThat(later).isBeforeOrEqualTo(find.getCreatedAt());
 			later = find.getCreatedAt();
 		}
@@ -155,11 +184,11 @@ public class CommentRepositoryTest {
 		commentRepository.saveNewComment(comment2.getMovieId(), comment2.getUserId(), comment2);
 
 		// WHEN
-		List<CommentEntity> finds = commentRepository.findByMovieIdOnLikeDescend("test");
+		List<CommentRespDTO> finds = commentRepository.findByMovieIdOnLikeDescend("test", userId, 0);
 
 		// THEN
 		int more = finds.get(0).getLike();
-		for (CommentEntity find : finds) {
+		for (CommentRespDTO find : finds) {
 			assertThat(more).isGreaterThanOrEqualTo(find.getLike());
 			more = find.getLike();
 		}
@@ -181,11 +210,11 @@ public class CommentRepositoryTest {
 		commentRepository.saveNewComment(comment2.getMovieId(), comment2.getUserId(), comment2);
 
 		// WHEN
-		List<CommentEntity> finds = commentRepository.findByMovieIdOnDislikeDescend("test");
+		List<CommentRespDTO> finds = commentRepository.findByMovieIdOnDislikeDescend("test", userId, 0);
 
 		// THEN
 		int more = finds.get(0).getDislike();
-		for (CommentEntity find : finds) {
+		for (CommentRespDTO find : finds) {
 			assertThat(more).isGreaterThanOrEqualTo(find.getDislike());
 			more = find.getDislike();
 		}
