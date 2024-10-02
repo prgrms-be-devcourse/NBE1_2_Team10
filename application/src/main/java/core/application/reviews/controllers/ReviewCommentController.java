@@ -93,7 +93,6 @@ public class ReviewCommentController {
      * @param dtoReq   요청 {@code DTO}
      * @return 응답 {@code DTO}
      */
-    @Transactional
     @PostMapping("/comments")
     public CreateCommentRespDTO createComment(
             @PathVariable("reviewId") Long reviewId,
@@ -127,7 +126,6 @@ public class ReviewCommentController {
      * @param dtoReq          요청 {@code DTO}
      * @return 응답 {@code DTO}
      */
-    @Transactional
     @PatchMapping("/comments/{reviewCommentId}")
     public EditCommentRespDTO editComment(
             @PathVariable("reviewCommentId") Long reviewCommentId,
@@ -163,7 +161,6 @@ public class ReviewCommentController {
      * @param reviewCommentId {@code pathVariable}
      * @return 응답 {@code DTO}
      */
-    @Transactional
     @DeleteMapping("/comments/{reviewCommentId}")
     public MessageRespDTO deleteComment(
             @PathVariable("reviewCommentId") Long reviewCommentId) {
@@ -189,7 +186,6 @@ public class ReviewCommentController {
      * @param resp            쿠키 저장하고 삭제할 {@code servletResponse}
      * @return 응답용 {@code DTO}
      */
-    @Transactional
     @PatchMapping("/comments/{reviewCommentId}/like")
     public MessageRespDTO editLikes(
             @PathVariable("reviewCommentId") Long reviewCommentId,

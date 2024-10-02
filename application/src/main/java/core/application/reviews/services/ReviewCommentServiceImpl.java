@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -121,6 +122,7 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity addNewParentReviewComment(Long reviewId, UUID userId,
             ReviewCommentEntity parentReviewComment) throws NoReviewFoundException {
 
@@ -134,6 +136,7 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity addNewChildReviewComment(Long reviewId, Long groupId, UUID userId,
             ReviewCommentEntity childReviewComment)
             throws NoReviewFoundException, NoReviewCommentFoundException {
@@ -167,6 +170,7 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity editReviewComment(Long reviewCommentId, Long commentRef,
             String contentReplacement)
             throws NoReviewCommentFoundException {
@@ -194,6 +198,7 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity deleteReviewComment(Long reviewCommentId)
             throws NoReviewCommentFoundException {
 
@@ -212,6 +217,7 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity increaseCommentLike(Long reviewCommentId)
             throws NoReviewCommentFoundException {
 
@@ -225,6 +231,7 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity decreaseCommentLike(Long reviewCommentId)
             throws NoReviewCommentFoundException {
 
