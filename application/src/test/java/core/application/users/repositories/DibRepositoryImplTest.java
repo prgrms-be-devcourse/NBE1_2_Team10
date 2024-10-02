@@ -41,6 +41,7 @@ class DibRepositoryImplTest {
 
     @Test
     @DisplayName("찜 아이디로 찜 찾기")
+    @Transactional
     void findByDibId() {
         // Given
         UUID userId = UUID.fromString("b7172110-7e18-11ef-8da5-467268b55380");
@@ -61,6 +62,7 @@ class DibRepositoryImplTest {
 
     @Test
     @DisplayName("특정 영화의 찜 개수 세기")
+    @Transactional
     void countMovie() {
         // Given
         String movieId = "K-1111";
@@ -79,6 +81,7 @@ class DibRepositoryImplTest {
 
     @Test
     @DisplayName("찜 객체 리스트 전체 조회")
+    @Transactional
     void selectAll() {
         // Given
         UUID userId1 = UUID.fromString("9d8ae540-8072-11ef-8da5-467268b55380");
@@ -106,6 +109,7 @@ class DibRepositoryImplTest {
 
     @Test
     @DisplayName("찜 아이디로 찜 삭제하기")
+    @Transactional
     void deleteDibByDibId() {
         // Given
         UUID userId = UUID.fromString("9d8ae540-8072-11ef-8da5-467268b55380");
@@ -122,6 +126,7 @@ class DibRepositoryImplTest {
 
     @Test
     @DisplayName("유저 아이디로 찜 삭제하기")
+    @Transactional
     void DeleteDibByUserId() {
         // Given
         UUID userId = UUID.fromString("9d8ae540-8072-11ef-8da5-467268b55380");
@@ -137,6 +142,7 @@ class DibRepositoryImplTest {
 
     @Test
     @DisplayName("유저 아이디랑 영화 아이디로 찜 삭제하기")
+    @Transactional
     void DeleteDibByUserIdAndMovieId() {
         // Given
         UUID userId = UUID.fromString("9d8ae540-8072-11ef-8da5-467268b55380");
