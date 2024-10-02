@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
-public class KmdbConfig {
+public class WebClientConfig {
 	@Value("${kmdb.api.url}")
 	private String apiUrl;
 
@@ -14,6 +14,7 @@ public class KmdbConfig {
 	public WebClient webClient() {
 		return WebClient.builder()
 			.baseUrl(apiUrl)
+			.codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs().maxInMemorySize(1024*1024))
 			.build();
 	}
 }

@@ -9,15 +9,28 @@ import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.CachedMovieRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import core.application.movies.constant.Genre;
+import core.application.movies.constant.MovieSearch;
+import core.application.movies.models.dto.MainPageMovieRespDTO;
+import core.application.movies.models.dto.MainPageMoviesRespDTO;
+import core.application.movies.models.dto.MovieDetailRespDTO;
+import core.application.movies.models.dto.MovieSimpleRespDTO;
+import core.application.movies.repositories.CachedMovieRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -31,15 +44,29 @@ public class MovieServiceImpl implements MovieService {
 	private String defaultImgUrl;
 
 	private final WebClient webClient;
-
 	private final CachedMovieRepository movieRepository;
 
-	public MainPageMoviesRespDTO getMainPageMovieInfo(){
-		return null;
+	@Override
+	@Transactional(readOnly = true)
+	public MainPageMoviesRespDTO getMainPageMovieInfo() {
+		List<MainPageMovieRespDTO> ratingOrder = movieRepository.selectOnAVGRatingDescend(10).stream()
+			.map(MainPageMovieRespDTO::from)
+			.toList();
+
+		List<MainPageMovieRespDTO> dibOrder = movieRepository.selectOnDibOrderDescend(10).stream()
+			.map(MainPageMovieRespDTO::from)
+			.toList();
+
+		List<MainPageMovieRespDTO> reviewOrder = movieRepository.selectOnReviewCountDescend(10).stream()
+			.map(MainPageMovieRespDTO::from)
+			.toList();
+
+		return MainPageMoviesRespDTO.of(dibOrder, ratingOrder, reviewOrder);
 	}
 
-	public List<MovieSimpleRespDTO> searchMovies(Integer page, MovieSearch sort, String query, Genre genre){
-		return null;
+	@Override
+	public List<MovieSimpleRespDTO> searchMovies(Integer page, MovieSearch sort, String query, Genre genre) {
+		return List.of();
 	}
 
 	/*
@@ -75,19 +102,19 @@ public class MovieServiceImpl implements MovieService {
 		String MovieSeq = movieId.substring(1);
 
 		String response = webClient.get()
-				.uri(uriBuilder -> uriBuilder
-						.path("/search_json2.jsp")
-						.queryParam("ServiceKey", apiKey)
-						.queryParam("detail", "Y")
-						.queryParam("collection", "kmdb_new2")
-						.queryParam("ratedYn", "Y")
-						.queryParam("movieId", MovieId)
-						.queryParam("movieSeq", MovieSeq)
-						.queryParam("listCount", 5)
-						.build())
-				.retrieve()
-				.bodyToMono(String.class)
-				.block();
+			.uri(uriBuilder -> uriBuilder
+				.path("/search_json2.jsp")
+				.queryParam("ServiceKey", apiKey)
+				.queryParam("detail", "Y")
+				.queryParam("collection", "kmdb_new2")
+				.queryParam("ratedYn", "Y")
+				.queryParam("movieId", MovieId)
+				.queryParam("movieSeq", MovieSeq)
+				.queryParam("listCount", 10)
+				.build())
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
 
 		return parseMovieDetail(new JSONObject(response));
 	}

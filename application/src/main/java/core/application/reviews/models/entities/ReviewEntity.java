@@ -3,6 +3,8 @@ package core.application.reviews.models.entities;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -25,6 +27,8 @@ public class ReviewEntity {
     private Instant createdAt;
     private Instant updatedAt;
 
+    private Set<UUID> likeUsers = new HashSet<>();
+
     /* builder 사용하려면...
      * public static ReviewEntity from(ReviewReqDTO dto) {
      *     return ReviewEntity.builder()
@@ -32,4 +36,16 @@ public class ReviewEntity {
      *     .build();
      * }
      */
+
+    public ReviewEntity increaseLikes(UUID userId){
+        this.like++;
+        likeUsers.add(userId);
+        return this;
+    }
+
+    public ReviewEntity decreaseLikes(UUID userId){
+        this.like--;
+        likeUsers.remove(userId);
+        return this;
+    }
 }

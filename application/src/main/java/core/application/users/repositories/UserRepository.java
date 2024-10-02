@@ -1,5 +1,6 @@
 package core.application.users.repositories;
 
+import core.application.users.models.entities.DibEntity;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
 
@@ -20,7 +21,7 @@ public interface UserRepository {
      * @param newUser 새 유저 정보
      * @return {@link UserEntity} 등록된 유저 정보
      */
-    UserEntity saveNewUser(UserEntity newUser);
+    int saveNewUser(UserEntity newUser);
 
 
     //<editor-fold desc="READ">
@@ -51,14 +52,6 @@ public interface UserRepository {
     Optional<UserEntity> findByUserEmailAndPassword(String email, String password);
 
     /**
-     * 리프래시 토큰으로 검색
-     *
-     * @param refreshToken 어느 유저에게 발급된 리프래쉬 토큰
-     * @return {@link Optional}{@code <}{@link UserEntity}{@code >}
-     */
-    Optional<UserEntity> findByRefreshToken(String refreshToken);
-
-    /**
      * 특정 권한을 가진 모든 유저를 검색
      *
      * @param role 유저 권한
@@ -71,9 +64,8 @@ public interface UserRepository {
      *
      * @param userId 유저 ID
      * @return {@link List}{@code <}{@link UserEntity}{@code >} {@code dibEntityList} 가 채워진 {@code UserEntity List}
-     * @see UserEntity#dibEntityList
      */
-    List<UserEntity> selectDibsOnUserId(UUID userId);
+    List<DibEntity> selectDibsOnUserId(UUID userId);
 
     /**
      * DB 의 모든 유저를 검색
@@ -95,7 +87,7 @@ public interface UserRepository {
      * @param replacement 변경할 정보
      * @return {@link UserEntity} 변경된 정보
      */
-    UserEntity editUserInfo(UUID userId, UserEntity replacement);
+    int editUserInfo(UUID userId, UserEntity replacement);
 
 
     // DELETE

@@ -18,7 +18,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootTest
 @Transactional
@@ -28,6 +30,13 @@ class ReviewCommentRepositoryTest {
 
     @Autowired
     private ReviewCommentRepository reviewCommentRepo;
+
+    @MockBean
+    private ReviewRepository reviewRepository;
+
+    @MockBean
+    private WebClient webClient;
+
 
     // DB 에 있는 실제 리뷰 포스팅의 ID
     private static final Long reviewId = 2L;
@@ -500,5 +509,27 @@ class ReviewCommentRepositoryTest {
 
         log.info(
                 "-> editReviewCommentInfo test passed");
+    }
+
+    @Test
+    @DisplayName("특정 포스팅 댓글의 좋아요를 수정")
+    void updateReviewCommentLikes() {
+        ReviewCommentEntity testEntity = reviewCommentRepo.saveNewReviewComment(genTestEntity());
+
+        ReviewCommentEntity result = reviewCommentRepo.updateReviewCommentLikes(
+                testEntity.getReviewCommentId(), 10);
+
+        checkNonNullValidation(result);
+
+        assertThat(result).satisfies(
+                r -> assertThat(r.getReviewCommentId()).isEqualTo(testEntity.getReviewCommentId()),
+                r -> assertThat(r.getReviewId()).isEqualTo(testEntity.getReviewId()),
+                r -> assertThat(r.getUserId()).isEqualTo(testEntity.getUserId()),
+                r -> assertThat(r.getContent()).isEqualTo(testEntity.getContent()),
+                r -> assertThat(r.getGroupId()).isEqualTo(testEntity.getGroupId()),
+                r -> assertThat(r.getCommentRef()).isEqualTo(testEntity.getCommentRef()),
+                r -> assertThat(r.getCreatedAt()).isEqualTo(testEntity.getCreatedAt()),
+                r -> assertThat(r.isUpdated()).isEqualTo(testEntity.isUpdated())
+        );
     }
 }
