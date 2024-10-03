@@ -1,24 +1,30 @@
 package core.application.users.controller;
 
-import core.application.users.models.dto.LoginRequestDTO;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
-import core.application.users.service.AuthenticatedUserInfo;
-import core.application.users.service.TokenService;
+import core.application.security.TokenService;
 import core.application.users.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
+/**
+ * 사용자 관련 요청을 처리하는 컨트롤러
+ * 사용자 로그인, 회원가입, 로그아웃, 정보 변경 및 삭제 등의 요청을 처리
+ */
 @RestController
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
     private final TokenService tokenService;
 
+    /**
+     * UserController 생성자.
+     *
+     * @param userService 사용자 서비스
+     * @param tokenService 토큰 서비스
+     */
     @Autowired
     public UserController(UserService userService, TokenService tokenService) {
         this.userService = userService;
@@ -69,7 +75,7 @@ public class UserController {
      */
 
     @DeleteMapping("/delete")
-    public MessageResponseDTO deleteUser(HttpServletRequest request) {
+    public MessageResponseDTO deleteUser() {
         return userService.deleteUser();
     }
 
