@@ -9,4 +9,17 @@ public enum MovieSearch {
 	MovieSearch(String sort) {
 		this.SORT = sort;
 	}
+
+	public String getSORT() {
+		return SORT;
+	}
+
+	public static boolean isNotValid(String sort) {
+		for (MovieSearch value : MovieSearch.values()) {
+			if (value.name().equals(sort)) {
+				return false;
+			}
+		}
+		return true;
+	}
 }
