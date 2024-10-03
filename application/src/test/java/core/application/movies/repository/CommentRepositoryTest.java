@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import core.application.movies.constant.Genre;
 import core.application.movies.models.dto.CommentRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.models.entities.CommentEntity;
@@ -58,7 +57,7 @@ public class CommentRepositoryTest {
 			"test",
 			"testTitle",
 			"posterUrl",
-			Genre.ACTION,
+			"액션",
 			"2024-09-30",
 			"줄거리",
 			"122",

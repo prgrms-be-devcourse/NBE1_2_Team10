@@ -11,16 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import core.application.movies.constant.Genre;
 import core.application.movies.models.dto.MainPageMovieRespDTO;
 import core.application.movies.models.dto.MainPageMoviesRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.CachedMovieRepository;
-import lombok.extern.slf4j.Slf4j;
 
 @SpringBootTest
 @Transactional
-@Slf4j
 public class MovieServiceTest {
 	@Autowired
 	private MovieService movieService;
@@ -34,7 +31,7 @@ public class MovieServiceTest {
 				String.valueOf(i),
 				String.valueOf(i),
 				"posterUrl",
-				Genre.ACTION,
+				"액션",
 				"2024-09-30",
 				"줄거리",
 				"122",

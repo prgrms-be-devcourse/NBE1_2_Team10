@@ -17,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import core.application.movies.constant.CommentSort;
-import core.application.movies.constant.Genre;
 import core.application.movies.models.dto.CommentRespDTO;
 import core.application.movies.models.dto.CommentWriteReqDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
@@ -62,7 +61,7 @@ public class CommentServiceTest {
 			"test",
 			"testTitle",
 			"posterUrl",
-			Genre.ACTION,
+			"액션",
 			"2024-09-30",
 			"줄거리",
 			"122",
@@ -77,7 +76,7 @@ public class CommentServiceTest {
 	@Test
 	@DisplayName("한줄평을 작성한다.")
 	public void writeComment() {
-	    // GIVEN
+		// GIVEN
 		CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO("한줄평 내용입니다.", 10);
 		UserEntity writer = users.get(0);
 
@@ -94,7 +93,7 @@ public class CommentServiceTest {
 	@Test
 	@DisplayName("영화의 한줄평을 최신순으로 불러온다.")
 	public void getLatestComments() throws InterruptedException {
-	    // GIVEN
+		// GIVEN
 		for (int i = 0; i < 10; i++) {
 			CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO(i + "번째 한줄평", 10);
 			CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, users.get(i).getUserId(),
@@ -166,7 +165,7 @@ public class CommentServiceTest {
 	@Test
 	@DisplayName("한줄평에 좋아요을 누른다.")
 	public void likeComment() {
-	    // GIVEN
+		// GIVEN
 		CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO("한줄평입니다.", 10);
 		UserEntity writer = users.get(0);
 		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, writer.getUserId(), movieId);
@@ -183,7 +182,7 @@ public class CommentServiceTest {
 	@Test
 	@DisplayName("좋아요를 취소한다.")
 	public void cancelLikeComment() {
-	    // GIVEN
+		// GIVEN
 		CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO("한줄평입니다.", 10);
 		UserEntity writer = users.get(0);
 		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, writer.getUserId(),
@@ -193,7 +192,7 @@ public class CommentServiceTest {
 		// WHEN
 		commentService.decrementCommentLike(commentRespDTO.getCommentId(), users.get(1).getUserId());
 
-	    // THEN
+		// THEN
 		CommentEntity comment = commentRepository.findByCommentId(commentRespDTO.getCommentId()).orElseThrow();
 		assertThat(comment.getLike()).isEqualTo(0);
 	}
@@ -236,7 +235,7 @@ public class CommentServiceTest {
 	@Test
 	@DisplayName("한줄평 조회 시, 좋아요와 싫어요를 누른 항목은 표시된다.")
 	public void displayTest() {
-	    // GIVEN
+		// GIVEN
 		Set<Long> reactionCommentIds = new HashSet<>();
 		UserEntity user = users.get(0);
 		for (int i = 0; i < 10; i++) {
@@ -250,7 +249,7 @@ public class CommentServiceTest {
 			}
 		}
 
-	    // WHEN
+		// WHEN
 		List<CommentRespDTO> comments = commentService.getComments(movieId, 0, CommentSort.LIKE, user.getUserId());
 
 		// THEN
