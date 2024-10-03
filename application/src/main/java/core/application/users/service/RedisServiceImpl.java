@@ -1,17 +1,21 @@
 package core.application.users.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class RedisServiceImpl implements RedisService {
     private final RedisTemplate<String, Object> redisTemplate;
-    private static final Logger logger = LoggerFactory.getLogger(RedisService.class);
+
+    @Value("${token.refresh.timeout}")
+    private Long refreshTimeout;
+
+    @Value("${token.refresh.time-unit}")
+    private TimeUnit timeUnit;
 
     public RedisServiceImpl(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
@@ -20,29 +24,17 @@ public class RedisServiceImpl implements RedisService {
     /**
      * Redis 값을 등록/수정합니다.
      *
-     * @param {String} key : redis key
-     * @param {String} value : redis value
-     * @return {void}
-     */
-    @Override
-    public void setValue(String key, String value) {
-        ValueOperations<String, Object> values = redisTemplate.opsForValue();
-        values.set(key, value);
-    }
-
-    /**
-     * Redis 값을 등록/수정합니다.
-     *
      * @param {String}   key : redis key
-     * @param {String}   value: redis value
-     * @param {Duration} duration: redis 값 메모리 상의 유효시간.
+     * @param {String}   value : redis value
+     * @param {Long} timeout : redis 값 메모리 상의 유효시간
+     * @param {TimeUnit} unit : 유효 시간의 단위
      * @return {void}
      */
 
     @Override
-    public void setValue(String key, String value, Duration duration) {
+    public void setValueWithTTL(String key, String value) {
         ValueOperations<String, Object> values = redisTemplate.opsForValue();
-        values.set(key, value, duration);
+        values.set(key, value, refreshTimeout, timeUnit);
     }
 
     /**
@@ -66,8 +58,6 @@ public class RedisServiceImpl implements RedisService {
      */
     @Override
     public boolean deleteValue(String key) {
-        logger.info("Deleting value for key: {}", key); // 삭제할 키를 로그에 기록
-
         Boolean result = redisTemplate.delete(key); // 삭제 결과를 Boolean으로 받음
         return result;
     }
