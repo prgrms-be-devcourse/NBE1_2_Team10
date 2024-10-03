@@ -9,8 +9,7 @@
 
     <update id="editUserInfo" useGeneratedKeys="true" keyProperty="userId">
         UPDATE user_table
-        SET user_email = #{replacement.userEmail},
-            user_pw = #{replacement.userPw},
+        SET user_pw = #{replacement.userPw},
             user_name = #{replacement.userName},
             role = #{replacement.role},
             alias = #{replacement.alias},
