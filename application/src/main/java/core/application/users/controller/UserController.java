@@ -3,12 +3,15 @@ package core.application.users.controller;
 import core.application.users.models.dto.LoginRequestDTO;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
+import core.application.users.service.AuthenticatedUserInfo;
 import core.application.users.service.TokenService;
 import core.application.users.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
@@ -28,8 +31,7 @@ public class UserController {
      */
 
     @PostMapping("/signin")
-    public MessageResponseDTO login(@RequestBody LoginRequestDTO loginRequestDTO) {
-        return userService.login(loginRequestDTO);
+    public void login() {
     }
 
     /**
@@ -47,9 +49,8 @@ public class UserController {
      * /users/signout
      */
 
-    @DeleteMapping("/signout") // access token과 refresh token 바로 중지
-    public MessageResponseDTO logout(HttpServletRequest request) {
-        return userService.logout();
+    @DeleteMapping("/signout")
+    public void logout() {
     }
 
     /**

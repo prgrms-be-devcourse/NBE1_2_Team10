@@ -85,7 +85,7 @@ public interface UserRepository {
      *
      * @param replacement 변경할 정보
      */
-    void editUserInfo(UserEntity replacement);
+    int editUserInfo(UserEntity replacement);
 
 
     // DELETE
@@ -95,5 +95,5 @@ public interface UserRepository {
      *
      * @param userId 삭제할 유저 ID
      */
-    void deleteUser(UUID userId);
+    int deleteUser(UUID userId);
 }
