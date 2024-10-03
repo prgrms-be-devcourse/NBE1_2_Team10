@@ -4,6 +4,8 @@ import core.application.Util.JwtUtil;
 import core.application.filter.JWTFilter;
 import core.application.filter.LoginFilter;
 import core.application.users.service.CustomUserDetailsService;
+import core.application.users.service.RedisService;
+import core.application.users.service.TokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,12 +25,15 @@ public class SecurityConfig {
     // AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
     private final AuthenticationConfiguration authenticationConfiguration;
     private final CustomUserDetailsService userDetailsService; // Add this field
+    private final RedisService redisService;
+    private final TokenService tokenService;
     private final JwtUtil jwtUtil;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, CustomUserDetailsService userDetailsService, JwtUtil jwtUtil) {
-
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, CustomUserDetailsService userDetailsService, TokenService tokenService, JwtUtil jwtUtil, RedisService redisService) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.userDetailsService = userDetailsService; // Initialize the field
+        this.tokenService = tokenService;
+        this.redisService = redisService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -46,7 +51,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, TokenService tokenService) throws Exception {
         // csrf disable
         http
                 .csrf((auth) -> auth.disable());
@@ -62,7 +67,7 @@ public class SecurityConfig {
         http
                 .authorizeRequests((auth) -> auth
                         // 추후 허가 경로 수정 // role이 "ADMIN"인 관리자에 대한 추가 사항 추후 수정 가능성
-                        .requestMatchers("/users/signup", "/users/signin").permitAll() // 회원가입, 로그인
+                        .requestMatchers("/users/signup", "/users/signin", "users/reissue").permitAll() // 회원가입, 로그인, refresh token 기반으로 access token 재발급
                         .requestMatchers(HttpMethod.GET, "/movies/list").permitAll() // 영화 목록 조회 (메인 페이지)
                         .requestMatchers(HttpMethod.GET, "/movies/search").permitAll() // 영화 검색
                         .requestMatchers(HttpMethod.GET, "/movies/").permitAll() // 영화 내용 상세 조회
@@ -79,10 +84,10 @@ public class SecurityConfig {
 
 
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+                .addFilterBefore(new JWTFilter(tokenService), LoginFilter.class);
 
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisService), UsernamePasswordAuthenticationFilter.class);
 
         // 세션 설정
         http

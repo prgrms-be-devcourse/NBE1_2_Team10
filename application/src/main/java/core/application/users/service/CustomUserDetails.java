@@ -1,6 +1,7 @@
 package core.application.users.service;
 
 import core.application.users.models.entities.UserEntity;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,6 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class CustomUserDetails implements UserDetails {
+    @Getter
     private final Optional<UserEntity> userEntity;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -50,6 +52,10 @@ public class CustomUserDetails implements UserDetails {
 
     public UUID getUserId() {
         return userEntity.get().getUserId();
+    }
+
+    public String getUserRole() {
+        return userEntity.get().getRole().toString();
     }
 
     @Override

@@ -13,24 +13,27 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * Redis 설정 클래스
- * RedisTemplate을 이용하여 Redis와의 상호작용을 설정하고 직렬화 방식을 정의함.
+ * Redis 연결을 위해 RedisTemplate 및 직렬화 방식을 설정
  */
 @Configuration
 public class RedisConfig {
 
+    // Redis 서버 호스트 주소
     @Value("${spring.data.redis.host}")
     private String host;
 
+    // Redis 서버 포트 번호
     @Value("${spring.data.redis.port}")
     private int port;
 
+    // Redis 서버 접속 비밀번호
     @Value("${spring.data.redis.password}")
     private String password;
 
     /**
-     * Redis 와의 연결을 위한 Connection 생성
+     * Redis 서버 연결을 위해 Connection Factory를 생성
      *
-     * @return
+     * @return RedisConnectionFactory LettuceConnectionFactory로 구성된 Redis Connection Factory
      */
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
@@ -41,27 +44,20 @@ public class RedisConfig {
 
     /**
      * RedisTemplate을 설정하는 빈(Bean) 생성 메서드
-     * 데이터 통신 직렬화 수행
+     * 데이터를 직렬화하여 Redis에 저장하며, String을 키로, Object를 값으로 사용
      *
-     * @return RedisTemplate<String, Object> - key는 String, value는 Object로 저장되는 Redis 템플릿
+     * @return RedisTemplate<String, Object> - key는 String, value는 Object로 설정된 Redis 템플릿
      */
     @Bean
     public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 
-        // Redis 서버와의 연결 설정
+        // Redis 서버 연결 설정
         redisTemplate.setConnectionFactory(redisConnectionFactory());
 
-        // Key - Value 형태로 직렬화
+        // Key, Value 각각 직렬화 설정 (Key: String, Value: JSON)
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-
-        // Hash Key-Value 형태로 직렬화
-        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        redisTemplate.setHashValueSerializer(new StringRedisSerializer());
-
-        // 기본적으로 직렬화
-        redisTemplate.setDefaultSerializer(new StringRedisSerializer());
 
         return redisTemplate;
     }

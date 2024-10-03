@@ -2,11 +2,14 @@ package core.application.filter;
 
 import core.application.Util.JwtUtil;
 import core.application.users.service.CustomUserDetails;
+import core.application.users.service.RedisService;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,15 +22,18 @@ import java.nio.charset.StandardCharsets;  // 추가된 부분
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final RedisService redisService;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, RedisService redisService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.redisService = redisService;
         setFilterProcessesUrl("/users/signin");
     }
 
@@ -60,6 +66,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         }
     }
 
+    private Cookie createCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(24*60*60);
+        //cookie.setSecure(true);
+        //cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+        return cookie;
+    }
+
     //로그인 성공시 실행하는 메소드 (여기서 JWT를 발급하면 됨)
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
@@ -74,9 +91,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        // 기한 설정
-        String token = jwtUtil.creatAccessJwt(userEmail, userId, role, 60*60*10L);
-        response.addHeader("Authorization", "Bearer " + token);
+        // 기한 설정 // 추후 수정
+        String accessToken = jwtUtil.creatAccessToken(userEmail, userId, role, "access");
+        String refreshToken = jwtUtil.creatRefreshToken(userEmail, "refresh");
+
+        response.setHeader("accessToken", accessToken);
+        response.addCookie(createCookie("refreshToken", refreshToken));
+        response.setStatus(HttpStatus.OK.value());
+        redisService.setValueWithTTL(userEmail, refreshToken);
     }
 
     //로그인 실패시 실행하는 메소드
