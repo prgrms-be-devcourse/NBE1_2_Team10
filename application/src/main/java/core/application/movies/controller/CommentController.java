@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import core.application.movies.constant.CommentSort;
 import core.application.movies.exception.WrongWriteCommentException;
-import core.application.movies.models.dto.CommentReactionDTO;
+import core.application.movies.models.dto.CommentReactionRespDTO;
 import core.application.movies.models.dto.CommentRespDTO;
 import core.application.movies.models.dto.CommentWriteReqDTO;
 import core.application.movies.service.CommentService;
@@ -56,30 +56,30 @@ public class CommentController {
 	}
 
 	@PostMapping("/{movieId}/comments/{commentId}/like")
-	public CommentReactionDTO incrementCommentLike(@PathVariable Long commentId) {
+	public CommentReactionRespDTO incrementCommentLike(@PathVariable Long commentId) {
 		// 추후 JWT 구현 시 userId 삽입
 		commentService.incrementCommentLike(commentId, null);
-		return new CommentReactionDTO("한줄평 좋아요 완료");
+		return new CommentReactionRespDTO("한줄평 좋아요 완료");
 	}
 
 	@DeleteMapping("/{movieId}/comments/{commentId}/like")
-	public CommentReactionDTO decrementCommentLike(@PathVariable Long commentId) {
+	public CommentReactionRespDTO decrementCommentLike(@PathVariable Long commentId) {
 		// 추후 JWT 구현 시 userId 삽입
 		commentService.decrementCommentLike(commentId, null);
-		return new CommentReactionDTO("한줄평 좋아요 취소 완료");
+		return new CommentReactionRespDTO("한줄평 좋아요 취소 완료");
 	}
 
 	@PostMapping("/{movieId}/comments/{commentId}/dislike")
-	public CommentReactionDTO incrementCommentDislike(@PathVariable Long commentId) {
+	public CommentReactionRespDTO incrementCommentDislike(@PathVariable Long commentId) {
 		// 추후 JWT 구현 시 userId 삽입
 		commentService.incrementCommentDislike(commentId, null);
-		return new CommentReactionDTO("한줄평 싫어요 취소 완료");
+		return new CommentReactionRespDTO("한줄평 싫어요 취소 완료");
 	}
 
 	@DeleteMapping("/{movieId}/comments/{commentId}/dislike")
-	public CommentReactionDTO decrementCommentDislike(@PathVariable Long commentId) {
+	public CommentReactionRespDTO decrementCommentDislike(@PathVariable Long commentId) {
 		// 추후 JWT 구현 시 userId 삽입
 		commentService.decrementCommentDislike(commentId, null);
-		return new CommentReactionDTO("한줄평 좋아요 완료");
+		return new CommentReactionRespDTO("한줄평 좋아요 완료");
 	}
 }
