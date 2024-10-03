@@ -39,13 +39,4 @@ public class AuthenticatedUserInfo {
         }
         return null; // 인증되지 않은 사용자일 경우
     }
-
-    public Optional<UserEntity> getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
-            return customUserDetails.getUserEntity();
-        }
-        return Optional.empty();
-    }
 }

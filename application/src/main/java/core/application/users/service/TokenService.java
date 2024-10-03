@@ -2,7 +2,6 @@ package core.application.users.service;
 
 import core.application.Util.JwtUtil;
 import core.application.users.models.entities.UserEntity;
-import core.application.users.models.entities.UserRole;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,7 +57,7 @@ public class TokenService {
             return "refresh token not recognized.";
         }
 
-        return "success";
+        return "valid token";
     }
 
     public String validateAccessToken(String accessToken) {
@@ -76,40 +75,45 @@ public class TokenService {
         if (!category.equals("access")) {
             return "Invalid access token";
         }
-        return "success";
+        return "valid token";
     }
 
     public Optional<UserEntity> getUserByAccessToken(String accessToken) {
-        if (!validateAccessToken(accessToken).equals("success")) {
+
+        if (accessToken == null) {
             return Optional.empty();
         }
 
-        //토큰에서 userEmail과 role 획득
+        System.out.println(accessToken);
+//        UUID userId = jwtUtil.getUserId(accessToken);
+//        System.out.println("user id " + userId);
+//        Optional<UserEntity> userEntity = userService.getUserByUserId(userId);
         String userEmail = jwtUtil.getUserEmail(accessToken);
-        UUID userId = jwtUtil.getUserId(accessToken);
-        String role = jwtUtil.getRole(accessToken);
+        System.out.println(userEmail);
+        Optional<UserEntity> userEntity = userService.getUserByUserEmail(userEmail);
 
-        if (userService.getUserByUserId(userId).isEmpty()) {
+        if (userEntity.isEmpty()) {
             return Optional.empty();
         }
 
         //userEntity를 생성하여 값 set
-        Optional<UserEntity> userEntity = Optional.ofNullable(UserEntity.builder()
-                .userEmail(userEmail)
-                .userId(userId)
-                .role(UserRole.valueOf(role))
+        Optional<UserEntity> userWithoutSensitiveInfo = Optional.ofNullable(UserEntity.builder()
+                .userEmail(userEntity.get().getUserEmail())
+                .userId(userEntity.get().getUserId())
+                .userName(userEntity.get().getUserName())
+                .role(userEntity.get().getRole())
                 .build());
 
-        return userEntity;
+        return userWithoutSensitiveInfo;
     }
 
     public String reissueAccessToken(HttpServletRequest request) {
         String refreshToken = getRefreshToken(request);
 
-        if (validateRefreshToken(refreshToken).equals("success")) {
-            UUID userId = jwtUtil.getUserId(refreshToken);
-            Optional<UserEntity> userEntity = userService.getUserByUserId(userId);
-            String userEmail = userEntity.get().getUserEmail();
+        if (validateRefreshToken(refreshToken).equals("valid token")) {
+            String userEmail =  jwtUtil.getUserEmail(refreshToken);
+            Optional<UserEntity> userEntity = userService.getUserByUserEmail(userEmail);
+            UUID userId = userEntity.get().getUserId();
             String role = userEntity.get().getRole().toString();
 
             // return access token
@@ -119,10 +123,9 @@ public class TokenService {
         }
     }
 
-    public String inactiveAccessToken(HttpServletRequest request) {
-        String refreshToken = getRefreshToken(request);
+    public String inactiveAccessToken(String refreshToken) {
         System.out.println(refreshToken);
-        if (validateRefreshToken(refreshToken).equals("success")) {
+        if (validateRefreshToken(refreshToken).equals("valid token")) {
             redisService.deleteValue(jwtUtil.getUserEmail(refreshToken));
         }
         return "inactive refresh token success";

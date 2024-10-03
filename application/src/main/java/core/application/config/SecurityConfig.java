@@ -2,7 +2,8 @@ package core.application.config;
 
 import core.application.Util.JwtUtil;
 import core.application.filter.JWTFilter;
-import core.application.filter.LoginFilter;
+import core.application.filter.CustomLoginFilter;
+import core.application.filter.CustomLogoutFilter;
 import core.application.users.service.CustomUserDetailsService;
 import core.application.users.service.RedisService;
 import core.application.users.service.TokenService;
@@ -18,6 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -84,10 +86,13 @@ public class SecurityConfig {
 
 
         http
-                .addFilterBefore(new JWTFilter(tokenService), LoginFilter.class);
+                .addFilterBefore(new JWTFilter(tokenService), CustomLoginFilter.class);
 
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new CustomLoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisService), UsernamePasswordAuthenticationFilter.class);
+
+        http
+                .addFilterBefore(new CustomLogoutFilter(tokenService), LogoutFilter.class);
 
         // 세션 설정
         http

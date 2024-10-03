@@ -14,8 +14,7 @@ public class RedisServiceImpl implements RedisService {
     @Value("${token.refresh.timeout}")
     private Long refreshTimeout;
 
-    @Value("${token.refresh.time-unit}")
-    private TimeUnit timeUnit;
+    private TimeUnit timeUnit = TimeUnit.DAYS;
 
     public RedisServiceImpl(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;

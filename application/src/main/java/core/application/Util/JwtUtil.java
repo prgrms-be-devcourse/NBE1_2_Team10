@@ -1,6 +1,5 @@
 package core.application.Util;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -10,7 +9,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class JwtUtil {
@@ -27,21 +25,6 @@ public class JwtUtil {
 
     public String getUserEmail(String token) {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userEmail", String.class);
-    }
-
-    public UUID getUserId(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        String userIdStr = claims.get("userId", String.class);  // String으로 가져옴
-        return UUID.fromString(userIdStr);  // String을 UUID로 변환
-    }
-
-    public String getRole(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
     }
 
     public String getCategory(String token) {
@@ -69,7 +52,7 @@ public class JwtUtil {
                 .claim("userEmail", userEmail)
                 .claim("category", category)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + refreshTimeout))
+                .expiration(new Date(System.currentTimeMillis() + refreshTimeout * 24 * 60 * 60 * 1000L))
                 .signWith(secretKey)
                 .compact();
     }
