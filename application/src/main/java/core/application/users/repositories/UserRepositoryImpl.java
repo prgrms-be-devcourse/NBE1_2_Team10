@@ -48,13 +48,12 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     @Override
-    public List<UserEntity> findAll() {
-        return mapper.findAll();
+    public List<UserEntity> findAll() {return mapper.findAll();
     }
 
     @Override
-    public int editUserInfo(UserEntity replacement) {
-        return mapper.editUserInfo(replacement);
+    public void editUserInfo(UserEntity replacement) {
+        mapper.editUserInfo(replacement);
     }
 
     @Override
