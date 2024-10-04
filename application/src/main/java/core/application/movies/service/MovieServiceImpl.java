@@ -102,8 +102,8 @@ public class MovieServiceImpl implements MovieService {
 		// 제목에서 !HS, !HE 제거 후 제목 저장
 		String title = exception(resultObject.optString("title").replaceAll("!HS", "").replaceAll("!HE", "").trim());
 
-		// API를 통해 데이터 가져올 때 빈("") 데이터일 경우 예외 처리
-		String imgUrl = exception(resultObject.optString("posters"));
+		// 포스터 url 저장
+		String imgUrl = handleString(resultObject.optString("posters"));
 
 		String resultimgUrl = imgUrl.split("\\|")[0];
 
@@ -111,7 +111,7 @@ public class MovieServiceImpl implements MovieService {
 		String genre = exception(resultObject.optString("genre"));
 
 		// 대표 개봉일
-		String ReleaseDate = exception(resultObject.optString("repRlsDate", ""));
+		String ReleaseDate = handleString(resultObject.optString("repRlsDate", ""));
 
 		// 줄거리 설정
 		JSONArray plotArray = resultObject.optJSONObject("plots").optJSONArray("plot");
@@ -119,23 +119,26 @@ public class MovieServiceImpl implements MovieService {
 		for (int j = 0; j < plotArray.length(); j++) {
 			JSONObject plot = plotArray.getJSONObject(j);
 			if (plot.optString("plotLang").equals("한국어")) {
-				resultPlot = exception(plot.optString("plotText"));
+				resultPlot = handleString(plot.optString("plotText"));
+			}else{
+				resultPlot = "알 수 없음"; // 한국어 줄거리 외 알 수 없음 처리
 			}
 		}
 
 		// 상영시간
-		String runtime = exception(resultObject.optString("runtime"));
+		String runtime = handleString(resultObject.optString("runtime"));
 
 		// 배우 목록 설정 (최대 5명)
 		JSONArray actorsArray = resultObject.optJSONObject("actors").optJSONArray("actor");
 		String actorName = "";
 		for(int k=0; k<Math.min(actorsArray.length(), 5); k++){
-			actorName = actorName + ", " + exception(actorsArray.getJSONObject(k).optString("actorNm"));
+			actorName = actorName + ", " + handleString(actorsArray.getJSONObject(k).optString("actorNm"));
+			if(actorName.equals(", 알 수 없음")) break;
 		}
 		actorName = actorName.substring(2);
 
 		JSONArray directorsArray = resultObject.optJSONObject("directors").optJSONArray("director");
-		String resultDirector = exception(directorsArray.getJSONObject(0).optString("directorNm"));
+		String resultDirector = handleString(directorsArray.getJSONObject(0).optString("directorNm"));
 
 		CachedMovieEntity cachedMovieEntity = new CachedMovieEntity(MovieID, title, resultimgUrl, genre, ReleaseDate, resultPlot, runtime, actorName, resultDirector, 0L, 0L, 0L, 0L);
 
@@ -152,5 +155,12 @@ public class MovieServiceImpl implements MovieService {
 		return Optional.ofNullable(str)
 				.filter(val -> !val.isEmpty())  // 빈 문자열이 아닐 때만 처리
 				.orElseThrow(() -> new IllegalArgumentException("잘못된 자료에 대한 요청입니다."));
+	}
+
+	public String handleString(String input) {
+		if (input == null || input.trim().isEmpty()) {
+			return "알 수 없음";
+		}
+		return input;
 	}
 }
