@@ -1,6 +1,5 @@
 package core.application.users.repositories;
 
-import core.application.users.models.entities.DibEntity;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
 
@@ -59,13 +58,6 @@ public interface UserRepository {
      */
     List<UserEntity> findByUserRole(UserRole role);
 
-    /**
-     * 특정 유저의 찜 목록을 load 한 {@code UserEntity} 반환
-     *
-     * @param userId 유저 ID
-     * @return {@link List}{@code <}{@link UserEntity}{@code >} {@code dibEntityList} 가 채워진 {@code UserEntity List}
-     */
-    List<DibEntity> selectDibsOnUserId(UUID userId);
 
     /**
      * DB 의 모든 유저를 검색
