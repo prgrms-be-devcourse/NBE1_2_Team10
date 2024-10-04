@@ -18,46 +18,22 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice(basePackages = "core.application.reviews")
 public class ReviewExceptionHandler {
 
-    @ExceptionHandler(NoReviewFoundException.class)
+    @ExceptionHandler({
+            NoReviewFoundException.class, NoReviewCommentFoundException.class,
+            NotCommentOwnerException.class,
+            InvalidCommentContentException.class
+    })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseError handleNoReviewFoundException(NoReviewFoundException e) {
-        String stackTrace = logHandledException("handleNoReviewFoundException", e);
-        return new ResponseError(e.getMessage(), HttpStatus.BAD_REQUEST, stackTrace);
+    public ResponseError handleException(RuntimeException e) {
+        logHandledException(e.getClass().getName(), e);
+        return new ResponseError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(NoReviewCommentFoundException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseError handleNoReviewCommentFoundException(NoReviewCommentFoundException e) {
-        String stackTrace = logHandledException("handleNoReviewCommentFoundException", e);
-        return new ResponseError(e.getMessage(), HttpStatus.BAD_REQUEST, stackTrace);
-    }
 
-    @ExceptionHandler(NotCommentOwnerException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseError handleNotCommentOwnerException(NotCommentOwnerException e) {
-        String stackTrace = logHandledException("handleNotCommentOwnerException", e);
-        return new ResponseError(e.getMessage(), HttpStatus.BAD_REQUEST, stackTrace);
-    }
-
-    @ExceptionHandler(InvalidCommentContentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseError handleInvalidCommentContentException(InvalidCommentContentException e) {
-        String stackTrace = logHandledException("handleInvalidCommentContentException", e);
-        return new ResponseError(e.getMessage(), HttpStatus.BAD_REQUEST, stackTrace);
-    }
-
-    private String logHandledException(String methodName, Throwable e) {
-        String stackTrace = getStackTraceToString(e);
+    private void logHandledException(String methodName, Throwable e) {
         log.warn("[ReviewExceptionHandler - {}] handled exception : {}", methodName,
                 e.getMessage());
         log.debug(e.getMessage(), e);
-        return stackTrace;
-    }
-
-    private String getStackTraceToString(Throwable throwable) {
-        StringWriter stringWriter = new StringWriter();
-        throwable.printStackTrace(new PrintWriter(stringWriter));
-        return stringWriter.toString();
     }
 
     @Data
@@ -66,6 +42,5 @@ public class ReviewExceptionHandler {
 
         private String message;
         private HttpStatus status;
-        private String stackTrace;
     }
 }
