@@ -1,12 +1,12 @@
 package core.application.movies.service;
 
-import java.util.List;
-
 import core.application.movies.constant.Genre;
 import core.application.movies.constant.MovieSearch;
 import core.application.movies.models.dto.MainPageMoviesRespDTO;
 import core.application.movies.models.dto.MovieDetailRespDTO;
 import core.application.movies.models.dto.MovieSimpleRespDTO;
+
+import java.util.List;
 
 public interface MovieService {
 

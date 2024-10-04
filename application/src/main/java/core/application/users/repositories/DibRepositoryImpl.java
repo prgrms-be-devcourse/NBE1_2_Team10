@@ -16,14 +16,18 @@ public class DibRepositoryImpl implements DibRepository{
     private final DibMapper mapper;
 
     @Override
-    public int saveNewDib(UUID userId, DibEntity dib) {
-        return mapper.saveNewDib(userId, dib);
+    public Optional<DibEntity> saveNewDib(UUID userId, String movieId) {
+        mapper.saveNewDib(userId, movieId);
+        return mapper.findByUserIdAndMovieId(userId, movieId);
     }
 
     @Override
     public Optional<DibEntity> findByDibId(Long id) {
         return mapper.findByDibId(id);
     }
+
+    @Override
+    public Optional<DibEntity> findByUserIdAndMovieId(UUID userId, String movieId) { return mapper.findByUserIdAndMovieId(userId, movieId); }
 
     @Override
     public Long countMovie(String movieId) {

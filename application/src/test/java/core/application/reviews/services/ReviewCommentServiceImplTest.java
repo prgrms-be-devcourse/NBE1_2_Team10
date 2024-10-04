@@ -122,19 +122,21 @@ class ReviewCommentServiceImplTest {
                 .thenReturn(Optional.empty());
 
         parentComments.forEach(
-                p -> when(reviewCommentRepo.findParentCommentByReviewIdOnDateDescend(reviewId))
+                p -> when(reviewCommentRepo.findParentCommentByReviewIdOnDateDescend(reviewId, 0,
+                        testSize))
                         .thenReturn(parentComments.stream().sorted(latestOrder).toList())
         );
         parentComments.forEach(
-                p -> when(reviewCommentRepo.findParentCommentByReviewIdOnLikeDescend(reviewId))
+                p -> when(reviewCommentRepo.findParentCommentByReviewIdOnLikeDescend(reviewId, 0,
+                        testSize))
                         .thenReturn(parentComments.stream().sorted(mostLikeOrder).toList())
         );
 
         // given
         List<ReviewCommentEntity> onLatest = reviewCommentService.getParentReviewComments(reviewId,
-                ReviewCommentSortOrder.LATEST);
+                ReviewCommentSortOrder.LATEST, 0, testSize);
         List<ReviewCommentEntity> onLikes = reviewCommentService.getParentReviewComments(reviewId,
-                ReviewCommentSortOrder.LIKE);
+                ReviewCommentSortOrder.LIKE, 0, testSize);
 
         // then
         assertThat(onLatest).containsAll(parentComments);
@@ -145,12 +147,12 @@ class ReviewCommentServiceImplTest {
 
         assertThatThrownBy(() -> {
             reviewCommentService.getParentReviewComments(random.nextLong(),
-                    ReviewCommentSortOrder.LATEST);
+                    ReviewCommentSortOrder.LATEST, 0, testSize);
         }).isInstanceOf(NoReviewFoundException.class);
 
         assertThatThrownBy(() -> {
             reviewCommentService.getParentReviewComments(random.nextLong(),
-                    ReviewCommentSortOrder.LIKE);
+                    ReviewCommentSortOrder.LIKE, 0, testSize);
         }).isInstanceOf(NoReviewFoundException.class);
 
         log.info("--> getParentReviewComments test passed");
