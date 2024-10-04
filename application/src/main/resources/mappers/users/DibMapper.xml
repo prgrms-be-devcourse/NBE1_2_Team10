@@ -14,7 +14,7 @@
 
     <delete id="deleteDibByUserId">
         DELETE FROM dib_table
-        WHERE  movie_id = #{movieId}
+        WHERE  user_id = #{userId}
     </delete>
 
     <delete id="deleteBidByUserIdAndMovieId">
@@ -39,9 +39,15 @@
         SELECT dib_id, user_id, movie_id
         FROM dib_table
     </select>
+
     <select id="findByUserId" resultType="core.application.users.models.entities.DibEntity">
         SELECT dib_id, user_id, movie_id
         FROM dib_table
         WHERE user_id = #{userId}
+
+    <select id="findByUserIdAndMovieId" resultType="core.application.users.models.entities.DibEntity">
+        SELECT dib_id, user_id, movie_id
+        FROM dib_table
+        WHERE user_id = #{userId} AND movie_id = #{movieId}
     </select>
 </mapper>

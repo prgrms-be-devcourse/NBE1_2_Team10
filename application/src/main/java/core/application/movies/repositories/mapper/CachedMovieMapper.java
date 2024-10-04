@@ -23,6 +23,8 @@ public interface CachedMovieMapper {
 
 	List<CachedMovieEntity> selectOnAVGRatingDescendLimit(int num);
 
+	List<CachedMovieEntity> selectOnReviewCountDescend(int num);
+
 	void update(@Param("movieId") String movieId, @Param("replacement") CachedMovieEntity replacement);
 
 	void delete(String movieId);
