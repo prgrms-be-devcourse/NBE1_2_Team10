@@ -59,6 +59,7 @@ public class MovieServiceImpl implements MovieService {
 
 	@Override
 	public List<MovieSearchRespDTO> searchMovies(Integer page, MovieSearch sort, String query) {
+		log.info("sortType = {}", sort.SORT);
 		String response = webClient.get()
 			.uri(uriBuilder -> uriBuilder
 				.path("/search_json2.jsp")
@@ -67,7 +68,7 @@ public class MovieServiceImpl implements MovieService {
 				.queryParam("collection", "kmdb_new2")
 				.queryParam("ratedYn", "Y")
 				.queryParam("query", query)
-				.queryParam("sort", sort.getSORT())
+				.queryParam("sort", sort.SORT)
 				.queryParam("listCount", 10)
 				.queryParam("startCount", page * 10)
 				.build())
@@ -88,6 +89,9 @@ public class MovieServiceImpl implements MovieService {
 				if (search.getPosterUrl().isEmpty()) {
 					search.setPosterUrl(defaultImgUrl);
 				}
+				if (search.getProducedYear().isEmpty()) {
+					search.setProducedYear("알수없음");
+				}
 				searchResult.add(search);
 			}
 		} catch (JSONException e) {
@@ -96,9 +100,57 @@ public class MovieServiceImpl implements MovieService {
 		return searchResult;
 	}
 
+	// 추후 외부 API 요청을 트랜잭션에서 분리해야 한다.
 	@Override
+	@Transactional(readOnly = true)
 	public List<MovieSearchRespDTO> getMoviesWithGenre(Integer page, Genre genre, MovieSearch sort) {
-		return List.of();
+		List<MovieSearchRespDTO> result = new ArrayList<>();
+		if (sort.equals(MovieSearch.LATEST)) {
+			String response = webClient.get()
+				.uri(uriBuilder -> uriBuilder
+					.path("/search_json2.jsp")
+					.queryParam("ServiceKey", apiKey)
+					.queryParam("detail", "Y")
+					.queryParam("collection", "kmdb_new2")
+					.queryParam("ratedYn", "Y")
+					.queryParam("genre", genre.PARAMETER)
+					.queryParam("sort", sort.SORT)
+					.queryParam("listCount", 10)
+					.queryParam("startCount", page * 10)
+					.build())
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
+
+			try {
+				JSONObject jsonObject = new JSONObject(response);
+				JSONArray movieArray = jsonObject.getJSONArray("Data")
+					.getJSONObject(0)
+					.getJSONArray("Result");
+
+				for (int i = 0; i < 10; i++) {
+					JSONObject movie = movieArray.getJSONObject(i);
+					MovieSearchRespDTO search = MovieSearchRespDTO.from(movie);
+					if (search.getPosterUrl().isEmpty()) {
+						search.setPosterUrl(defaultImgUrl);
+					}
+					if (search.getProducedYear().isEmpty()) {
+						search.setProducedYear("알수없음");
+					}
+					result.add(search);
+				}
+			} catch (JSONException e) {
+				throw new NoMovieException(genre.PARAMETER + " 장르에 더 이상 제공되는 영화가 없습니다.");
+			}
+		}
+		// 평점 순은 자체 영화 테이블 중 평가된 적이 있는 영화중에서 제공한다.
+		List<CachedMovieEntity> findResult = movieRepository.findMoviesOnRatingDescendWithGenre(
+			page * 10, genre.PARAMETER);
+		for (CachedMovieEntity movie : findResult) {
+			result.add(MovieSearchRespDTO.from(movie));
+		}
+		return result;
+
 	}
 
 	/*
