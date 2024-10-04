@@ -34,7 +34,10 @@ public interface MovieService {
 	 * @param sort 정렬 조건
 	 * @return 해당 카테고리의 영화
 	 */
-	public List<MovieSearchRespDTO> getMoviesWithGenre(Integer page, Genre genre, MovieSearch sort);
+	public List<MovieSearchRespDTO> getMoviesWithGenreRatingOrder(Integer page, Genre genre);
+
+	public List<MovieSearchRespDTO> getMoviesWithGenreLatestOrder(Integer page, Genre genre);
+
 
 	/**
 	 * 사용자가 영화 상세 페이지에서 필요로 하는 정보를 보내준다.

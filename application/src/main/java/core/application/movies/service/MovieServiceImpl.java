@@ -1,7 +1,9 @@
 package core.application.movies.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -11,9 +13,9 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import core.application.movies.constant.Genre;
+import core.application.movies.constant.KmdbParameter;
 import core.application.movies.constant.MovieSearch;
 import core.application.movies.exception.NoMovieException;
 import core.application.movies.models.dto.MainPageMovieRespDTO;
@@ -22,6 +24,7 @@ import core.application.movies.models.dto.MovieDetailRespDTO;
 import core.application.movies.models.dto.MovieSearchRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.CachedMovieRepository;
+import core.application.movies.repositories.KmdbApiRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,7 +39,7 @@ public class MovieServiceImpl implements MovieService {
 	@Value("${kmdb.api.default.image}")
 	private String defaultImgUrl;
 
-	private final WebClient webClient;
+	private final KmdbApiRepository kmdbRepository;
 	private final CachedMovieRepository movieRepository;
 
 	@Override
@@ -59,41 +62,17 @@ public class MovieServiceImpl implements MovieService {
 
 	@Override
 	public List<MovieSearchRespDTO> searchMovies(Integer page, MovieSearch sort, String query) {
-		log.info("sortType = {}", sort.SORT);
-		String response = webClient.get()
-			.uri(uriBuilder -> uriBuilder
-				.path("/search_json2.jsp")
-				.queryParam("ServiceKey", apiKey)
-				.queryParam("detail", "Y")
-				.queryParam("collection", "kmdb_new2")
-				.queryParam("ratedYn", "Y")
-				.queryParam("query", query)
-				.queryParam("sort", sort.SORT)
-				.queryParam("listCount", 10)
-				.queryParam("startCount", page * 10)
-				.build())
-			.retrieve()
-			.bodyToMono(String.class)
-			.block();
+		Map<KmdbParameter, String> params = new HashMap<>();
+		params.put(KmdbParameter.START_COUNT, String.valueOf(page * 10));
+		params.put(KmdbParameter.SORT, sort.SORT);
+		params.put(KmdbParameter.QUERY, query);
+
+		JSONObject jsonResponse = kmdbRepository.getResponse(params);
 		List<MovieSearchRespDTO> searchResult = new ArrayList<>();
-
 		try {
-			JSONObject jsonObject = new JSONObject(response);
-			JSONArray movieArray = jsonObject.getJSONArray("Data")
-				.getJSONObject(0)
-				.getJSONArray("Result");
-
-			for (int i = 0; i < 10; i++) {
-				JSONObject movie = movieArray.getJSONObject(i);
-				MovieSearchRespDTO search = MovieSearchRespDTO.from(movie);
-				if (search.getPosterUrl().isEmpty()) {
-					search.setPosterUrl(defaultImgUrl);
-				}
-				if (search.getProducedYear().isEmpty()) {
-					search.setProducedYear("알수없음");
-				}
-				searchResult.add(search);
-			}
+			parseMovieFromMovieArray(
+				parseMovieArrayFromJsonResponse(jsonResponse),
+				searchResult);
 		} catch (JSONException e) {
 			throw new NoMovieException("'" + query + "'에 해당하는 영화가 없습니다.");
 		}
@@ -103,46 +82,8 @@ public class MovieServiceImpl implements MovieService {
 	// 추후 외부 API 요청을 트랜잭션에서 분리해야 한다.
 	@Override
 	@Transactional(readOnly = true)
-	public List<MovieSearchRespDTO> getMoviesWithGenre(Integer page, Genre genre, MovieSearch sort) {
+	public List<MovieSearchRespDTO> getMoviesWithGenreRatingOrder(Integer page, Genre genre) {
 		List<MovieSearchRespDTO> result = new ArrayList<>();
-		if (sort.equals(MovieSearch.LATEST)) {
-			String response = webClient.get()
-				.uri(uriBuilder -> uriBuilder
-					.path("/search_json2.jsp")
-					.queryParam("ServiceKey", apiKey)
-					.queryParam("detail", "Y")
-					.queryParam("collection", "kmdb_new2")
-					.queryParam("ratedYn", "Y")
-					.queryParam("genre", genre.PARAMETER)
-					.queryParam("sort", sort.SORT)
-					.queryParam("listCount", 10)
-					.queryParam("startCount", page * 10)
-					.build())
-				.retrieve()
-				.bodyToMono(String.class)
-				.block();
-
-			try {
-				JSONObject jsonObject = new JSONObject(response);
-				JSONArray movieArray = jsonObject.getJSONArray("Data")
-					.getJSONObject(0)
-					.getJSONArray("Result");
-
-				for (int i = 0; i < 10; i++) {
-					JSONObject movie = movieArray.getJSONObject(i);
-					MovieSearchRespDTO search = MovieSearchRespDTO.from(movie);
-					if (search.getPosterUrl().isEmpty()) {
-						search.setPosterUrl(defaultImgUrl);
-					}
-					if (search.getProducedYear().isEmpty()) {
-						search.setProducedYear("알수없음");
-					}
-					result.add(search);
-				}
-			} catch (JSONException e) {
-				throw new NoMovieException(genre.PARAMETER + " 장르에 더 이상 제공되는 영화가 없습니다.");
-			}
-		}
 		// 평점 순은 자체 영화 테이블 중 평가된 적이 있는 영화중에서 제공한다.
 		List<CachedMovieEntity> findResult = movieRepository.findMoviesOnRatingDescendWithGenre(
 			page * 10, genre.PARAMETER);
@@ -150,7 +91,45 @@ public class MovieServiceImpl implements MovieService {
 			result.add(MovieSearchRespDTO.from(movie));
 		}
 		return result;
+	}
 
+	public List<MovieSearchRespDTO> getMoviesWithGenreLatestOrder(Integer page, Genre genre) {
+		List<MovieSearchRespDTO> result = new ArrayList<>();
+
+		Map<KmdbParameter, String> params = new HashMap<>();
+		params.put(KmdbParameter.START_COUNT, String.valueOf(page * 10));
+		params.put(KmdbParameter.SORT, MovieSearch.LATEST.SORT);
+		params.put(KmdbParameter.GENRE, genre.PARAMETER);
+
+		JSONObject jsonResponse = kmdbRepository.getResponse(params);
+		try {
+			parseMovieFromMovieArray(
+				parseMovieArrayFromJsonResponse(jsonResponse),
+				result);
+		} catch (JSONException e) {
+			throw new NoMovieException(genre.PARAMETER + " 장르에 더 이상 제공되는 영화가 없습니다.");
+		}
+		return result;
+	}
+
+	private JSONArray parseMovieArrayFromJsonResponse(JSONObject jsonResponse) {
+		return jsonResponse.getJSONArray("Data")
+			.getJSONObject(0)
+			.getJSONArray("Result");
+	}
+
+	private void parseMovieFromMovieArray(JSONArray movieArray, List<MovieSearchRespDTO> result) {
+		for (int i = 0; i < movieArray.length(); i++) {
+			JSONObject movie = movieArray.getJSONObject(i);
+			MovieSearchRespDTO search = MovieSearchRespDTO.from(movie);
+			if (search.getPosterUrl().isEmpty()) {
+				search.setPosterUrl(defaultImgUrl);
+			}
+			if (search.getProducedYear().isEmpty()) {
+				search.setProducedYear("알수없음");
+			}
+			result.add(search);
+		}
 	}
 
 	/*
