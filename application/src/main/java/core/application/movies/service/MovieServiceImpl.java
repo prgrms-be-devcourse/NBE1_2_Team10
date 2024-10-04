@@ -9,28 +9,15 @@ import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.CachedMovieRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import core.application.movies.constant.Genre;
-import core.application.movies.constant.MovieSearch;
-import core.application.movies.models.dto.MainPageMovieRespDTO;
-import core.application.movies.models.dto.MainPageMoviesRespDTO;
-import core.application.movies.models.dto.MovieDetailRespDTO;
-import core.application.movies.models.dto.MovieSimpleRespDTO;
-import core.application.movies.repositories.CachedMovieRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -40,33 +27,16 @@ public class MovieServiceImpl implements MovieService {
 	@Value("${kmdb.api.key}")
 	private String apiKey;
 
-	@Value("${kmdb.api.default.image}")
-	private String defaultImgUrl;
-
 	private final WebClient webClient;
+
 	private final CachedMovieRepository movieRepository;
 
-	@Override
-	@Transactional(readOnly = true)
-	public MainPageMoviesRespDTO getMainPageMovieInfo() {
-		List<MainPageMovieRespDTO> ratingOrder = movieRepository.selectOnAVGRatingDescend(10).stream()
-			.map(MainPageMovieRespDTO::from)
-			.toList();
-
-		List<MainPageMovieRespDTO> dibOrder = movieRepository.selectOnDibOrderDescend(10).stream()
-			.map(MainPageMovieRespDTO::from)
-			.toList();
-
-		List<MainPageMovieRespDTO> reviewOrder = movieRepository.selectOnReviewCountDescend(10).stream()
-			.map(MainPageMovieRespDTO::from)
-			.toList();
-
-		return MainPageMoviesRespDTO.of(dibOrder, ratingOrder, reviewOrder);
+	public MainPageMoviesRespDTO getMainPageMovieInfo(){
+		return null;
 	}
 
-	@Override
-	public List<MovieSimpleRespDTO> searchMovies(Integer page, MovieSearch sort, String query, Genre genre) {
-		return List.of();
+	public List<MovieSimpleRespDTO> searchMovies(Integer page, MovieSearch sort, String query, Genre genre){
+		return null;
 	}
 
 	/*
@@ -102,19 +72,19 @@ public class MovieServiceImpl implements MovieService {
 		String MovieSeq = movieId.substring(1);
 
 		String response = webClient.get()
-			.uri(uriBuilder -> uriBuilder
-				.path("/search_json2.jsp")
-				.queryParam("ServiceKey", apiKey)
-				.queryParam("detail", "Y")
-				.queryParam("collection", "kmdb_new2")
-				.queryParam("ratedYn", "Y")
-				.queryParam("movieId", MovieId)
-				.queryParam("movieSeq", MovieSeq)
-				.queryParam("listCount", 10)
-				.build())
-			.retrieve()
-			.bodyToMono(String.class)
-			.block();
+				.uri(uriBuilder -> uriBuilder
+						.path("/search_json2.jsp")
+						.queryParam("ServiceKey", apiKey)
+						.queryParam("detail", "Y")
+						.queryParam("collection", "kmdb_new2")
+						.queryParam("ratedYn", "Y")
+						.queryParam("movieId", MovieId)
+						.queryParam("movieSeq", MovieSeq)
+						.queryParam("listCount", 5)
+						.build())
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
 
 		return parseMovieDetail(new JSONObject(response));
 	}
@@ -127,25 +97,21 @@ public class MovieServiceImpl implements MovieService {
 				.getJSONObject(0);
 
 		//MovieId 저장
-		String MovieID = resultObject.optString("DOCID", "");
+		String MovieID = exception(resultObject.optString("DOCID"));
 
 		// 제목에서 !HS, !HE 제거 후 제목 저장
-		String title = resultObject.optString("title", "").replaceAll("!HS", "").replaceAll("!HE", "").trim();
+		String title = exception(resultObject.optString("title").replaceAll("!HS", "").replaceAll("!HE", "").trim());
 
-		// 포스트 링크 저장
-		String imgUrl = resultObject.optString("posters", defaultImgUrl);
-		String resultimgUrl = " ";
-		if (!imgUrl.equals(defaultImgUrl)) {
-			resultimgUrl = imgUrl.split("\\|")[0];
-		} else {
-			resultimgUrl = imgUrl;
-		}
+		// API를 통해 데이터 가져올 때 빈("") 데이터일 경우 예외 처리
+		String imgUrl = exception(resultObject.optString("posters"));
+
+		String resultimgUrl = imgUrl.split("\\|")[0];
 
 		// 장르 저장
-		String genre = (resultObject.optString("genre", ""));
+		String genre = exception(resultObject.optString("genre"));
 
 		// 대표 개봉일
-		String ReleaseDate = resultObject.optString("repRlsDate", "");
+		String ReleaseDate = exception(resultObject.optString("repRlsDate", ""));
 
 		// 줄거리 설정
 		JSONArray plotArray = resultObject.optJSONObject("plots").optJSONArray("plot");
@@ -153,29 +119,23 @@ public class MovieServiceImpl implements MovieService {
 		for (int j = 0; j < plotArray.length(); j++) {
 			JSONObject plot = plotArray.getJSONObject(j);
 			if (plot.optString("plotLang").equals("한국어")) {
-				resultPlot = plot.optString("plotText");
+				resultPlot = exception(plot.optString("plotText"));
 			}
-
 		}
 
 		// 상영시간
-		String runtime = resultObject.optString("runtime");
+		String runtime = exception(resultObject.optString("runtime"));
 
 		// 배우 목록 설정 (최대 5명)
 		JSONArray actorsArray = resultObject.optJSONObject("actors").optJSONArray("actor");
-		String actorName = null;
-		if (actorsArray != null) {
-			for (int k = 0; k < Math.min(actorsArray.length(), 5); k++) {
-				if(actorName == null) {
-					actorName = actorsArray.getJSONObject(k).optString("actorNm", "배우명");
-				}else{
-					actorName = actorName + ", " + actorsArray.getJSONObject(k).optString("actorNm", "배우명");
-				}
-			}
+		String actorName = "";
+		for(int k=0; k<Math.min(actorsArray.length(), 5); k++){
+			actorName = actorName + ", " + exception(actorsArray.getJSONObject(k).optString("actorNm"));
 		}
+		actorName = actorName.substring(2);
 
 		JSONArray directorsArray = resultObject.optJSONObject("directors").optJSONArray("director");
-		String resultDirector = directorsArray.getJSONObject(0).optString("directorNm", "감독명");
+		String resultDirector = exception(directorsArray.getJSONObject(0).optString("directorNm"));
 
 		CachedMovieEntity cachedMovieEntity = new CachedMovieEntity(MovieID, title, resultimgUrl, genre, ReleaseDate, resultPlot, runtime, actorName, resultDirector, 0L, 0L, 0L, 0L);
 
@@ -186,5 +146,11 @@ public class MovieServiceImpl implements MovieService {
 		MovieDetailRespDTO movieDetailRespDTO = new MovieDetailRespDTO();
 
 		return movieDetailRespDTO.toDTO(cachedMovieEntity);
+	}
+
+	private String exception(String str) {
+		return Optional.ofNullable(str)
+				.filter(val -> !val.isEmpty())  // 빈 문자열이 아닐 때만 처리
+				.orElseThrow(() -> new IllegalArgumentException("잘못된 자료에 대한 요청입니다."));
 	}
 }

@@ -1,9 +1,12 @@
 package core.application.movies.service;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
 
+import core.application.movies.models.dto.MovieDetailRespDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,16 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import core.application.movies.constant.Genre;
 import core.application.movies.models.dto.MainPageMovieRespDTO;
 import core.application.movies.models.dto.MainPageMoviesRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.CachedMovieRepository;
-import lombok.extern.slf4j.Slf4j;
 
 @SpringBootTest
 @Transactional
-@Slf4j
 public class MovieServiceTest {
 	@Autowired
 	private MovieService movieService;
@@ -34,7 +34,7 @@ public class MovieServiceTest {
 				String.valueOf(i),
 				String.valueOf(i),
 				"posterUrl",
-				Genre.ACTION,
+				"로맨스",
 				"2024-09-30",
 				"줄거리",
 				"122",
@@ -71,5 +71,25 @@ public class MovieServiceTest {
 			MainPageMovieRespDTO movie = review.get(i);
 			assertThat(movie.getMovieId()).isEqualTo(String.valueOf(9 - i));
 		}
+	}
+
+	@Test
+	@DisplayName("영화 상세 정보 가져오기 서비스 테스트")
+	void testGetMovieDetailInfo_MovieExistsInCache() {
+		// GIVEN
+		String movieId = "K36062";
+
+		// Act
+		MovieDetailRespDTO result = movieService.getMovieDetailInfo(movieId);
+
+		// Assert
+		assertNotNull(result);
+		assertEquals("K36062", result.getMovieId());
+		assertEquals("댓글부대", result.getTitle());
+		assertEquals("드라마,범죄", result.getGenre());
+		assertEquals("20240327", result.getReleaseDate());
+		assertEquals("109", result.getRunningTime());
+		assertEquals("손석구, 김성철, 김동휘, 홍경, 김희원", result.getActors());
+		assertEquals("안국진", result.getDirector());
 	}
 }
