@@ -54,6 +54,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("회원가입 / 새로운 유저 저장")
     void saveNewUser() {
         // Given
@@ -67,6 +68,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("유저 ID로 유저 찾기")
     void findByUserId() {
         // Given
@@ -78,6 +80,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("유저 이메일로 유저 찾기")
     void findByUserEmail() {
         // Given
@@ -89,6 +92,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("유저 이메일과 비밀번호로 유저 찾기 / 로그인")
     void findByUserEmailAndPassword() {
         // Given
@@ -100,6 +104,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("해당 역할의 유저들 찾기")
     void findByUserRole() {
         // Given
@@ -122,6 +127,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("전체 유저 목록 조회")
     void findAll() {
         // Given
@@ -137,6 +143,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("유저 정보 수정하기")
     void editUserInfo() {
         // Given
@@ -160,6 +167,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("유저 삭제하기")
     void deleteUser() {
         // Given
