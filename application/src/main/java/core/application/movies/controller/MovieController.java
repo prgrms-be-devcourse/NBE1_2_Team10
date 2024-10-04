@@ -57,8 +57,8 @@ public class MovieController {
 		}
 		// 유효하지 않은 정렬 조건이라면, 제작년도순으로 제공
 		if (MovieSearch.isNotValid(sort)) {
-			return movieService.getMoviesWithGenre(page, Genre.valueOf(genre.toUpperCase()), MovieSearch.LATEST);
+			return movieService.getMoviesWithGenreLatestOrder(page, Genre.valueOf(genre.toUpperCase()));
 		}
-		return movieService.getMoviesWithGenre(page, Genre.valueOf(genre.toUpperCase()), MovieSearch.valueOf(sort));
+		return movieService.getMoviesWithGenreRatingOrder(page, Genre.valueOf(genre.toUpperCase()));
 	}
 }
