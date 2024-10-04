@@ -133,6 +133,14 @@ public class ReviewCommentController {
      * @return 응답 {@code DTO}
      */
     @PostMapping("/comments")
+    @Operation(summary = "댓글 생성", description = "특정 게시글에 댓글을 생성")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공적으로 댓글을 생성하였습니다.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CreateCommentRespDTO.class))),
+            @ApiResponse(responseCode = "400", description = "게시글, 댓글을 찾을 수 없거나 잘못된 요청 body 가 들어왔습니다.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.class)))
+    })
+    @Parameter(name = "reviewId", description = "댓글을 조회할 게시글 ID", example = "20")
     public CreateCommentRespDTO createComment(
             @PathVariable("reviewId") Long reviewId,
             @RequestBody @Validated CreateCommentReqDTO dtoReq,
