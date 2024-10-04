@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import core.application.movies.models.dto.CommentRespDTO;
 import core.application.movies.models.entities.CommentEntity;
 
 @Mapper
@@ -14,15 +15,19 @@ public interface CommentMapper {
 
 	Optional<CommentEntity> findByCommentId(Long commentId);
 
-	List<CommentEntity> findByMovieId(String movieId);
+	Optional<CommentEntity> findByMovieIdAndUserId(String movieId, UUID userId);
 
-	List<CommentEntity> findByMovieIdOnDateDescend(String movieId);
+	List<CommentRespDTO> findByMovieId(String movieId, UUID userId, int offset);
 
-	List<CommentEntity> findByMovieIdOnLikeDescend(String movieId);
+	List<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, int offset);
 
-	List<CommentEntity> findByMovieIdOnDislikeDescend(String movieId);
+	List<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, int offset);
+
+	List<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, int offset);
 
 	List<CommentEntity> selectAll();
+
+	void update(CommentEntity comment);
 
 	void delete(Long commentId);
 }

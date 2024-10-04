@@ -123,3 +123,16 @@ create table review_comment_table
 )
     comment '리뷰 댓글 테이블';
 
+create table comment_like_table (
+    comment_like_id bigint auto_increment primary key,
+    comment_id      bigint not null,
+    user_id         binary(16),
+    constraint foreign key (comment_id) references comment_table (comment_id),
+    constraint foreign key (user_id) references user_table (user_id));
+
+create table comment_dislike_table (
+    comment_dislike_id bigint auto_increment primary key,
+    comment_id      bigint not null,
+    user_id         binary(16),
+    constraint foreign key (comment_id) references comment_table (comment_id),
+    constraint foreign key (user_id) references user_table (user_id));
