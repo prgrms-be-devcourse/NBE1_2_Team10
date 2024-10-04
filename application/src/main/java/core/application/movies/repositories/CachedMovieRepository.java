@@ -69,6 +69,15 @@ public interface CachedMovieRepository {
 	 */
 	List<CachedMovieEntity> selectOnReviewCountDescend(int num);
 
+	/**
+	 * 카테고리 검색 중 평점순 조회
+	 *
+	 * @param offset 오프셋
+	 * @param genre 장르
+	 * @return 해당 카테고리 영화의 평점순
+	 */
+	List<CachedMovieEntity> findMoviesOnRatingDescendWithGenre(int offset, String genre);
+
 	// UPDATE
 
 	/**
