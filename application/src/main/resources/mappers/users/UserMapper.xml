@@ -3,19 +3,18 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="core.application.users.mapper.UserMapper">
     <insert id="saveNewUser" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO user_table(user_email, user_pw, user_name, role, refresh_token, alias, phone_num)
-        VALUES (#{userEmail},#{userPw}, #{userName}, #{role}, #{refreshToken}, #{alias}, #{phoneNum})
+        INSERT INTO user_table(user_email, user_pw, user_name, role, alias, phone_num)
+        VALUES (#{userEmail}, #{userPw}, #{userName}, #{role}, #{alias}, #{phoneNum})
     </insert>
 
-    <update id="editUserInfo" useGeneratedKeys="true" keyProperty="userId">
+    <update id="editUserInfo">
         UPDATE user_table
-        SET user_email = #{userEmail},
-            user_pw = #{userPw},
-            user_name = #{userName},
-            role = #{role},
-            refresh_token = #{refreshToken},
-            alias = #{alias},
-            phone_num = #{phoneNum}
+        SET user_email = #{replacement.userEmail},
+            user_pw = #{replacement.userPw},
+            user_name = #{replacement.userName},
+            role = #{replacement.role},
+            alias = #{replacement.alias},
+            phone_num = #{replacement.phoneNum}
         WHERE user_id = #{userId}
     </update>
 
@@ -25,37 +24,31 @@
     </delete>
 
     <select id="findByUserId" resultType="core.application.users.models.entities.UserEntity">
-        SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
         FROM user_table
         WHERE user_id = #{userId}
     </select>
 
     <select id="findByUserEmail" resultType="core.application.users.models.entities.UserEntity">
-        SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
         FROM user_table
         WHERE user_email = #{userEmail}
     </select>
 
     <select id="findByUserEmailAndPassword" resultType="core.application.users.models.entities.UserEntity">
-        SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
         FROM user_table
         WHERE user_email = #{userEmail} AND user_pw = #{userPw}
     </select>
 
     <select id="findByUserRole" resultType="core.application.users.models.entities.UserEntity">
-        SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
         FROM user_table
         WHERE role = #{role}
     </select>
 
-    <select id="selectDibsOnUserId" resultType="core.application.users.models.entities.DibEntity">
-        SELECT dib_id, user_id, movie_id
-        FROM dib_table
-        WHERE user_id = #{userId}
-    </select>
-
     <select id="findAll" resultType="core.application.users.models.entities.UserEntity">
-        SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
         FROM user_table
     </select>
 </mapper>

@@ -14,6 +14,7 @@ public interface DibMapper {
     Optional<DibEntity> findByDibId(@Param("dibId") Long id);
     Optional<DibEntity> findByUserIdAndMovieId(@Param("userId") UUID userId, @Param("movieId") String movieId);
     Long countMovie(@Param("movieId") String movieId);
+  
     List<DibEntity> selectAll();
     void deleteDibByDibId(@Param("dibId") Long dibId);
     void deleteDibByUserId(@Param("userId") UUID userId);
