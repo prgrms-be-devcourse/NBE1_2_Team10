@@ -4,8 +4,7 @@ import core.application.reviews.exceptions.InvalidCommentContentException;
 import core.application.reviews.exceptions.NoReviewCommentFoundException;
 import core.application.reviews.exceptions.NoReviewFoundException;
 import core.application.reviews.exceptions.NotCommentOwnerException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +39,10 @@ public class ReviewExceptionHandler {
     @AllArgsConstructor
     public static class ResponseError {
 
+        @Schema(description = "예외 메시지", example = "세부 내용")
         private String message;
+
+        @Schema(description = "예외 코드", example = "400")
         private HttpStatus status;
     }
 }

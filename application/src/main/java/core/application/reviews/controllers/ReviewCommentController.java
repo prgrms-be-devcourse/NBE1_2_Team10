@@ -1,5 +1,6 @@
 package core.application.reviews.controllers;
 
+import core.application.reviews.ReviewExceptionHandler.ResponseError;
 import core.application.reviews.exceptions.InvalidCommentContentException;
 import core.application.reviews.exceptions.NotCommentOwnerException;
 import core.application.reviews.models.dto.request.CreateCommentReqDTO;
@@ -10,6 +11,14 @@ import core.application.reviews.models.dto.response.ShowCommentsRespDTO;
 import core.application.reviews.models.entities.ReviewCommentEntity;
 import core.application.reviews.services.ReviewCommentService;
 import core.application.reviews.services.ReviewCommentSortOrder;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -34,6 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/movies/{movieId}/reviews/{reviewId}")
+@Tag(name = "Review Comment", description = "영화 후기 포스팅 댓글과 관련된 API")
 @Transactional(readOnly = true)
 public class ReviewCommentController {
 
@@ -51,9 +61,23 @@ public class ReviewCommentController {
      * @return 응답용 댓글 목록들
      */
     @GetMapping("/comments")
+    @Operation(summary = "부모 댓글 조회", description = "특정 게시글의 부모 댓글을 페이징 하여 조회")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공적으로 조회하였습니다.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ShowCommentsRespDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Review ID 에 게시글을 찾을 수 없습니다.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.class))),
+    })
+    @Parameters({
+            @Parameter(name = "reviewId", description = "댓글을 조회할 게시글 ID", example = "20"),
+            @Parameter(name = "page", description = "0 보다 큰 페이징 넘버", example = "1")
+    })
     public ShowCommentsRespDTO showParentReviewComments(
             @PathVariable("reviewId") Long reviewId,
             @RequestParam("page") int page) {
+
+        // TODO `page` 양수인 것만 오도록 exception 처리 필요
+        // 쿼리 파람에 @Positive 붙이고 컨트롤러에 @Validated 붙이면 될 듯?
 
         int offset = (page - 1) * COMMENTS_PER_PAGE;
 

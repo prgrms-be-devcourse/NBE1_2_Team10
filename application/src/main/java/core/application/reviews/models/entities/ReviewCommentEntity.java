@@ -1,5 +1,6 @@
 package core.application.reviews.models.entities;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -26,13 +27,19 @@ public class ReviewCommentEntity {
     /**
      * 포스팅 리뷰 댓글 ID
      */
+    @Schema(description = "댓글 고유 ID", example = "10015")
     private Long reviewCommentId;
 
     /**
      * 댓글이 달린 포스팅 ID
      */
+    @Schema(description = "댓글이 달린 포스팅 고유 ID", example = "20")
     private Long reviewId;
+
+    @Schema(description = "사용자 고유 ID")
     private UUID userId;
+
+    @Schema(description = "댓글 내용", example = "댓글 내용")
     private String content;
 
     /**
@@ -40,6 +47,7 @@ public class ReviewCommentEntity {
      * <p>
      * {@link #reviewCommentId} 와 동일
      */
+    @Schema(description = "부모 댓글의 고유 ID", nullable = true)
     private Long groupId;
 
     /**
@@ -47,13 +55,18 @@ public class ReviewCommentEntity {
      * <p>
      * {@link #reviewCommentId} 와 동일
      */
+    @Schema(description = "멘션된 댓글의 고유 ID", example = "10010", nullable = true)
     private Long commentRef;
+
+    @Schema(description = "댓글의 좋아요 수", example = "10")
     private int like;
 
     @Setter
+    @Schema(description = "댓글의 생성 날자")
     private Instant createdAt;
 
     @Setter
+    @Schema(description = "댓글 수정 여부", example = "false")
     private boolean isUpdated;
 
     /**
