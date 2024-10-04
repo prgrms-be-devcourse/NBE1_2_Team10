@@ -96,11 +96,26 @@ public class ReviewCommentController {
      * @return 응답용 댓글 목록들
      */
     @GetMapping("/comments/{groupId}")
+    @Operation(summary = "자식 댓글 조회", description = "특정 게시글 속 부모 댓글의 자식 댓글을 페이징 하여 조회")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공적으로 조회하였습니다.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ShowCommentsRespDTO.class))),
+            @ApiResponse(responseCode = "400", description = "게시글 혹은 부모 댓글을 찾을 수 없습니다.",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.class)))
+    })
+    @Parameters({
+            @Parameter(name = "reviewId", description = "댓글을 조회할 게시글 ID", example = "20"),
+            @Parameter(name = "groupId", description = "부모 댓글의 ID", example = "10010"),
+            @Parameter(name = "page", description = "0 보다 큰 페이징 넘버", example = "1")
+    })
     public ShowCommentsRespDTO showChildComments(
             @PathVariable("reviewId") Long reviewId,
             @PathVariable("groupId") Long groupId,
             @RequestParam("page") int page
     ) {
+
+        // TODO `page` 양수인 것만 오도록 exception 처리 필요
+        // 쿼리 파람에 @Positive 붙이고 컨트롤러에 @Validated 붙이면 될 듯?
 
         int offset = (page - 1) * COMMENTS_PER_PAGE;
 
