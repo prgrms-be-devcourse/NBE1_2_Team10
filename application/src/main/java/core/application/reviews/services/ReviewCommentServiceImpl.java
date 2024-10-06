@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,17 +39,58 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    public boolean doesUserOwnsComment(UUID userId, Long reviewCommentId)
+            throws NoReviewCommentFoundException {
+
+        ReviewCommentEntity reviewComment = doesExist(reviewCommentId,
+                reviewCommentRepo::findByReviewCommentId,
+                () -> new NoReviewCommentFoundException(reviewCommentId));
+
+        return reviewComment.getUserId().equals(userId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public long getNumberOfParentComment(Long reviewId) throws NoReviewFoundException {
+
+        // reviewId 에 해당하는 포스팅 없으면 throw
+        doesExist(reviewId, reviewRepo::findByReviewId, () -> new NoReviewFoundException(reviewId));
+
+        return reviewCommentRepo.countParentCommentByReviewId(reviewId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public long getNumberOfChildComment(Long groupId) throws NoReviewCommentFoundException {
+
+        // groupId 에 해당하는 부모 댓글 없으면 throw
+        doesExist(groupId, reviewCommentRepo::findByReviewCommentId,
+                () -> new NoReviewCommentFoundException(groupId));
+
+        return reviewCommentRepo.countChildCommentByGroupId(groupId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<ReviewCommentEntity> getParentReviewComments(Long reviewId,
-            ReviewCommentSortOrder order) throws NoReviewFoundException {
+            ReviewCommentSortOrder order, int offset, int num) throws NoReviewFoundException {
 
         // reviewId 에 해당하는 포스팅 없으면 throw
         doesExist(reviewId, reviewRepo::findByReviewId, () -> new NoReviewFoundException(reviewId));
 
         return switch (order) {
             // 최신순
-            case LATEST -> reviewCommentRepo.findParentCommentByReviewIdOnDateDescend(reviewId);
+            case LATEST ->
+                    reviewCommentRepo.findParentCommentByReviewIdOnDateDescend(reviewId, offset,
+                            num);
             // 좋아요 순
-            case LIKE -> reviewCommentRepo.findParentCommentByReviewIdOnLikeDescend(reviewId);
+            case LIKE ->
+                    reviewCommentRepo.findParentCommentByReviewIdOnLikeDescend(reviewId, offset,
+                            num);
         };
     }
 
@@ -56,14 +98,31 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
-    public List<ReviewCommentEntity> getChildReviewCommentsOnParent(Long groupId) {
-        return reviewCommentRepo.findChildCommentsByGroupId(groupId);
+    public List<ReviewCommentEntity> getChildReviewCommentsOnParent(
+            Long reviewId, Long groupId, int offset, int num)
+            throws NoReviewFoundException, NoReviewCommentFoundException {
+
+        // 부모 댓글 없으면 throw
+        ReviewCommentEntity parentComment = doesExist(groupId,
+                reviewCommentRepo::findByReviewCommentId,
+                () -> new NoReviewCommentFoundException(groupId));
+
+        // 자식 댓글 달려는 부모 댓글이 reviewId 의 댓글이 아니면 throw
+        if (!parentComment.getReviewId().equals(reviewId)) {
+            throw new NoReviewCommentFoundException(
+                    "Parent comment [" + groupId + "] does not belongs to given review ID ["
+                            + reviewId + "]");
+        }
+
+        return reviewCommentRepo.findChildCommentsByGroupId(groupId, offset, num);
     }
+
 
     /**
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity addNewParentReviewComment(Long reviewId, UUID userId,
             ReviewCommentEntity parentReviewComment) throws NoReviewFoundException {
 
@@ -77,6 +136,7 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity addNewChildReviewComment(Long reviewId, Long groupId, UUID userId,
             ReviewCommentEntity childReviewComment)
             throws NoReviewFoundException, NoReviewCommentFoundException {
@@ -110,6 +170,7 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity editReviewComment(Long reviewCommentId, Long commentRef,
             String contentReplacement)
             throws NoReviewCommentFoundException {
@@ -137,6 +198,7 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity deleteReviewComment(Long reviewCommentId)
             throws NoReviewCommentFoundException {
 
@@ -155,6 +217,7 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity increaseCommentLike(Long reviewCommentId)
             throws NoReviewCommentFoundException {
 
@@ -168,6 +231,7 @@ public class ReviewCommentServiceImpl implements
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public ReviewCommentEntity decreaseCommentLike(Long reviewCommentId)
             throws NoReviewCommentFoundException {
 

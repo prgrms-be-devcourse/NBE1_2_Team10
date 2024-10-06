@@ -23,7 +23,10 @@
     </select>
 
     <select id="findByMovieIdOnLikeDescend" resultMap="ReviewResultMap">
-        SELECT * FROM REVIEW_TABLE WHERE movie_id = #{movieId} ORDER BY like DESC
+        SELECT *
+        FROM REVIEW_TABLE
+        WHERE movie_id = #{movieId}
+        ORDER BY `like` DESC
     </select>
 
     <select id="findByMovieIdWithoutContent" resultMap="ReviewResultMap">
@@ -43,7 +46,7 @@
         SELECT review_id, title, user_id, movie_id, `like`, created_at, updated_at
         FROM REVIEW_TABLE
         WHERE movie_id = #{movieId}
-        ORDER BY like_count DESC
+        ORDER BY `like` DESC
     </select>
 
     <select id="findByUserId" resultMap="ReviewResultMap">

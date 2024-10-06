@@ -34,7 +34,7 @@ public class MovieServiceTest {
 				String.valueOf(i),
 				String.valueOf(i),
 				"posterUrl",
-				"로맨스",
+				"액션",
 				"2024-09-30",
 				"줄거리",
 				"122",
