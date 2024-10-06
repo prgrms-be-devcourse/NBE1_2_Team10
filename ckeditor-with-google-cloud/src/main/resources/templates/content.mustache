@@ -1,0 +1,41 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <!-- 이미지 리사이즈 된 게 화면에 반영이 안되길레 GPT 한테 물어봄 -->
+  <!-- 리사이즈 된 거 뭔가 적용되는 CSS 선언하라 카길레 붙여 넣으니 잘 됨 -->
+  <style>
+    /* Ensure the figure takes the full width of its container */
+    figure.image {
+      display: block;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Make the image resize within the figure and maintain its aspect ratio */
+    figure.image img {
+      max-width: 100%; /* Ensure the image never exceeds the figure/container width */
+      height: auto; /* Maintain the image's aspect ratio */
+    }
+  </style>
+
+  <title>{{posting.title}}</title>
+</head>
+
+<body>
+
+<h1>content page</h1>
+
+<hr>
+
+<h2>{{posting.title}}</h2>
+
+<!-- posting.content 내용을 HTML 로 그대로 해석해 보여줌 -->
+<!-- 뭔가 mustache 만의 문법? 인?듯? -->
+{{{posting.content}}}
+
+</body>
+</html>
