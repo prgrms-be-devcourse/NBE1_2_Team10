@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CKEditor 5 Sample</title>
+
+  <!-- 필요한 CSS 들 가져오기 -->
+  <!-- CDN (Content Delivery Network) 방식으로 CSS 가져옴 -->
+  <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/43.2.0/ckeditor5.css">
+  <!-- CSS 현 페이지에 적용 -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- 필요한 script 들 가져옴 (main.js 에서 import 후 사용) -->
+  <script type="importmap">
+    {
+      "imports": {
+        "ckeditor5": "https://cdn.ckeditor.com/ckeditor5/43.2.0/ckeditor5.js",
+        "ckeditor5/": "https://cdn.ckeditor.com/ckeditor5/43.2.0/"
+      }
+    }
+  </script>
+
+  <!-- main.js 스크립 읽음 -->
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+
+<!-- 포스팅 내용 전송할 form 태그 -->
+<form action="/save" method="post" id="post-form">
+  <!-- 제목 -->
+  <label for="title"></label><input id="title" name="title" type="text" placeholder="제목을 입력하세요"/>
+
+  <!-- editor 편집 화면 -->
+  <div>
+    <div class="main-container">  <!-- style.css 에서 선언된 div -->
+      <div
+          class="editor-container editor-container_classic-editor editor-container_include-style editor-container_include-block-toolbar"
+          id="editor-container"
+      >
+        <div class="editor-container__editor">
+          <div id="editor"></div>   <!-- main.js 에서 `editor` id 검색해 editor 만듬. 절대 바뀌면 안됨. -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 포스팅 본문 담기위한 input -->
+  <!-- form 태그에서 POST submit 발생 시 content 내용 editor 적은 내용 넣도록 main.js 에서 만듬. -->
+  <label for="hidden-content"></label><input id="hidden-content" name="content" type="hidden"
+                                             value="old"/>
+
+  <!-- submit -->
+  <p align="center">
+    <input type="submit">
+  </p>
+</form>
+
+</body>
+</html>
