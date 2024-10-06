@@ -8,9 +8,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import core.application.movies.constant.Genre;
@@ -22,7 +22,6 @@ import core.application.movies.models.dto.MovieDetailRespDTO;
 import core.application.movies.models.dto.MovieSearchRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.CachedMovieRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,27 +33,30 @@ public class MovieServiceImpl implements MovieService {
 	@Value("${kmdb.api.key}")
 	private String apiKey;
 
+	@Value("kmdb.api.default.image")
+	private String defaultImgUrl;
+
 	private final WebClient webClient;
 
 	private final CachedMovieRepository movieRepository;
 
 	@Override
-    @Transactional(readOnly = true)
-    public MainPageMoviesRespDTO getMainPageMovieInfo() {
-        List<MainPageMovieRespDTO> ratingOrder = movieRepository.selectOnAVGRatingDescend(10).stream()
-            .map(MainPageMovieRespDTO::from)
-            .toList();
+	@Transactional(readOnly = true)
+	public MainPageMoviesRespDTO getMainPageMovieInfo() {
+		List<MainPageMovieRespDTO> ratingOrder = movieRepository.selectOnAVGRatingDescend(10).stream()
+			.map(MainPageMovieRespDTO::from)
+			.toList();
 
-        List<MainPageMovieRespDTO> dibOrder = movieRepository.selectOnDibOrderDescend(10).stream()
-            .map(MainPageMovieRespDTO::from)
-            .toList();
+		List<MainPageMovieRespDTO> dibOrder = movieRepository.selectOnDibOrderDescend(10).stream()
+			.map(MainPageMovieRespDTO::from)
+			.toList();
 
-        List<MainPageMovieRespDTO> reviewOrder = movieRepository.selectOnReviewCountDescend(10).stream()
-            .map(MainPageMovieRespDTO::from)
-            .toList();
+		List<MainPageMovieRespDTO> reviewOrder = movieRepository.selectOnReviewCountDescend(10).stream()
+			.map(MainPageMovieRespDTO::from)
+			.toList();
 
-        return MainPageMoviesRespDTO.of(dibOrder, ratingOrder, reviewOrder);
-    }
+		return MainPageMoviesRespDTO.of(dibOrder, ratingOrder, reviewOrder);
+	}
 
 	@Override
 	public List<MovieSearchRespDTO> searchMovies(Integer page, MovieSearch sort, String query) {
@@ -183,19 +185,19 @@ public class MovieServiceImpl implements MovieService {
 		String MovieSeq = movieId.substring(1);
 
 		String response = webClient.get()
-				.uri(uriBuilder -> uriBuilder
-						.path("/search_json2.jsp")
-						.queryParam("ServiceKey", apiKey)
-						.queryParam("detail", "Y")
-						.queryParam("collection", "kmdb_new2")
-						.queryParam("ratedYn", "Y")
-						.queryParam("movieId", MovieId)
-						.queryParam("movieSeq", MovieSeq)
-						.queryParam("listCount", 5)
-						.build())
-				.retrieve()
-				.bodyToMono(String.class)
-				.block();
+			.uri(uriBuilder -> uriBuilder
+				.path("/search_json2.jsp")
+				.queryParam("ServiceKey", apiKey)
+				.queryParam("detail", "Y")
+				.queryParam("collection", "kmdb_new2")
+				.queryParam("ratedYn", "Y")
+				.queryParam("movieId", MovieId)
+				.queryParam("movieSeq", MovieSeq)
+				.queryParam("listCount", 5)
+				.build())
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
 
 		return parseMovieDetail(new JSONObject(response));
 	}
@@ -231,7 +233,7 @@ public class MovieServiceImpl implements MovieService {
 			JSONObject plot = plotArray.getJSONObject(j);
 			if (plot.optString("plotLang").equals("한국어")) {
 				resultPlot = handleString(plot.optString("plotText"));
-			}else{
+			} else {
 				resultPlot = "알 수 없음"; // 한국어 줄거리 외 알 수 없음 처리
 			}
 		}
@@ -242,9 +244,10 @@ public class MovieServiceImpl implements MovieService {
 		// 배우 목록 설정 (최대 5명)
 		JSONArray actorsArray = resultObject.optJSONObject("actors").optJSONArray("actor");
 		String actorName = "";
-		for(int k=0; k<Math.min(actorsArray.length(), 5); k++){
+		for (int k = 0; k < Math.min(actorsArray.length(), 5); k++) {
 			actorName = actorName + ", " + handleString(actorsArray.getJSONObject(k).optString("actorNm"));
-			if(actorName.equals(", 알 수 없음")) break;
+			if (actorName.equals(", 알 수 없음"))
+				break;
 		}
 		actorName = actorName.substring(2);
 
@@ -265,11 +268,11 @@ public class MovieServiceImpl implements MovieService {
 
 	private String exception(String str) {
 		return Optional.ofNullable(str)
-				.filter(val -> !val.isEmpty())  // 빈 문자열이 아닐 때만 처리
-				.orElseThrow(() -> new IllegalArgumentException("잘못된 자료에 대한 요청입니다."));
+			.filter(val -> !val.isEmpty())  // 빈 문자열이 아닐 때만 처리
+			.orElseThrow(() -> new IllegalArgumentException("잘못된 자료에 대한 요청입니다."));
 	}
 
 	public String handleString(String input) {
-                return input == null || input.trim().isEmpty() ? "알 수 없음" : input;
+		return input == null || input.trim().isEmpty() ? "알 수 없음" : input;
 	}
 }
