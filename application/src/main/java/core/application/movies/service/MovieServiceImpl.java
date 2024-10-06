@@ -1,23 +1,30 @@
 package core.application.movies.service;
 
-import core.application.movies.constant.Genre;
-import core.application.movies.constant.MovieSearch;
-import core.application.movies.models.dto.MainPageMoviesRespDTO;
-import core.application.movies.models.dto.MovieDetailRespDTO;
-import core.application.movies.models.dto.MovieSimpleRespDTO;
-import core.application.movies.models.entities.CachedMovieEntity;
-import core.application.movies.repositories.CachedMovieRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+import core.application.movies.constant.Genre;
+import core.application.movies.constant.MovieSearch;
+import core.application.movies.exception.NoMovieException;
+import core.application.movies.models.dto.MainPageMovieRespDTO;
+import core.application.movies.models.dto.MainPageMoviesRespDTO;
+import core.application.movies.models.dto.MovieDetailRespDTO;
+import core.application.movies.models.dto.MovieSearchRespDTO;
+import core.application.movies.models.entities.CachedMovieEntity;
+import core.application.movies.repositories.CachedMovieRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -31,12 +38,117 @@ public class MovieServiceImpl implements MovieService {
 
 	private final CachedMovieRepository movieRepository;
 
-	public MainPageMoviesRespDTO getMainPageMovieInfo(){
-		return null;
+	@Override
+    @Transactional(readOnly = true)
+    public MainPageMoviesRespDTO getMainPageMovieInfo() {
+        List<MainPageMovieRespDTO> ratingOrder = movieRepository.selectOnAVGRatingDescend(10).stream()
+            .map(MainPageMovieRespDTO::from)
+            .toList();
+
+        List<MainPageMovieRespDTO> dibOrder = movieRepository.selectOnDibOrderDescend(10).stream()
+            .map(MainPageMovieRespDTO::from)
+            .toList();
+
+        List<MainPageMovieRespDTO> reviewOrder = movieRepository.selectOnReviewCountDescend(10).stream()
+            .map(MainPageMovieRespDTO::from)
+            .toList();
+
+        return MainPageMoviesRespDTO.of(dibOrder, ratingOrder, reviewOrder);
+    }
+
+	@Override
+	public List<MovieSearchRespDTO> searchMovies(Integer page, MovieSearch sort, String query) {
+		log.info("sortType = {}", sort.SORT);
+		String response = webClient.get()
+			.uri(uriBuilder -> uriBuilder
+				.path("/search_json2.jsp")
+				.queryParam("ServiceKey", apiKey)
+				.queryParam("detail", "Y")
+				.queryParam("collection", "kmdb_new2")
+				.queryParam("ratedYn", "Y")
+				.queryParam("query", query)
+				.queryParam("sort", sort.SORT)
+				.queryParam("listCount", 10)
+				.queryParam("startCount", page * 10)
+				.build())
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
+		List<MovieSearchRespDTO> searchResult = new ArrayList<>();
+
+		try {
+			JSONObject jsonObject = new JSONObject(response);
+			JSONArray movieArray = jsonObject.getJSONArray("Data")
+				.getJSONObject(0)
+				.getJSONArray("Result");
+
+			for (int i = 0; i < 10; i++) {
+				JSONObject movie = movieArray.getJSONObject(i);
+				MovieSearchRespDTO search = MovieSearchRespDTO.from(movie);
+				if (search.getPosterUrl().isEmpty()) {
+					search.setPosterUrl(defaultImgUrl);
+				}
+				if (search.getProducedYear().isEmpty()) {
+					search.setProducedYear("알수없음");
+				}
+				searchResult.add(search);
+			}
+		} catch (JSONException e) {
+			throw new NoMovieException("'" + query + "'에 해당하는 영화가 없습니다.");
+		}
+		return searchResult;
 	}
 
-	public List<MovieSimpleRespDTO> searchMovies(Integer page, MovieSearch sort, String query, Genre genre){
-		return null;
+	// 추후 외부 API 요청을 트랜잭션에서 분리해야 한다.
+	@Override
+	@Transactional(readOnly = true)
+	public List<MovieSearchRespDTO> getMoviesWithGenre(Integer page, Genre genre, MovieSearch sort) {
+		List<MovieSearchRespDTO> result = new ArrayList<>();
+		if (sort.equals(MovieSearch.LATEST)) {
+			String response = webClient.get()
+				.uri(uriBuilder -> uriBuilder
+					.path("/search_json2.jsp")
+					.queryParam("ServiceKey", apiKey)
+					.queryParam("detail", "Y")
+					.queryParam("collection", "kmdb_new2")
+					.queryParam("ratedYn", "Y")
+					.queryParam("genre", genre.PARAMETER)
+					.queryParam("sort", sort.SORT)
+					.queryParam("listCount", 10)
+					.queryParam("startCount", page * 10)
+					.build())
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
+
+			try {
+				JSONObject jsonObject = new JSONObject(response);
+				JSONArray movieArray = jsonObject.getJSONArray("Data")
+					.getJSONObject(0)
+					.getJSONArray("Result");
+
+				for (int i = 0; i < 10; i++) {
+					JSONObject movie = movieArray.getJSONObject(i);
+					MovieSearchRespDTO search = MovieSearchRespDTO.from(movie);
+					if (search.getPosterUrl().isEmpty()) {
+						search.setPosterUrl(defaultImgUrl);
+					}
+					if (search.getProducedYear().isEmpty()) {
+						search.setProducedYear("알수없음");
+					}
+					result.add(search);
+				}
+			} catch (JSONException e) {
+				throw new NoMovieException(genre.PARAMETER + " 장르에 더 이상 제공되는 영화가 없습니다.");
+			}
+		}
+		// 평점 순은 자체 영화 테이블 중 평가된 적이 있는 영화중에서 제공한다.
+		List<CachedMovieEntity> findResult = movieRepository.findMoviesOnRatingDescendWithGenre(
+			page * 10, genre.PARAMETER);
+		for (CachedMovieEntity movie : findResult) {
+			result.add(MovieSearchRespDTO.from(movie));
+		}
+		return result;
 	}
 
 	/*
@@ -62,10 +174,9 @@ public class MovieServiceImpl implements MovieService {
 		});
 
 		// 데이터가 있을 경우에 return으로 함수 종료
-		if(check.get()){
+		if (check.get()) {
 			return movieDetailRespDTO;
 		}
-
 
 		// 3. 비어 있을 경우 API에 접근한 뒤 Entity에 저장 후 DB에 저장
 		String MovieId = movieId.substring(0, 1);
@@ -92,9 +203,9 @@ public class MovieServiceImpl implements MovieService {
 	private MovieDetailRespDTO parseMovieDetail(JSONObject jsonResponse) {
 
 		JSONObject resultObject = jsonResponse.getJSONArray("Data")
-				.getJSONObject(0)
-				.getJSONArray("Result")
-				.getJSONObject(0);
+			.getJSONObject(0)
+			.getJSONArray("Result")
+			.getJSONObject(0);
 
 		//MovieId 저장
 		String MovieID = exception(resultObject.optString("DOCID"));
@@ -140,7 +251,8 @@ public class MovieServiceImpl implements MovieService {
 		JSONArray directorsArray = resultObject.optJSONObject("directors").optJSONArray("director");
 		String resultDirector = handleString(directorsArray.getJSONObject(0).optString("directorNm"));
 
-		CachedMovieEntity cachedMovieEntity = new CachedMovieEntity(MovieID, title, resultimgUrl, genre, ReleaseDate, resultPlot, runtime, actorName, resultDirector, 0L, 0L, 0L, 0L);
+		CachedMovieEntity cachedMovieEntity = new CachedMovieEntity(MovieID, title, resultimgUrl, genre, ReleaseDate,
+			resultPlot, runtime, actorName, resultDirector, 0L, 0L, 0L, 0L);
 
 		// 3. 비어 있을 경우 API에 접근한 뒤 Entity에 저장 후 DB에 저장
 		movieRepository.saveNewMovie(cachedMovieEntity);
