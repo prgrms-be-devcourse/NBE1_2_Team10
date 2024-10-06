@@ -1,7 +1,6 @@
 package core.application.users.repositories;
 
 import core.application.users.mapper.UserMapper;
-import core.application.users.models.entities.DibEntity;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
 import lombok.RequiredArgsConstructor;
@@ -34,17 +33,12 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     @Override
-    public Optional<UserEntity> findByUserEmailAndPassword(String email, String password) {
-        return mapper.findByUserEmailAndPassword(email, password);
+    public Optional<UserEntity> findByUserEmailAndPassword(String userEmail, String userPw) {
+        return mapper.findByUserEmailAndPassword(userEmail, userPw);
     }
     @Override
     public List<UserEntity> findByUserRole(UserRole role) {
         return mapper.findByUserRole(role);
-    }
-
-    @Override
-    public List<DibEntity> selectDibsOnUserId(UUID userId) {
-        return mapper.selectDibsOnUserId(userId);
     }
 
     @Override

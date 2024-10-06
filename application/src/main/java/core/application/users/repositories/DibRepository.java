@@ -17,10 +17,10 @@ public interface DibRepository {
      * 주어진 유저가 소유한 새로운 찜 목록을 DB 에 등록
      *
      * @param userId 찜 목록을 소유할 유저 ID
-     * @param dib    등록할 찜 목록
+     * @param movieId 찜 목록에 들어갈 영화 ID
      * @return @return {@link DibEntity} 등록된 찜 정보
      */
-    int saveNewDib(UUID userId, DibEntity dib);
+    Optional<DibEntity> saveNewDib(UUID userId, String movieId);
 
 
     //<editor-fold desc="READ">
@@ -33,6 +33,11 @@ public interface DibRepository {
      */
     Optional<DibEntity> findByDibId(Long id);
 
+
+    List<DibEntity> findByUserId(UUID userId);
+
+    Optional<DibEntity> findByUserIdAndMovieId(UUID userId, String movieId);
+  
     /**
      * 특정 영화의 찜 된 횟수를 반환
      *

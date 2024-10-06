@@ -129,44 +129,70 @@ public interface MyBatisReviewCommentRepository extends ReviewCommentRepository 
     })
     Optional<ReviewCommentEntity> findByReviewCommentId(Long reviewCommentId);
 
-
     final String selectParentCommentOnReviewId = " SELECT * FROM REVIEW_COMMENT_TABLE" +
             " WHERE REVIEW_ID = #{reviewId}" + " AND GROUP_ID IS NULL ";
+    final String orderByDate = " ORDER BY CREATED_AT DESC, REVIEW_COMMENT_ID DESC ";
+    final String orderByLikes = " ORDER BY `like` DESC, REVIEW_COMMENT_ID DESC ";
+    final String pagingOffset = " LIMIT #{num} OFFSET #{offset} ";
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @Select(selectParentCommentOnReviewId)
+    @Select(selectParentCommentOnReviewId + orderByDate + pagingOffset)
     @ResultMap("ReviewCommentResultMap")
-    List<ReviewCommentEntity> findParentCommentByReviewId(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewId(
+            @Param("reviewId") Long reviewId,
+            @Param("offset") int offset,
+            @Param("num") int num);
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @Select(selectParentCommentOnReviewId + " ORDER BY CREATED_AT DESC, REVIEW_COMMENT_ID DESC ")
+    @Select(selectParentCommentOnReviewId + orderByDate + pagingOffset)
     @ResultMap("ReviewCommentResultMap")
-    List<ReviewCommentEntity> findParentCommentByReviewIdOnDateDescend(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewIdOnDateDescend(
+            @Param("reviewId") Long reviewId,
+            @Param("offset") int offset,
+            @Param("num") int num);
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @Select(selectParentCommentOnReviewId + " ORDER BY `like` DESC, REVIEW_COMMENT_ID DESC ")
+    @Select(selectParentCommentOnReviewId + orderByLikes + pagingOffset)
     @ResultMap("ReviewCommentResultMap")
-    List<ReviewCommentEntity> findParentCommentByReviewIdOnLikeDescend(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewIdOnLikeDescend(
+            @Param("reviewId") Long reviewId,
+            @Param("offset") int offset,
+            @Param("num") int num);
 
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @Select(" SELECT * FROM REVIEW_COMMENT_TABLE WHERE GROUP_ID = #{groupId} "
-            + "ORDER BY CREATED_AT DESC, REVIEW_COMMENT_ID DESC")
-    @ResultMap("ReviewCommentResultMap")
-    List<ReviewCommentEntity> findChildCommentsByGroupId(Long groupId);
+    @Select(" SELECT COUNT(*) FROM REVIEW_COMMENT_TABLE WHERE review_id = #{reviewId} AND group_id IS NULL ")
+    long countParentCommentByReviewId(Long reviewId);
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Select(" SELECT * FROM REVIEW_COMMENT_TABLE WHERE group_id = #{groupId} " + orderByDate
+            + pagingOffset)
+    List<ReviewCommentEntity> findChildCommentsByGroupId(
+            @Param("groupId") Long groupId,
+            @Param("offset") int offset,
+            @Param("num") int num);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Select(" SELECT COUNT(*) FROM REVIEW_COMMENT_TABLE WHERE group_id = #{groupId} ")
+    long countChildCommentByGroupId(Long groupId);
 
     /**
      * {@inheritDoc}

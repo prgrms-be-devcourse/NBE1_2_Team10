@@ -61,46 +61,71 @@ public interface ReviewCommentRepository {
     //<editor-fold desc="부모 댓글 검색">
 
     /**
-     * 특정 포스팅에 달린 모든 부모 댓글을 검색.
+     * 특정 포스팅에 달린 모든 부모 댓글을 검색 (페이징)
      * <p>
      * 즉, {@code groupId == null} 인 댓글만 검색.
      *
      * @param reviewId 검색할 포스팅 ID
+     * @param offset   댓글 offset
+     * @param num      가져올 댓글 수
      * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    List<ReviewCommentEntity> findParentCommentByReviewId(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewId(Long reviewId, int offset, int num);
 
     /**
-     * 특정 포스팅에 달린 모든 부모 댓글을 최신순으로 검색
+     * 특정 포스팅에 달린 모든 부모 댓글을 최신순으로 검색 (페이징)
      * <p>
      * 즉, {@code groupId == null} 인 댓글만 검색.
      *
      * @param reviewId 검색할 포스팅 ID
+     * @param offset   오프셋
+     * @param num      가져올 개수
      * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    List<ReviewCommentEntity> findParentCommentByReviewIdOnDateDescend(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewIdOnDateDescend(Long reviewId, int offset,
+            int num);
 
     /**
-     * 특정 포스팅에 달린 모든 부모 댓글을 좋아요 순으로 검색
+     * 특정 포스팅에 달린 모든 부모 댓글을 좋아요 순으로 검색 (페이징)
      * <p>
      * 즉, {@code groupId == null} 인 댓글만 검색.
      *
      * @param reviewId 검색할 포스팅 ID
+     * @param offset   오프셋
+     * @param num      가져올 개수
      * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    List<ReviewCommentEntity> findParentCommentByReviewIdOnLikeDescend(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewIdOnLikeDescend(Long reviewId, int offset,
+            int num);
+
+    /**
+     * 특정 포스팅에 달린 모든 부모 댓글의 개수를 확인
+     *
+     * @param reviewId 검색할 포스팅 ID
+     * @return 부모 댓글의 개수
+     */
+    long countParentCommentByReviewId(Long reviewId);
+
     //</editor-fold>
 
 
     /**
-     * 특정 부모 댓글에 달린 자식 댓글들을 최신순으로 검색
+     * 특정 부모 댓글에 달린 자식 댓글들을 최신순으로 검색 (페이징)
      * <p>
      * 자식 댓글은 {@code groupId != null} 인 댓글들.
      *
      * @param groupId 부모 댓글의 ID
      * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    List<ReviewCommentEntity> findChildCommentsByGroupId(Long groupId);
+    List<ReviewCommentEntity> findChildCommentsByGroupId(Long groupId, int offset, int num);
+
+    /**
+     * 특정 부모 댓글 아래 자식 댓글의 개수를 확인
+     *
+     * @param groupId 부모 댓글 ID
+     * @return 자식 댓글의 개수
+     */
+    long countChildCommentByGroupId(Long groupId);
 
 
     /**
