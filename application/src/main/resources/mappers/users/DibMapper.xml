@@ -44,7 +44,7 @@
         SELECT dib_id, user_id, movie_id
         FROM dib_table
         WHERE user_id = #{userId}
-
+    </select>
     <select id="findByUserIdAndMovieId" resultType="core.application.users.models.entities.DibEntity">
         SELECT dib_id, user_id, movie_id
         FROM dib_table
