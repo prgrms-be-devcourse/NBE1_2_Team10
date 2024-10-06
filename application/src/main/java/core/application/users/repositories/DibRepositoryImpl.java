@@ -27,7 +27,11 @@ public class DibRepositoryImpl implements DibRepository{
     }
 
     @Override
+
+    public List<DibEntity> findByUserId(UUID userId) { return mapper.findByUserId(userId); }
+
     public Optional<DibEntity> findByUserIdAndMovieId(UUID userId, String movieId) { return mapper.findByUserIdAndMovieId(userId, movieId); }
+
 
     @Override
     public Long countMovie(String movieId) {

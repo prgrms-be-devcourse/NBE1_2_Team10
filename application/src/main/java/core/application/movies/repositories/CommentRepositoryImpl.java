@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
+import core.application.movies.models.dto.CommentRespDTO;
 import core.application.movies.models.entities.CommentEntity;
 import core.application.movies.repositories.mapper.CommentMapper;
 import lombok.RequiredArgsConstructor;
@@ -28,28 +29,38 @@ public class CommentRepositoryImpl implements CommentRepository {
 	}
 
 	@Override
-	public List<CommentEntity> findByMovieId(String movieId) {
-		return commentMapper.findByMovieId(movieId);
+	public Boolean existsByMovieIdAndUserId(String movieId, UUID userId) {
+		return commentMapper.findByMovieIdAndUserId(movieId, userId).isPresent();
 	}
 
 	@Override
-	public List<CommentEntity> findByMovieIdOnDateDescend(String movieId) {
-		return commentMapper.findByMovieIdOnDateDescend(movieId);
+	public List<CommentRespDTO> findByMovieId(String movieId, UUID userId, int offset) {
+		return commentMapper.findByMovieId(movieId, userId, offset);
 	}
 
 	@Override
-	public List<CommentEntity> findByMovieIdOnLikeDescend(String movieId) {
-		return commentMapper.findByMovieIdOnLikeDescend(movieId);
+	public List<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, int offset) {
+		return commentMapper.findByMovieIdOnDateDescend(movieId, userId, offset);
 	}
 
 	@Override
-	public List<CommentEntity> findByMovieIdOnDislikeDescend(String movieId) {
-		return commentMapper.findByMovieIdOnDislikeDescend(movieId);
+	public List<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, int offset) {
+		return commentMapper.findByMovieIdOnLikeDescend(movieId, userId, offset);
+	}
+
+	@Override
+	public List<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, int offset) {
+		return commentMapper.findByMovieIdOnDislikeDescend(movieId, userId, offset);
 	}
 
 	@Override
 	public List<CommentEntity> selectAll() {
 		return commentMapper.selectAll();
+	}
+
+	@Override
+	public void update(CommentEntity comment) {
+		commentMapper.update(comment);
 	}
 
 	@Override

@@ -33,8 +33,11 @@ public interface DibRepository {
      */
     Optional<DibEntity> findByDibId(Long id);
 
-    Optional<DibEntity> findByUserIdAndMovieId(UUID userId, String movieId);
 
+    List<DibEntity> findByUserId(UUID userId);
+
+    Optional<DibEntity> findByUserIdAndMovieId(UUID userId, String movieId);
+  
     /**
      * 특정 영화의 찜 된 횟수를 반환
      *

@@ -14,4 +14,13 @@ public enum Genre {
 	Genre(String parameter) {
 		this.PARAMETER = parameter;
 	}
+
+	public static Boolean isNotValid(String parameter) {
+		for (Genre value : Genre.values()) {
+			if (value.name().equalsIgnoreCase(parameter)) {
+				return false;
+			}
+		}
+		return true;
+	}
 }
