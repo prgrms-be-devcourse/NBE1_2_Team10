@@ -11,6 +11,10 @@ import java.util.UUID;
  */
 public interface ReviewService {
 
+
+
+    ReviewEntity createReview(String movieId, UUID userId, ReviewEntity reviewEntity) throws NoReviewFoundException;
+
     /**
      * 리뷰글 보기
      *
@@ -24,7 +28,6 @@ public interface ReviewService {
      */
     Optional<ReviewEntity> loadReview(Long reviewId, ReviewSortOrder order, boolean withContent)
             throws NoReviewFoundException;
-
 
     /**
      * 특정 리뷰 포스팅을 수정하는 서비스

@@ -1,6 +1,6 @@
 package core.application.movies.contoller;
 
-import core.application.movies.Controller.MovieController;
+import core.application.movies.controller.MovieController;
 import core.application.movies.models.dto.MovieDetailRespDTO;
 import core.application.movies.service.MovieServiceImpl;
 import org.junit.jupiter.api.DisplayName;
