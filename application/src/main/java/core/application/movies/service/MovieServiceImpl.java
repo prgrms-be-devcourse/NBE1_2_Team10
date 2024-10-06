@@ -33,7 +33,7 @@ public class MovieServiceImpl implements MovieService {
 	@Value("${kmdb.api.key}")
 	private String apiKey;
 
-	@Value("kmdb.api.default.image")
+	@Value("${kmdb.api.default.image}")
 	private String defaultImgUrl;
 
 	private final WebClient webClient;
