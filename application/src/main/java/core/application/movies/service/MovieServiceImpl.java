@@ -158,9 +158,6 @@ public class MovieServiceImpl implements MovieService {
 	}
 
 	public String handleString(String input) {
-		if (input == null || input.trim().isEmpty()) {
-			return "알 수 없음";
-		}
-		return input;
+                return input == null || input.trim().isEmpty() ? "알 수 없음" : input;
 	}
 }
