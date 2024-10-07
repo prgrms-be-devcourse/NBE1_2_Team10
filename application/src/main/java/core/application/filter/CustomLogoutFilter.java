@@ -55,17 +55,10 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
         // 요청 URI 및 메소드 확인
         String requestUri = request.getRequestURI();
-        if (!requestUri.matches("^/users/signout$")) {
-
-            // 로그아웃 경로가 아닌 경우 필터 체인 진행
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String requestMethod = request.getMethod();
-        if (!requestMethod.equals("DELETE")) {
+        if (!requestUri.matches("^/users/signout$") || !requestMethod.equals("DELETE")) {
 
-            // DELETE 메소드가 아닌 경우 필터 체인 진행
+            // 로그아웃 경로가 아니고 DELETE 메소드가 아닌 경우 필터 체인 진행
             filterChain.doFilter(request, response);
             return;
         }
