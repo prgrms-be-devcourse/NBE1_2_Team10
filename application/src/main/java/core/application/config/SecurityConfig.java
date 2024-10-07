@@ -117,7 +117,7 @@ public class SecurityConfig {
 
         // 사용자 정의 로그인 필터 추가
         http
-                .addFilterAt(new CustomLoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new CustomLoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         // 사용자 정의 로그아웃 필터 추가
         http

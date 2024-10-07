@@ -1,5 +1,6 @@
 package core.application.security;
 
+import core.application.users.service.RedisService;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ public class JwtTokenUtil {
     private SecretKey secretKey;
     private Long accessTimeout;
     private Long refreshTimeout;
+    private final RedisService redisService;
 
     /**
      * 생성자
@@ -28,10 +30,11 @@ public class JwtTokenUtil {
      * @param accessTimeout 액세스 토큰의 만료 시간(밀리초)
      * @param refreshTimeout 리프레시 토큰의 만료 시간(일 수)
      */
-    public JwtTokenUtil(@Value("${spring.jwt.secret}") String secret, @Value("${token.access.timeout}") Long accessTimeout, @Value("${token.refresh.timeout}") Long refreshTimeout) {
+    public JwtTokenUtil(@Value("${spring.jwt.secret}") String secret, @Value("${token.access.timeout}") Long accessTimeout, @Value("${token.refresh.timeout}") Long refreshTimeout, RedisService redisService) {
         this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
         this.accessTimeout = accessTimeout;
         this.refreshTimeout = refreshTimeout;
+        this.redisService = redisService;
     }
 
     /**
@@ -93,12 +96,14 @@ public class JwtTokenUtil {
      * @return 생성된 리프레시 토큰
      */
     public String creatRefreshToken(String userEmail, String category) {
-        return Jwts.builder()
+        String refreshToken = Jwts.builder()
                 .claim("userEmail", userEmail)
                 .claim("category", category)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + refreshTimeout * 24 * 60 * 60 * 1000L))
                 .signWith(secretKey)
                 .compact();
+        redisService.setValueWithTTL(userEmail, refreshToken); // Redis에 리프레시 토큰 저장
+        return refreshToken;
     }
 }

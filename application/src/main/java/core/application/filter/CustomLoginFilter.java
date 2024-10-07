@@ -2,7 +2,6 @@ package core.application.filter;
 
 import core.application.security.JwtTokenUtil;
 import core.application.security.CustomUserDetails;
-import core.application.users.service.RedisService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,19 +30,16 @@ import java.util.UUID;
 public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtUtil;
-    private final RedisService redisService;
 
     /**
      * 생성자.
      *
      * @param authenticationManager 인증 매니저
      * @param jwtUtil JWT 관련 유틸리티
-     * @param redisService Redis 서비스
      */
-    public CustomLoginFilter(AuthenticationManager authenticationManager, JwtTokenUtil jwtUtil, RedisService redisService) {
+    public CustomLoginFilter(AuthenticationManager authenticationManager, JwtTokenUtil jwtUtil) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.redisService = redisService;
         setFilterProcessesUrl("/users/signin");
     }
 
@@ -123,7 +119,6 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setHeader("accessToken", accessToken); // 액세스 토큰을 응답 헤더에 추가
         response.addCookie(createCookie("refreshToken", refreshToken)); // 리프레시 토큰을 쿠키에 추가
         response.setStatus(HttpStatus.OK.value()); // 응답 상태를 OK로 설정
-        redisService.setValueWithTTL(userEmail, refreshToken); // Redis에 리프레시 토큰 저장
     }
 
     /**
