@@ -62,22 +62,22 @@ public class GCSImageUploadService implements
         Blob result = cloudStorage.create(blobInfo, file.getBytes());
 
         log.info("Image uploaded to GCS successfully");
-        log.debug(result.toString());
+        log.info(result.toString());
 
         // 우리가 설정한 대로 (버킷, 경로, 이름) 객체 저장되니까 그대로 URL return
         return IMAGE_URL_PREFIX + "/" + cloudBucketName + "/" + nameToStoredInCloud;
     }
 
     private void logFileInfo(MultipartFile file) {
-        log.debug("File info : {}", file.toString());
-        log.debug("\tName : {}", file.getName());
-        log.debug("\tContentType : {}", file.getContentType());
+        log.info("File info : {}", file.toString());
+        log.info("Name : {}", file.getName());
+        log.info("ContentType : {}", file.getContentType());
 
         long sizeBytes = file.getSize();
         int logarithm = ((int) Math.log10(sizeBytes)) / 3;
         Character unit = " KMGTPE".charAt(logarithm);
         double size = sizeBytes / Math.pow(1_000L, logarithm);
 
-        log.debug("\tSize : {}", String.format("%.2f %cB", size, unit));
+        log.info("Size : {}", String.format("%.2f %cB", size, unit));
     }
 }
