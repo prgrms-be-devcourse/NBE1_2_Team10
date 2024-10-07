@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import core.application.movies.models.dto.CommentRespDTO;
+import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.models.entities.CommentEntity;
 
 @Mapper

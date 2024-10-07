@@ -1,4 +1,4 @@
-package core.application.movies.repositories;
+package core.application.movies.repositories.comment;
 
 import java.util.UUID;
 

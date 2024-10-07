@@ -1,4 +1,4 @@
-package core.application.movies.models.dto;
+package core.application.movies.models.dto.response;
 
 import java.util.List;
 
