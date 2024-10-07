@@ -5,7 +5,6 @@ import core.application.filter.JWTFilter;
 import core.application.filter.CustomLoginFilter;
 import core.application.filter.CustomLogoutFilter;
 import core.application.security.CustomUserDetailsService;
-import core.application.users.service.RedisService;
 import core.application.security.TokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +30,6 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final CustomUserDetailsService userDetailsService;
-    private final RedisService redisService;
     private final JwtTokenUtil jwtUtil;
 
     /**
@@ -40,12 +38,10 @@ public class SecurityConfig {
      * @param authenticationConfiguration AuthenticationConfiguration 객체
      * @param userDetailsService 사용자 세부 정보 서비스를 위한 객체
      * @param jwtUtil JWT 관련 작업을 위한 유틸리티 클래스
-     * @param redisService Redis 작업을 위한 서비스
      */
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, CustomUserDetailsService userDetailsService, JwtTokenUtil jwtUtil, RedisService redisService) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, CustomUserDetailsService userDetailsService, JwtTokenUtil jwtUtil) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.userDetailsService = userDetailsService;
-        this.redisService = redisService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -104,10 +100,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/movies/search").permitAll() // 영화 검색
                         .requestMatchers(HttpMethod.GET, "/movies/").permitAll() // 영화 내용 상세 조회
                         .requestMatchers(HttpMethod.GET, "/movies/*/reviews/list").permitAll() // 리뷰 목록 조회
-                        .requestMatchers(HttpMethod.GET, "/movies/*/reviews/{reviewId}").permitAll() // 리뷰 상세 조회
+                        .requestMatchers(HttpMethod.GET, "/movies/*/reviews/*").permitAll() // 리뷰 상세 조회
                         .requestMatchers(HttpMethod.GET, "/movies/*/reviews/list").permitAll() // 리뷰 목록 조회
-                        .requestMatchers(HttpMethod.GET, "/movies/*/reviews/{reviewId}/comments").permitAll() // 리뷰 댓글 목록 조회
-                        .requestMatchers(HttpMethod.GET, "/movies/*/reviews/{reviewId}/comments/{groupId}").permitAll() // 리뷰 대댓글 목록 조회
+                        .requestMatchers(HttpMethod.GET, "/movies/*/reviews/*/comments").permitAll() // 리뷰 댓글 목록 조회
+                        .requestMatchers(HttpMethod.GET, "/movies/*/reviews/*/comments/*").permitAll() // 리뷰 대댓글 목록 조회
                         .requestMatchers(HttpMethod.GET, "/movies/*/comments").permitAll() // 한줄평 목록 조회
                         .anyRequest().authenticated()); // 나머지 요청은 인증 필요
 
