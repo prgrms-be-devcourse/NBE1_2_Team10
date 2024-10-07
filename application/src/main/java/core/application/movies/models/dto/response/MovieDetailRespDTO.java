@@ -39,16 +39,16 @@ public class MovieDetailRespDTO {
 	private String director;
 
 	@Schema(description = "영화 찜 개수", example = "87")
-	private Long   dibCount;
+	private Long dibCount;
 
 	@Schema(description = "영화 리뷰 개수", example = "10")
-	private Long   reviewCount;
+	private Long reviewCount;
 
 	@Schema(description = "영화 한줄평 개수", example = "176")
-	private Long   commentCount;
+	private Long commentCount;
 
 	@Schema(description = "영화 한줄평 점수 총합", example = "1658")
-	private Long   sumOfRating;
+	private Long sumOfRating;
 
 	public static MovieDetailRespDTO from(CachedMovieEntity cachedMovieEntity) {
 		return MovieDetailRespDTO.builder()
