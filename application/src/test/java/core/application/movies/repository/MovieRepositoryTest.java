@@ -1,4 +1,4 @@
-package core.application.movies;
+package core.application.movies.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import core.application.movies.constant.Genre;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.CachedMovieRepository;
 
@@ -30,7 +29,7 @@ public class MovieRepositoryTest {
 			"test",
 			"testTitle",
 			"posterUrl",
-			Genre.ACTION,
+			"액션",
 			"2024-09-30",
 			"줄거리",
 			"122",
@@ -55,7 +54,7 @@ public class MovieRepositoryTest {
 			"test",
 			"testTitle",
 			"posterUrl",
-			Genre.ACTION,
+			"액션",
 			"2024-09-30",
 			"줄거리",
 			"122",
@@ -76,7 +75,7 @@ public class MovieRepositoryTest {
 	}
 
 	@Test
-	@DisplayName("찜 많은 순, 평점 높은 순으로 영화를 제공한다.")
+	@DisplayName("찜 많은 순, 평점 높은 순, 리뷰 많은 순으로 영화를 제공한다.")
 	public void order() {
 		// GIVEN
 		for (int i = 0; i < 10; i++) {
@@ -84,13 +83,13 @@ public class MovieRepositoryTest {
 				"test" + i,
 				"testTitle",
 				"posterUrl",
-				Genre.ACTION,
+				"액션",
 				"2024-09-30",
 				"줄거리",
 				"122",
 				"마동석, 김무열",
 				"봉준호",
-				(long)i, 2L, 10L, (long)(100 - 10 * i)
+				(long)i, (long)(i), 10L, (long)(100 - 10 * i)
 			);
 			repository.saveNewMovie(movieEntity);
 		}
@@ -98,6 +97,7 @@ public class MovieRepositoryTest {
 		// WHEN
 		List<CachedMovieEntity> rating = repository.selectOnAVGRatingDescend(5);
 		List<CachedMovieEntity> dib = repository.selectOnDibOrderDescend(5);
+		List<CachedMovieEntity> review = repository.selectOnDibOrderDescend(5);
 
 		// THEN
 		assertThat(rating).hasSize(5);
@@ -113,6 +113,13 @@ public class MovieRepositoryTest {
 		assertThat(dib.get(2).getDibCount()).isEqualTo(7);
 		assertThat(dib.get(3).getDibCount()).isEqualTo(6);
 		assertThat(dib.get(4).getDibCount()).isEqualTo(5);
+
+		assertThat(review).hasSize(5);
+		assertThat(review.get(0).getReviewCount()).isEqualTo(9);
+		assertThat(review.get(1).getReviewCount()).isEqualTo(8);
+		assertThat(review.get(2).getReviewCount()).isEqualTo(7);
+		assertThat(review.get(3).getReviewCount()).isEqualTo(6);
+		assertThat(review.get(4).getReviewCount()).isEqualTo(5);
 	}
 
 	private void checkEqualMovie(Optional<CachedMovieEntity> findByRepository, CachedMovieEntity movie) {

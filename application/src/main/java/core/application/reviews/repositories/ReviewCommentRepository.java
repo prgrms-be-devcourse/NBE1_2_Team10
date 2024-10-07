@@ -2,7 +2,6 @@ package core.application.reviews.repositories;
 
 
 import core.application.reviews.models.entities.ReviewCommentEntity;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,7 +21,6 @@ public interface ReviewCommentRepository {
      */
     ReviewCommentEntity saveNewReviewComment(ReviewCommentEntity reviewComment);
 
-
     // 부모 댓글을 등록
 
     /**
@@ -33,8 +31,8 @@ public interface ReviewCommentRepository {
      * @param reviewComment 등록할 포스팅 댓글 정보
      * @return {@link ReviewCommentEntity} 등록된 정보
      */
-    ReviewCommentEntity saveNewParentReviewComment(Long reviewId, UUID userId, ReviewCommentEntity reviewComment);
-
+    ReviewCommentEntity saveNewParentReviewComment(Long reviewId, UUID userId,
+            ReviewCommentEntity reviewComment);
 
     // 자식 댓글을 등록
 
@@ -46,9 +44,9 @@ public interface ReviewCommentRepository {
      * @param reviewComment 등록할 댓글 정보
      * @return {@link ReviewCommentEntity} 등록된 정보
      */
-    ReviewCommentEntity saveNewChildReviewComment(Long groupId, UUID userId, ReviewCommentEntity reviewComment);
+    ReviewCommentEntity saveNewChildReviewComment(Long groupId, UUID userId,
+            ReviewCommentEntity reviewComment);
     //</editor-fold>
-
 
     //<editor-fold desc="READ">
 
@@ -60,50 +58,74 @@ public interface ReviewCommentRepository {
      */
     Optional<ReviewCommentEntity> findByReviewCommentId(Long reviewCommentId);
 
-
     //<editor-fold desc="부모 댓글 검색">
 
     /**
-     * 특정 포스팅에 달린 모든 부모 댓글을 검색.
+     * 특정 포스팅에 달린 모든 부모 댓글을 검색 (페이징)
      * <p>
      * 즉, {@code groupId == null} 인 댓글만 검색.
      *
      * @param reviewId 검색할 포스팅 ID
+     * @param offset   댓글 offset
+     * @param num      가져올 댓글 수
      * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    List<ReviewCommentEntity> findParentCommentByReviewId(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewId(Long reviewId, int offset, int num);
 
     /**
-     * 특정 포스팅에 달린 모든 부모 댓글을 최신순으로 검색
+     * 특정 포스팅에 달린 모든 부모 댓글을 최신순으로 검색 (페이징)
      * <p>
      * 즉, {@code groupId == null} 인 댓글만 검색.
      *
      * @param reviewId 검색할 포스팅 ID
+     * @param offset   오프셋
+     * @param num      가져올 개수
      * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    List<ReviewCommentEntity> findParentCommentByReviewIdOnDateDescend(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewIdOnDateDescend(Long reviewId, int offset,
+            int num);
 
     /**
-     * 특정 포스팅에 달린 모든 부모 댓글을 좋아요 순으로 검색
+     * 특정 포스팅에 달린 모든 부모 댓글을 좋아요 순으로 검색 (페이징)
      * <p>
      * 즉, {@code groupId == null} 인 댓글만 검색.
      *
      * @param reviewId 검색할 포스팅 ID
+     * @param offset   오프셋
+     * @param num      가져올 개수
      * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    List<ReviewCommentEntity> findParentCommentByReviewIdOnLikeDescend(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewIdOnLikeDescend(Long reviewId, int offset,
+            int num);
+
+    /**
+     * 특정 포스팅에 달린 모든 부모 댓글의 개수를 확인
+     *
+     * @param reviewId 검색할 포스팅 ID
+     * @return 부모 댓글의 개수
+     */
+    long countParentCommentByReviewId(Long reviewId);
+
     //</editor-fold>
 
 
     /**
-     * 특정 부모 댓글에 달린 자식 댓글들을 최신순으로 검색
+     * 특정 부모 댓글에 달린 자식 댓글들을 최신순으로 검색 (페이징)
      * <p>
      * 자식 댓글은 {@code groupId != null} 인 댓글들.
      *
      * @param groupId 부모 댓글의 ID
      * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    List<ReviewCommentEntity> findChildCommentsByGroupId(Long groupId);
+    List<ReviewCommentEntity> findChildCommentsByGroupId(Long groupId, int offset, int num);
+
+    /**
+     * 특정 부모 댓글 아래 자식 댓글의 개수를 확인
+     *
+     * @param groupId 부모 댓글 ID
+     * @return 자식 댓글의 개수
+     */
+    long countChildCommentByGroupId(Long groupId);
 
 
     /**
@@ -125,18 +147,43 @@ public interface ReviewCommentRepository {
     List<ReviewCommentEntity> selectAll();
     //</editor-fold>
 
-
     // UPDATE
 
     /**
      * 특정 포스팅 댓글의 정보를 {@code replacement} 정보로 변경
      * <p>
-     * 이 때 {@code content}, {@code commentRef} 만 {@code replacement} 의 것으로 변경.
-     * {@code isUpdated} 는 자동으로 변경.
+     * 이 때 {@code content}, {@code commentRef} 만 {@code replacement} 의 것으로 변경. {@code isUpdated} 는
+     * 자동으로 변경.
      *
      * @param reviewCommentId 정보 변경할 포스팅 댓글의 ID
      * @param replacement     변경할 정보
      * @return {@link ReviewCommentEntity} 변경된 정보
+     * @deprecated use instead {@link #editReviewCommentInfo(Long, ReviewCommentEntity, boolean)}
      */
-    ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId, ReviewCommentEntity replacement);
+    @Deprecated
+    ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId,
+            ReviewCommentEntity replacement);
+
+    /**
+     * 특정 포스팅 댓글의 정보를 {@code replacement} 정보로 변경
+     * <p>
+     * 이 때 {@code content}, {@code commentRef} 만 {@code replacement} 의 것으로 변경. {@code isUpdated} 는
+     * 자동으로 변경.
+     *
+     * @param reviewCommentId 정보 변경할 포스팅 댓글의 ID
+     * @param replacement     변경할 정보
+     * @param update          {@code is_updated} 에 설정할 정보
+     * @return {@link ReviewCommentEntity} 변경된 정보
+     */
+    ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId, ReviewCommentEntity replacement,
+            boolean update);
+
+    /**
+     * 특정 포스팅 댓글의 좋아요를 수정
+     *
+     * @param reviewCommentId 수정할 댓글 ID
+     * @param likes           설정할 좋아요 수
+     * @return {@link ReviewCommentEntity} 변경된 정보
+     */
+    ReviewCommentEntity updateReviewCommentLikes(Long reviewCommentId, int likes);
 }

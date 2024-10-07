@@ -14,12 +14,11 @@ import java.util.UUID;
 public interface UserMapper {
     int saveNewUser(@Param("newUser")UserEntity newUser);
     Optional<UserEntity> findByUserId(UUID userId);
-    Optional<UserEntity> findByUserEmail(String userEmail);
-    Optional<UserEntity> findByUserEmailAndPassword(String userEmail, String userPw);
+    Optional<UserEntity> findByUserEmail(String email);
+    Optional<UserEntity> findByUserEmailAndPassword(String email, String password);
     List<UserEntity> findByUserRole(UserRole role);
-    List<DibEntity> selectDibsOnUserId(UUID userId);
-
     List<UserEntity> findAll();
     int editUserInfo(@Param("replacement") UserEntity replacement);
     int deleteUser(UUID userId);
+
 }

@@ -16,7 +16,6 @@ import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.UpdateProvider;
-import org.springframework.transaction.annotation.Transactional;
 
 @Mapper
 public interface MyBatisReviewCommentRepository extends ReviewCommentRepository {
@@ -130,44 +129,70 @@ public interface MyBatisReviewCommentRepository extends ReviewCommentRepository 
     })
     Optional<ReviewCommentEntity> findByReviewCommentId(Long reviewCommentId);
 
-
     final String selectParentCommentOnReviewId = " SELECT * FROM REVIEW_COMMENT_TABLE" +
             " WHERE REVIEW_ID = #{reviewId}" + " AND GROUP_ID IS NULL ";
+    final String orderByDate = " ORDER BY CREATED_AT DESC, REVIEW_COMMENT_ID DESC ";
+    final String orderByLikes = " ORDER BY `like` DESC, REVIEW_COMMENT_ID DESC ";
+    final String pagingOffset = " LIMIT #{num} OFFSET #{offset} ";
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @Select(selectParentCommentOnReviewId)
+    @Select(selectParentCommentOnReviewId + orderByDate + pagingOffset)
     @ResultMap("ReviewCommentResultMap")
-    List<ReviewCommentEntity> findParentCommentByReviewId(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewId(
+            @Param("reviewId") Long reviewId,
+            @Param("offset") int offset,
+            @Param("num") int num);
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @Select(selectParentCommentOnReviewId + " ORDER BY CREATED_AT DESC, REVIEW_COMMENT_ID DESC ")
+    @Select(selectParentCommentOnReviewId + orderByDate + pagingOffset)
     @ResultMap("ReviewCommentResultMap")
-    List<ReviewCommentEntity> findParentCommentByReviewIdOnDateDescend(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewIdOnDateDescend(
+            @Param("reviewId") Long reviewId,
+            @Param("offset") int offset,
+            @Param("num") int num);
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @Select(selectParentCommentOnReviewId + " ORDER BY `like` DESC, REVIEW_COMMENT_ID DESC ")
+    @Select(selectParentCommentOnReviewId + orderByLikes + pagingOffset)
     @ResultMap("ReviewCommentResultMap")
-    List<ReviewCommentEntity> findParentCommentByReviewIdOnLikeDescend(Long reviewId);
+    List<ReviewCommentEntity> findParentCommentByReviewIdOnLikeDescend(
+            @Param("reviewId") Long reviewId,
+            @Param("offset") int offset,
+            @Param("num") int num);
 
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @Select(" SELECT * FROM REVIEW_COMMENT_TABLE WHERE GROUP_ID = #{groupId} "
-            + "ORDER BY CREATED_AT DESC, REVIEW_COMMENT_ID DESC")
-    @ResultMap("ReviewCommentResultMap")
-    List<ReviewCommentEntity> findChildCommentsByGroupId(Long groupId);
+    @Select(" SELECT COUNT(*) FROM REVIEW_COMMENT_TABLE WHERE review_id = #{reviewId} AND group_id IS NULL ")
+    long countParentCommentByReviewId(Long reviewId);
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Select(" SELECT * FROM REVIEW_COMMENT_TABLE WHERE group_id = #{groupId} " + orderByDate
+            + pagingOffset)
+    List<ReviewCommentEntity> findChildCommentsByGroupId(
+            @Param("groupId") Long groupId,
+            @Param("offset") int offset,
+            @Param("num") int num);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Select(" SELECT COUNT(*) FROM REVIEW_COMMENT_TABLE WHERE group_id = #{groupId} ")
+    long countChildCommentByGroupId(Long groupId);
 
     /**
      * {@inheritDoc}
@@ -185,23 +210,63 @@ public interface MyBatisReviewCommentRepository extends ReviewCommentRepository 
     @ResultMap("ReviewCommentResultMap")
     List<ReviewCommentEntity> selectAll();
 
+
+    /**
+     * 실질적으로 DB 에 {@code update} 하는 {@code MyBatis Query} 용 메서드
+     *
+     * @param reviewCommentId 댓글 ID
+     * @param replacement     변경할 정보
+     * @param update          {@code is_updated} 에 설정할 정보
+     * @return {@code update} 결과
+     * @see ReviewCommentMapperProvider#insertReviewComment
+     */
     @UpdateProvider(type = ReviewCommentMapperProvider.class, method = "editReviewComment")
     int updateReviewCommentEntity(
             @Param("reviewCommentId") Long reviewCommentId,
-            @Param("replacement") ReviewCommentEntity replacement
+            @Param("replacement") ReviewCommentEntity replacement,
+            @Param("isUpdated") boolean update
     );
 
     /**
      * {@inheritDoc}
      *
-     * @see ReviewCommentMapperProvider#editReviewComment
+     * @deprecated use instead {@link #editReviewCommentInfo(Long, ReviewCommentEntity, boolean)}
      */
     @Override
-    @Transactional
-    @UpdateProvider(type = ReviewCommentMapperProvider.class, method = "editReviewComment")
+    @Deprecated
     default ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId,
             ReviewCommentEntity replacement) {
-        int result = updateReviewCommentEntity(reviewCommentId, replacement);
+        return editReviewCommentInfo(reviewCommentId, replacement, true);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    default ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId,
+            ReviewCommentEntity replacement, boolean update) {
+        int result = updateReviewCommentEntity(reviewCommentId, replacement, update);
+        return findByReviewCommentId(reviewCommentId).orElseThrow();
+    }
+
+    /**
+     * 실질적으로 DB 에 리뷰 좋아요 {@code update} 하는 {@code MyBatis Query} 용 메서드
+     *
+     * @param reviewCommentId 댓글 ID
+     * @param likes           변경될 좋아요 수
+     * @return {@code update} 결과
+     * @see ReviewCommentMapperProvider#updateCommentLikes
+     */
+    @UpdateProvider(type = ReviewCommentMapperProvider.class, method = "updateCommentLikes")
+    int updateCommentLikes(@Param("reviewCommentId") Long reviewCommentId,
+            @Param("likes") int likes);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    default ReviewCommentEntity updateReviewCommentLikes(Long reviewCommentId, int likes) {
+        int result = updateCommentLikes(reviewCommentId, likes);
         return findByReviewCommentId(reviewCommentId).orElseThrow();
     }
 }

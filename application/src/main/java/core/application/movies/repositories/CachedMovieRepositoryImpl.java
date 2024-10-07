@@ -47,6 +47,16 @@ public class CachedMovieRepositoryImpl implements CachedMovieRepository {
 	}
 
 	@Override
+	public List<CachedMovieEntity> selectOnReviewCountDescend(int num) {
+		return mapper.selectOnReviewCountDescend(num);
+	}
+
+	@Override
+	public List<CachedMovieEntity> findMoviesOnRatingDescendWithGenre(int offset, String genre) {
+		return mapper.findMoviesOnRatingDescendWithGenre(offset, genre);
+	}
+
+	@Override
 	public CachedMovieEntity editMovie(String movieId, CachedMovieEntity replacement) {
 		mapper.update(movieId, replacement);
 		return replacement;
