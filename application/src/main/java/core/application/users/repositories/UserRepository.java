@@ -72,15 +72,13 @@ public interface UserRepository {
     // UPDATE
 
     /**
-     * 특정 ID 의 유저 정보를 {@code replacement} 정보로 변경.
-     * <p>
+     * 특정 ID 의 유저 정보를 {@code replacement} 정보로 변경
      * 이 때 {@code userId} 를 제외한 모든 정보가 {@code replacement} 의 것으로 변경.
      *
-     * @param userId      정보 변경할 유저 ID
      * @param replacement 변경할 정보
      * @return {@link UserEntity} 변경된 정보
      */
-    int editUserInfo(UUID userId, UserEntity replacement);
+    int editUserInfo(UserEntity replacement);
 
 
     // DELETE
@@ -90,5 +88,5 @@ public interface UserRepository {
      *
      * @param userId 삭제할 유저 ID
      */
-    void deleteUser(UUID userId);
+    int deleteUser(UUID userId);
 }

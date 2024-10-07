@@ -58,8 +58,8 @@ public class CustomLogoutFilter extends GenericFilterBean {
         String requestMethod = request.getMethod();
         if (!requestUri.matches("^/users/signout$") || !requestMethod.equals("DELETE")) {
 
-            // 로그아웃 경로가 아니고 DELETE 메소드가 아닌 경우 필터 체인 진행
-            filterChain.doFilter(request, response);
+            // 로그아웃 경로가 아니고 DELETE 메소드가 아닌 경우 404 응답
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "The requested path was not found.");
             return;
         }
 
