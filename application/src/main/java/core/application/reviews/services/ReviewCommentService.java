@@ -144,7 +144,6 @@ public interface ReviewCommentService {
      * @return {@link ReviewCommentEntity} 좋아요가 1 증가한 댓글 정보
      * @throws NoReviewCommentFoundException {@code reviewCommentId} 에 해당하는 댓글을 찾지 못했을 시
      * @author jbw9964
-     * @see ReviewCommentEntity#increaseLikes
      */
     ReviewCommentEntity increaseCommentLike(Long reviewCommentId)
             throws NoReviewCommentFoundException;
@@ -156,7 +155,6 @@ public interface ReviewCommentService {
      * @return {@link ReviewCommentEntity} 좋아요가 1 감소된 댓글 정보
      * @throws NoReviewCommentFoundException {@code reviewCommentId} 에 해당하는 댓글을 찾지 못했을 시
      * @author jbw9964
-     * @see ReviewCommentEntity#decreaseLikes
      */
     ReviewCommentEntity decreaseCommentLike(Long reviewCommentId)
             throws NoReviewCommentFoundException;
