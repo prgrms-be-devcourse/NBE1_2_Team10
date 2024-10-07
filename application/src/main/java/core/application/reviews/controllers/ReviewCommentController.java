@@ -17,13 +17,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import core.application.reviews.ReviewExceptionHandler.ResponseError;
+import core.application.api.response.ApiResponse;
+import core.application.api.response.code.Message;
 import core.application.reviews.exceptions.InvalidCommentContentException;
+import core.application.reviews.exceptions.InvalidPageException;
 import core.application.reviews.exceptions.NotCommentOwnerException;
 import core.application.reviews.models.dto.request.CreateCommentReqDTO;
 import core.application.reviews.models.dto.response.CreateCommentRespDTO;
 import core.application.reviews.models.dto.response.EditCommentRespDTO;
-import core.application.reviews.models.dto.response.MessageRespDTO;
 import core.application.reviews.models.dto.response.ShowCommentsRespDTO;
 import core.application.reviews.models.entities.ReviewCommentEntity;
 import core.application.reviews.services.ReviewCommentService;
@@ -31,10 +32,6 @@ import core.application.reviews.services.ReviewCommentSortOrder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -64,29 +61,24 @@ public class ReviewCommentController {
 	 */
 	@GetMapping("/comments")
 	@Operation(summary = "부모 댓글 조회", description = "특정 게시글의 부모 댓글을 페이징 하여 조회")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "성공적으로 조회하였습니다.",
-			content = @Content(mediaType = "application/json", schema = @Schema(implementation = ShowCommentsRespDTO.class))),
-		@ApiResponse(responseCode = "400", description = "Review ID 에 게시글을 찾을 수 없습니다.",
-			content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.class))),
-	})
 	@Parameters({
 		@Parameter(name = "reviewId", description = "댓글을 조회할 게시글 ID", example = "20"),
 		@Parameter(name = "page", description = "0 보다 큰 페이징 넘버", example = "1")
 	})
-	public ShowCommentsRespDTO showParentReviewComments(
+	public ApiResponse<ShowCommentsRespDTO> showParentReviewComments(
 		@PathVariable("reviewId") Long reviewId,
 		@RequestParam("page") int page) {
-
-		// TODO `page` 양수인 것만 오도록 exception 처리 필요
-		// 쿼리 파람에 @Positive 붙이고 컨트롤러에 @Validated 붙이면 될 듯?
+		if (page < 1) {
+			throw new InvalidPageException("잘못된 댓글 페이지입니다.");
+		}
 
 		int offset = (page - 1) * COMMENTS_PER_PAGE;
 
 		List<ReviewCommentEntity> parentReviewComments = reviewCommentService.getParentReviewComments(
 			reviewId, ReviewCommentSortOrder.LIKE, offset, COMMENTS_PER_PAGE);
 
-		return new ShowCommentsRespDTO().addComments(parentReviewComments);
+		ShowCommentsRespDTO showCommentsRespDTO = new ShowCommentsRespDTO().addComments(parentReviewComments);
+		return ApiResponse.onSuccess(showCommentsRespDTO);
 	}
 
 	/**
@@ -99,32 +91,27 @@ public class ReviewCommentController {
 	 */
 	@GetMapping("/comments/{groupId}")
 	@Operation(summary = "자식 댓글 조회", description = "특정 게시글 속 부모 댓글의 자식 댓글을 페이징 하여 조회")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "성공적으로 조회하였습니다.",
-			content = @Content(mediaType = "application/json", schema = @Schema(implementation = ShowCommentsRespDTO.class))),
-		@ApiResponse(responseCode = "400", description = "게시글 혹은 부모 댓글을 찾을 수 없습니다.",
-			content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.class)))
-	})
 	@Parameters({
 		@Parameter(name = "reviewId", description = "댓글을 조회할 게시글 ID", example = "20"),
 		@Parameter(name = "groupId", description = "부모 댓글의 ID", example = "10010"),
 		@Parameter(name = "page", description = "0 보다 큰 페이징 넘버", example = "1")
 	})
-	public ShowCommentsRespDTO showChildComments(
+	public ApiResponse<ShowCommentsRespDTO> showChildComments(
 		@PathVariable("reviewId") Long reviewId,
 		@PathVariable("groupId") Long groupId,
 		@RequestParam("page") int page
 	) {
-
-		// TODO `page` 양수인 것만 오도록 exception 처리 필요
-		// 쿼리 파람에 @Positive 붙이고 컨트롤러에 @Validated 붙이면 될 듯?
+		if (page < 1) {
+			throw new InvalidPageException("잘못된 댓글 페이지입니다.");
+		}
 
 		int offset = (page - 1) * COMMENTS_PER_PAGE;
 
 		List<ReviewCommentEntity> childReviewComments = reviewCommentService.getChildReviewCommentsOnParent(
 			reviewId, groupId, offset, COMMENTS_PER_PAGE);
 
-		return new ShowCommentsRespDTO().addComments(childReviewComments);
+		ShowCommentsRespDTO showCommentsRespDTO = new ShowCommentsRespDTO().addComments(childReviewComments);
+		return ApiResponse.onSuccess(showCommentsRespDTO);
 	}
 
 	/**
@@ -136,14 +123,8 @@ public class ReviewCommentController {
 	 */
 	@PostMapping("/comments")
 	@Operation(summary = "댓글 생성", description = "특정 게시글에 댓글을 생성")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "성공적으로 댓글을 생성하였습니다.",
-			content = @Content(mediaType = "application/json", schema = @Schema(implementation = CreateCommentRespDTO.class))),
-		@ApiResponse(responseCode = "400", description = "게시글, 댓글을 찾을 수 없거나 잘못된 요청 body 가 들어왔습니다.",
-			content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.class)))
-	})
 	@Parameter(name = "reviewId", description = "댓글을 조회할 게시글 ID", example = "20")
-	public CreateCommentRespDTO createComment(
+	public ApiResponse<CreateCommentRespDTO> createComment(
 		@PathVariable("reviewId") Long reviewId,
 		@RequestBody @Validated CreateCommentReqDTO dtoReq,
 		BindingResult bindingResult
@@ -165,7 +146,7 @@ public class ReviewCommentController {
 			reviewCommentService.addNewParentReviewComment(reviewId, userId, validData) :
 			reviewCommentService.addNewChildReviewComment(reviewId, groupId, userId, validData);
 
-		return CreateCommentRespDTO.toDTO(result);
+		return ApiResponse.onCreateSuccess(CreateCommentRespDTO.toDTO(result));
 	}
 
 	/**
@@ -176,12 +157,8 @@ public class ReviewCommentController {
 	 * @return 응답 {@code DTO}
 	 */
 	@Operation(summary = "댓글 수정", description = "작성한 댓글을 수정")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "성공적으로 댓글 수정", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EditCommentRespDTO.class))),
-		@ApiResponse(responseCode = "400", description = "댓글 작성자 X or 존재하지 않는 댓글 or 잘못된 작성 시도", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.class)))
-	})
 	@PatchMapping("/comments/{reviewCommentId}")
-	public EditCommentRespDTO editComment(
+	public ApiResponse<EditCommentRespDTO> editComment(
 		@PathVariable("reviewCommentId") Long reviewCommentId,
 		@RequestBody @Validated CreateCommentReqDTO dtoReq,
 		BindingResult bindingResult
@@ -206,7 +183,7 @@ public class ReviewCommentController {
 		ReviewCommentEntity result = reviewCommentService.editReviewComment(reviewCommentId,
 			commentRef, content);
 
-		return EditCommentRespDTO.toDTO(result);
+		return ApiResponse.onSuccess(EditCommentRespDTO.toDTO(result));
 	}
 
 	/**
@@ -216,12 +193,8 @@ public class ReviewCommentController {
 	 * @return 응답 {@code DTO}
 	 */
 	@Operation(summary = "댓글 삭제", description = "작성한 댓글을 삭제")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "성공적으로 댓글 삭제", content = @Content(mediaType = "application/json", schema = @Schema(implementation = MessageRespDTO.class))),
-		@ApiResponse(responseCode = "400", description = "댓글 작성자 X or 존재하지 않는 댓글 삭제 시도", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.class)))
-	})
 	@DeleteMapping("/comments/{reviewCommentId}")
-	public MessageRespDTO deleteComment(
+	public ApiResponse<Message> deleteComment(
 		@PathVariable("reviewCommentId") Long reviewCommentId) {
 
 		// TODO 추후 spring security context 에서 유저 아이디 받아야 함.
@@ -234,7 +207,7 @@ public class ReviewCommentController {
 
 		reviewCommentService.deleteReviewComment(reviewCommentId);
 
-		return new MessageRespDTO("성공적으로 댓글을 삭제했습니다.");
+		return ApiResponse.onDeleteSuccess(Message.createMessage("성공적으로 댓글을 삭제했습니다."));
 	}
 
 	/**
@@ -246,12 +219,8 @@ public class ReviewCommentController {
 	 * @return 응답용 {@code DTO}
 	 */
 	@Operation(summary = "댓글 좋아요 또는 좋아요 취소")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "댓글 좋아요 또는 취소 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = MessageRespDTO.class))),
-		@ApiResponse(responseCode = "400", description = "존재하지 않는 댓글에 시도", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.class)))
-	})
 	@PatchMapping("/comments/{reviewCommentId}/like")
-	public MessageRespDTO editLikes(
+	public ApiResponse<Message> editLikes(
 		@PathVariable("reviewCommentId") Long reviewCommentId,
 		@CookieValue(value = COOKIE_NAME, required = false) Cookie cookie,
 		HttpServletResponse resp) {
@@ -274,7 +243,7 @@ public class ReviewCommentController {
 
 		resultMessage += " [" + entity.getLike() + "]";
 
-		return new MessageRespDTO(resultMessage);
+		return ApiResponse.onSuccess(Message.createMessage(resultMessage));
 	}
 
 	private void saveCookie(Long reviewCommentId, HttpServletResponse resp) {
