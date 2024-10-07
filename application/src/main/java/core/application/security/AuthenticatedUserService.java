@@ -54,7 +54,7 @@ public class AuthenticatedUserService {
 
         if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
             CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-            return customUserDetails.getUserId().toString();  // UserRole 반환
+            return customUserDetails.getUserRole().toString();  // UserRole 반환
         }
         return null; // 인증되지 않은 사용자일 경우
     }
