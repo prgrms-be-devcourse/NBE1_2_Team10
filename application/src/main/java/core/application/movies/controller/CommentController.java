@@ -14,11 +14,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import core.application.movies.constant.CommentSort;
+import core.application.movies.exception.ExceptionResult;
 import core.application.movies.exception.WrongWriteCommentException;
 import core.application.movies.models.dto.CommentReactionRespDTO;
 import core.application.movies.models.dto.CommentRespDTO;
 import core.application.movies.models.dto.CommentWriteReqDTO;
 import core.application.movies.service.CommentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,9 +35,19 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/movies")
+@Tag(name = "Comment", description = "한줄평 관련 API")
 public class CommentController {
 	private final CommentService commentService;
 
+	@Operation(summary = "한줄평 조회")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "한줄평 조회 성공",
+			content = @Content(schema = @Schema(implementation = CommentRespDTO.class)))
+	})
+	@Parameters({
+		@Parameter(name = "page", description = "페이지", example = "0"),
+		@Parameter(name = "sortType", description = "정렬 타입", example = "LIKE")
+	})
 	@GetMapping("/{movieId}/comments")
 	public List<CommentRespDTO> getComments(@PathVariable String movieId, @RequestParam int page, @RequestParam
 	String sortType) {
@@ -43,6 +62,13 @@ public class CommentController {
 		return commentService.getComments(movieId, page, sort, null);
 	}
 
+	@Operation(summary = "한줄평 작성")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200",
+			content = @Content(schema = @Schema(implementation = CommentRespDTO.class))),
+		@ApiResponse(responseCode = "400", description = "특정 영화의 한줄평 2회 이상 시도 or 한줄평 내용 공백 or 평점 범위 초과",
+			content = @Content(schema = @Schema(implementation = ExceptionResult.class)))
+	})
 	@PostMapping("/{movieId}/comments")
 	public CommentRespDTO writeComment(@PathVariable String movieId,
 		@RequestBody @Validated CommentWriteReqDTO writeReqDTO, BindingResult bindingResult) {
@@ -55,6 +81,11 @@ public class CommentController {
 		return commentService.writeCommentOnMovie(writeReqDTO, null, movieId);
 	}
 
+	@Operation(summary = "한줄평 좋아요")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = CommentReactionRespDTO.class))),
+		@ApiResponse(responseCode = "400", description = "이미 좋아요한 한줄평 좋아요 시도 or 존재하지 않는 한줄평 좋아요 시도", content = @Content(schema = @Schema(implementation = ExceptionResult.class)))
+	})
 	@PostMapping("/{movieId}/comments/{commentId}/like")
 	public CommentReactionRespDTO incrementCommentLike(@PathVariable Long commentId) {
 		// 추후 JWT 구현 시 userId 삽입
@@ -62,6 +93,12 @@ public class CommentController {
 		return new CommentReactionRespDTO("한줄평 좋아요 완료");
 	}
 
+	@Operation(summary = "한줄평 좋아요 취소")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200",
+			content = @Content(schema = @Schema(implementation = CommentReactionRespDTO.class))),
+		@ApiResponse(responseCode = "400", description = "좋아요 하지 않은 한줄평 좋아요 취소 시도 or 존재하지 않는 한줄평 좋아요 취소 시도", content = @Content(schema = @Schema(implementation = ExceptionResult.class)))
+	})
 	@DeleteMapping("/{movieId}/comments/{commentId}/like")
 	public CommentReactionRespDTO decrementCommentLike(@PathVariable Long commentId) {
 		// 추후 JWT 구현 시 userId 삽입
@@ -69,6 +106,14 @@ public class CommentController {
 		return new CommentReactionRespDTO("한줄평 좋아요 취소 완료");
 	}
 
+	@Operation(summary = "한줄평 싫어요")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200",
+			content = @Content(schema = @Schema(implementation = CommentReactionRespDTO.class))),
+		@ApiResponse(responseCode = "400",
+			description = "이미 '싫어요'한 한줄평 '싫어요' 시도 or 존재하지 않는 한줄평 '싫어요' 시도",
+			content = @Content(schema = @Schema(implementation = ExceptionResult.class)))
+	})
 	@PostMapping("/{movieId}/comments/{commentId}/dislike")
 	public CommentReactionRespDTO incrementCommentDislike(@PathVariable Long commentId) {
 		// 추후 JWT 구현 시 userId 삽입
@@ -76,6 +121,14 @@ public class CommentController {
 		return new CommentReactionRespDTO("한줄평 싫어요 취소 완료");
 	}
 
+	@Operation(summary = "한줄평 싫어요 취소")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200",
+			content = @Content(schema = @Schema(implementation = CommentReactionRespDTO.class))),
+		@ApiResponse(responseCode = "400",
+			description = "싫어요 하지 않은 한줄평 좋아요 취소 시도 or 존재하지 않는 한줄평 싫어요 취소 시도",
+			content = @Content(schema = @Schema(implementation = ExceptionResult.class)))
+	})
 	@DeleteMapping("/{movieId}/comments/{commentId}/dislike")
 	public CommentReactionRespDTO decrementCommentDislike(@PathVariable Long commentId) {
 		// 추후 JWT 구현 시 userId 삽입
