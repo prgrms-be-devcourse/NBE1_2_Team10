@@ -18,7 +18,14 @@ public enum ErrorStatus {
 	NOT_COMMENT_WRITER(HttpStatus.BAD_REQUEST, "COMMENT4003"),
 	// 영화 관련 에러
 	NO_SEARCH_RESULT(HttpStatus.BAD_REQUEST, "MOVIE4000"),
-	NO_MOVIE(HttpStatus.BAD_REQUEST, "MOVIE4001");
+	NO_MOVIE(HttpStatus.BAD_REQUEST, "MOVIE4001"),
+
+	// 리뷰 관련 에러
+	INVALID_COMMENT_CONTENT(HttpStatus.BAD_REQUEST, "REVIEW4000"),
+	INVALID_PAGE(HttpStatus.BAD_REQUEST, "REVIEW4001"),
+	NO_REVIEW_COMMENT(HttpStatus.BAD_REQUEST, "REVIEW4002"),
+	NO_REVIEW(HttpStatus.BAD_REQUEST, "REVIEW4003"),
+	NOT_COMMENT_OWNER(HttpStatus.BAD_REQUEST, "REVIEW4004");
 
 	private final HttpStatus httpStatus;
 	private final String code;
