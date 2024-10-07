@@ -1,11 +1,15 @@
-package core.application.movies.models.dto;
+package core.application.movies.models.dto.response;
 
 import core.application.movies.models.entities.CachedMovieEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 @Schema(description = "영화 상세 페이지 정보")
+@AllArgsConstructor
 public class MovieDetailRespDTO {
 	@Schema(description = "영화 ID", example = "A-12345")
 	private String movieId;
@@ -46,21 +50,21 @@ public class MovieDetailRespDTO {
 	@Schema(description = "영화 한줄평 점수 총합", example = "1658")
 	private Long   sumOfRating;
 
-	public MovieDetailRespDTO toDTO(CachedMovieEntity cachedMovieEntity){
-		this.movieId = cachedMovieEntity.getMovieId();
-		this.title = cachedMovieEntity.getTitle();
-		this.posterUrl = cachedMovieEntity.getPosterUrl();
-		this.genre = cachedMovieEntity.getGenre();
-		this.releaseDate = cachedMovieEntity.getReleaseDate();
-		this.plot = cachedMovieEntity.getPlot();
-		this.runningTime = cachedMovieEntity.getRunningTime();
-		this.actors = cachedMovieEntity.getActors();
-		this.director = cachedMovieEntity.getDirector();
-		this.dibCount = cachedMovieEntity.getDibCount();
-		this.reviewCount = cachedMovieEntity.getReviewCount();
-		this.commentCount = cachedMovieEntity.getCommentCount();
-		this.sumOfRating = cachedMovieEntity.getSumOfRating();
-
-		return this;
+	public static MovieDetailRespDTO from(CachedMovieEntity cachedMovieEntity) {
+		return MovieDetailRespDTO.builder()
+			.movieId(cachedMovieEntity.getMovieId())
+			.title(cachedMovieEntity.getTitle())
+			.posterUrl(cachedMovieEntity.getPosterUrl())
+			.genre(cachedMovieEntity.getGenre())
+			.releaseDate(cachedMovieEntity.getReleaseDate())
+			.plot(cachedMovieEntity.getPlot())
+			.runningTime(cachedMovieEntity.getRunningTime())
+			.actors(cachedMovieEntity.getActors())
+			.director(cachedMovieEntity.getDirector())
+			.dibCount(cachedMovieEntity.getDibCount())
+			.reviewCount(cachedMovieEntity.getReviewCount())
+			.commentCount(cachedMovieEntity.getCommentCount())
+			.sumOfRating(cachedMovieEntity.getSumOfRating())
+			.build();
 	}
 }
