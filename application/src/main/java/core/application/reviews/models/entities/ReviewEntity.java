@@ -1,12 +1,15 @@
 package core.application.reviews.models.entities;
 
-import lombok.*;
-
-import java.util.Objects;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * {@code  ReviewRepository} 와 관련된 엔티티
@@ -19,6 +22,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @ToString
 public class ReviewEntity {
+
     private Long reviewId;
     private String title;
     private String content;
@@ -32,19 +36,6 @@ public class ReviewEntity {
     @Setter
     private Instant updatedAt;
 
-	private Set<UUID> likeUsers = new HashSet<>();
-
-	public ReviewEntity increaseLikes(UUID userId) {
-		this.like++;
-		likeUsers.add(userId);
-		return this;
-	}
-
-    public ReviewEntity decreaseLikes(UUID userId){
-        this.like--;
-        likeUsers.remove(userId);
-        return this;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -60,8 +51,7 @@ public class ReviewEntity {
                 && Objects.equals(title, that.title) && Objects.equals(content,
                 that.content) && Objects.equals(userId, that.userId)
                 && Objects.equals(movieId, that.movieId) && Objects.equals(
-                createdAt, that.createdAt) && Objects.equals(updatedAt, that.updatedAt)
-                && Objects.equals(likeUsers, that.likeUsers);
+                createdAt, that.createdAt) && Objects.equals(updatedAt, that.updatedAt);
     }
 
     @Override
@@ -74,7 +64,6 @@ public class ReviewEntity {
         result = 31 * result + like;
         result = 31 * result + Objects.hashCode(createdAt);
         result = 31 * result + Objects.hashCode(updatedAt);
-        result = 31 * result + Objects.hashCode(likeUsers);
         return result;
     }
 }
