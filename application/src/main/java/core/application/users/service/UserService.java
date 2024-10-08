@@ -2,16 +2,28 @@ package core.application.users.service;
 
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
+import core.application.users.models.entities.UserEntity;
+
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * 사용자 관련 서비스를 정의하는 인터페이스
+ *
+ * 이 인터페이스는 사용자 가입, 정보 업데이트, 삭제,
+ * 사용자 검색 기능을 제공합니다. 각 메서드는
+ * 사용자의 정보와 관련된 작업을 수행
+ */
 
 public interface UserService {
-    public MessageResponseDTO signup (UserDTO user);
 
-    // TokenDTO 추후 반환하는 식으로 수정하게 될 것 같습니다.
-    public MessageResponseDTO login (String username, String password);
+    public MessageResponseDTO signup (UserDTO userDTO);
 
-    public MessageResponseDTO logout (UserDTO user);
+    public MessageResponseDTO updateUserInfo (UserDTO userDTO);
 
-    public MessageResponseDTO updateUserInfo (UserDTO user);
+    public MessageResponseDTO deleteUser ();
 
-    public MessageResponseDTO deleteUser (UserDTO user);
+    public Optional<UserEntity> getUserByUserId(UUID userId);
+
+    public Optional<UserEntity> getUserByUserEmail(String userEmail);
 }
