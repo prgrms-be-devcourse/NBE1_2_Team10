@@ -1,4 +1,4 @@
-package core.application.movies.repositories;
+package core.application.movies.repositories.comment;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
-import core.application.movies.models.dto.CommentRespDTO;
+import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.models.entities.CommentEntity;
 import core.application.movies.repositories.mapper.CommentMapper;
 import lombok.RequiredArgsConstructor;

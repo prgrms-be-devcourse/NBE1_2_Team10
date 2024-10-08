@@ -1,4 +1,4 @@
-package core.application.movies.repositories;
+package core.application.movies.repositories.movie;
 
 import java.util.List;
 import java.util.Optional;
