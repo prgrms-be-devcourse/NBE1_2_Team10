@@ -1,7 +1,6 @@
 package core.application.security;
 
 import core.application.users.models.entities.UserEntity;
-import core.application.users.service.RedisService;
 import core.application.users.service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;

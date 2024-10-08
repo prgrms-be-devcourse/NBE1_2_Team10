@@ -1,6 +1,5 @@
 package core.application.security;
 
-import core.application.users.service.RedisService;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

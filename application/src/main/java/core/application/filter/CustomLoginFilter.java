@@ -110,8 +110,6 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         String userEmail = customUserDetails.getUserEmail();
         UUID userId = customUserDetails.getUserId();
 
-        System.out.println(userId);
-
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
