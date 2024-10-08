@@ -1,5 +1,7 @@
 package core.application.reviews.services;
 
+import core.application.movies.exception.NoMovieException;
+import core.application.movies.repositories.movie.CachedMovieRepository;
 import core.application.reviews.exceptions.NoReviewFoundException;
 import core.application.reviews.models.entities.ReviewEntity;
 import core.application.reviews.repositories.ReviewRepository;
@@ -30,7 +32,9 @@ public class ReviewServiceImpl implements ReviewService {
      */
     @Override
     public List<ReviewEntity> getReviewsOnMovieId(String movieId, ReviewSortOrder order,
-            boolean withContent, int offset, int num) {
+            boolean withContent, int offset, int num) throws NoMovieException {
+
+        this.checkWhetherMovieExist(movieId);
 
         Triplet<String, Integer, Integer, List<ReviewEntity>> func
                 = withContent ?
@@ -86,7 +90,7 @@ public class ReviewServiceImpl implements ReviewService {
      * {@inheritDoc}
      */
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public ReviewEntity updateReviewInfo(Long reviewId, ReviewEntity updateReview)
             throws NoReviewFoundException {
 
@@ -119,7 +123,7 @@ public class ReviewServiceImpl implements ReviewService {
      * {@inheritDoc}
      */
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public ReviewEntity deleteReview(Long reviewId) throws NoReviewFoundException {
 
         ReviewEntity origin = reviewRepo.findByReviewIdWithoutContent(reviewId)
@@ -134,7 +138,7 @@ public class ReviewServiceImpl implements ReviewService {
      * {@inheritDoc}
      */
     @Override
-    public ReviewEntity increaseLikes(Long reviewId, UUID userId) throws NoReviewFoundException {
+    public ReviewEntity increaseLikes(Long reviewId) throws NoReviewFoundException {
         return updateLikes(reviewId, 1);
     }
 
@@ -142,7 +146,7 @@ public class ReviewServiceImpl implements ReviewService {
      * {@inheritDoc}
      */
     @Override
-    public ReviewEntity decreaseLikes(Long reviewId, UUID userId) throws NoReviewFoundException {
+    public ReviewEntity decreaseLikes(Long reviewId) throws NoReviewFoundException {
         return updateLikes(reviewId, -1);
     }
 

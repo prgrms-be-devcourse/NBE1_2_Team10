@@ -1,5 +1,6 @@
 package core.application.reviews.services;
 
+import core.application.movies.exception.NoMovieException;
 import core.application.reviews.exceptions.NoReviewFoundException;
 import core.application.reviews.models.entities.ReviewEntity;
 import java.util.List;
@@ -20,9 +21,11 @@ public interface ReviewService {
      * @param offset      페이징 {@code offset}
      * @param num         가져올 포스팅 개수
      * @return 리뷰 포스팅 목록
+     * @throws NoMovieException 영화 ID 에 해당하는 영화가 DB 에 존재하지 않을 시
      */
     List<ReviewEntity> getReviewsOnMovieId(String movieId, ReviewSortOrder order,
-            boolean withContent, int offset, int num);
+            boolean withContent, int offset, int num) throws NoMovieException;
+
     /**
      * 새로운 리뷰 포스팅을 생성하는 서비스
      *
@@ -79,12 +82,11 @@ public interface ReviewService {
      * userId로 확인하여 중복 좋아요 방지
      *
      * @param reviewId 리뷰 포스팅 ID
-     * @param userId   사용자 ID
      * @return {@link ReviewEntity} 좋아요가 1 증가된 리뷰 정보
      * @throws NoReviewFoundException {@code reviewId} 에 해당하는 리뷰 포스팅을 찾지 못했을 시
      * @author semin9809
      */
-    ReviewEntity increaseLikes(Long reviewId, UUID userId) throws NoReviewFoundException;
+    ReviewEntity increaseLikes(Long reviewId) throws NoReviewFoundException;
 
     /**
      * 리뷰에 누른 좋아요 취소하기
@@ -92,12 +94,11 @@ public interface ReviewService {
      * userId로 확인하여 중복 처리 못하게 하기
      *
      * @param reviewId 리뷰 포스팅 ID
-     * @param userId   사용자 ID
      * @return {@link ReviewEntity} 좋아요가 1 감소된 리뷰 정보
      * @throws NoReviewFoundException {@code reviewId} 에 해당하는 리뷰 포스팅을 찾지 못했을 시
      * @author semin9809
      */
-    ReviewEntity decreaseLikes(Long reviewId, UUID userId) throws NoReviewFoundException;
+    ReviewEntity decreaseLikes(Long reviewId) throws NoReviewFoundException;
 
     /**
      * 주어진 {@code movieId} 에 해당하는 영화가 존재하는지 확인하는 서비스
