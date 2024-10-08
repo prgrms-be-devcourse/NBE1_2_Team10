@@ -105,6 +105,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/movies/*/reviews/*/comments").permitAll() // 리뷰 댓글 목록 조회
                         .requestMatchers(HttpMethod.GET, "/movies/*/reviews/*/comments/*").permitAll() // 리뷰 대댓글 목록 조회
                         .requestMatchers(HttpMethod.GET, "/movies/*/comments").permitAll() // 한줄평 목록 조회
+                        .requestMatchers( "/swagger-ui/*", "/api-test", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()); // 나머지 요청은 인증 필요
 
         // JWT 필터를 사용자 정의 로그인 필터 앞에 추가
