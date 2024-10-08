@@ -18,6 +18,8 @@ public interface ReviewMapper {
 
     Optional<ReviewEntity> findByReviewId(Long reviewId);
 
+    Optional<ReviewEntity> findByReviewIdWithoutContent(Long reviewId);
+
     List<ReviewEntity> findByMovieId(
             @Param("movieId") String movieId,
             @Param("offset") int offset,

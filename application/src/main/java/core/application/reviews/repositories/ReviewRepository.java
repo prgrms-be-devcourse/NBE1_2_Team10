@@ -33,6 +33,14 @@ public interface ReviewRepository {
      */
     Optional<ReviewEntity> findByReviewId(Long reviewId);
 
+    /**
+     * 후기 포스팅 ID 로 검색 {@code (본문 없이 가져오기)}
+     *
+     * @param reviewId 후기 포스팅 ID
+     * @return {@link Optional}{@code <}{@link ReviewEntity}{@code >}
+     */
+    Optional<ReviewEntity> findByReviewIdWithoutContent(Long reviewId);
+
     //<editor-fold desc="특정 영화의 후기 포스팅들을 검색">
 
     /**
