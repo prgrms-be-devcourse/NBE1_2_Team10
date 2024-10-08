@@ -69,6 +69,10 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
             //token에 담은 검증을 위한 AuthenticationManager로 전달
             return authenticationManager.authenticate(authToken);
+        } catch (AuthenticationException e) {
+            // 인증 과정에서 발생한 예외를 로그로 남김
+            System.err.println("Authentication failed: " + e.getMessage());
+            throw e; // 예외를 다시 던져서 로그인 실패로 처리
         } catch (IOException | JSONException e) {
             // JSON 파싱 또는 IO 오류 처리
             System.err.println("Invalid request format: " + e.getMessage());
@@ -105,6 +109,8 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String userEmail = customUserDetails.getUserEmail();
         UUID userId = customUserDetails.getUserId();
+
+        System.out.println(userId);
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
