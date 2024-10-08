@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepo;
+    private final CachedMovieRepository movieRepository;
 
     @FunctionalInterface
     private interface Triplet<T1, T2, T3, R> {
@@ -47,6 +48,24 @@ public class ReviewServiceImpl implements ReviewService {
                                 null;       // ReviewSortOrder LATEST 또는 LIKE 아님? 그럼 null
 
         return func != null ? func.apply(movieId, offset, num) : null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ReviewEntity createNewReview(
+            String movieId, UUID userId,
+            String title, String content) throws NoMovieException {
+
+        this.checkWhetherMovieExist(movieId);
+
+        ReviewEntity info = ReviewEntity.builder()
+                .title(title)
+                .content(content)
+                .build();
+
+        return reviewRepo.saveNewReview(movieId, userId, info);
     }
 
     /**
@@ -132,5 +151,15 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new NoReviewFoundException(reviewId));
 
         return reviewRepo.updateReviewLikes(reviewId, origin.getLike() + dl);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void checkWhetherMovieExist(String movieId) throws NoMovieException {
+        movieRepository.findByMovieId(movieId)
+                .orElseThrow(() -> new NoMovieException("No movie found with id: ["
+                        + movieId + "]"));
     }
 }

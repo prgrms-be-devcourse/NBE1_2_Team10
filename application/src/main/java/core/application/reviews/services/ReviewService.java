@@ -23,6 +23,17 @@ public interface ReviewService {
      */
     List<ReviewEntity> getReviewsOnMovieId(String movieId, ReviewSortOrder order,
             boolean withContent, int offset, int num);
+    /**
+     * 새로운 리뷰 포스팅을 생성하는 서비스
+     *
+     * @param movieId 포스팅을 작성할 영화 ID
+     * @param userId  포스팅을 작성하는 사용자 ID
+     * @param title   포스팅 제목
+     * @param content 포스팅 본문
+     * @return 생성된 포스팅 정보
+     */
+    ReviewEntity createNewReview(String movieId, UUID userId, String title, String content)
+            throws NoMovieException;
 
     /**
      * 한 리뷰의 상세 정보를 가져오는 서비스
@@ -88,4 +99,11 @@ public interface ReviewService {
      */
     ReviewEntity decreaseLikes(Long reviewId, UUID userId) throws NoReviewFoundException;
 
+    /**
+     * 주어진 {@code movieId} 에 해당하는 영화가 존재하는지 확인하는 서비스
+     *
+     * @param movieId 영화 ID
+     * @throws NoMovieException 영화가 DB 에 존재하지 않을 시
+     */
+    void checkWhetherMovieExist(String movieId) throws NoMovieException;
 }
