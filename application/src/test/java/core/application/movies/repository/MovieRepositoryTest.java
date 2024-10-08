@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import core.application.movies.models.entities.CachedMovieEntity;
-import core.application.movies.repositories.CachedMovieRepository;
+import core.application.movies.repositories.movie.CachedMovieRepository;
 
 @SpringBootTest
 @Transactional

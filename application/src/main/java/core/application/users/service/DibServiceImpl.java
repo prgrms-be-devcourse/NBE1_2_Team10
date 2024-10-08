@@ -1,7 +1,7 @@
 package core.application.users.service;
 
 import core.application.movies.models.entities.CachedMovieEntity;
-import core.application.movies.repositories.CachedMovieRepository;
+import core.application.movies.repositories.movie.CachedMovieRepository;
 import core.application.users.models.dto.DibRespDTO;
 import core.application.users.repositories.DibRepository;
 import lombok.RequiredArgsConstructor;

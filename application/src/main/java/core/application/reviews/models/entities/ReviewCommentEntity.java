@@ -82,28 +82,6 @@ public class ReviewCommentEntity {
         return this;
     }
 
-    /**
-     * 댓글에 좋아요를 증가시키는 기능
-     *
-     * @param num 증가시킬 좋아요 개수
-     * @return {@code this} 좋아요가 증가된 댓글 정보
-     */
-    public ReviewCommentEntity increaseLikes(int num) {
-        this.like += num;
-        return this;
-    }
-
-    /**
-     * 댓글에 누른 좋아요를 감소시키는 기능
-     *
-     * @param num 감소시킬 좋아요 개수
-     * @return {@code this} 좋아요가 감소된 댓글 정보
-     */
-    public ReviewCommentEntity decreaseLikes(int num) {
-        this.like -= num;
-        return this;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {

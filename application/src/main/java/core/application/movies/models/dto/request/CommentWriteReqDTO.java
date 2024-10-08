@@ -1,4 +1,4 @@
-package core.application.movies.models.dto;
+package core.application.movies.models.dto.request;
 
 import org.hibernate.validator.constraints.Range;
 

@@ -1,4 +1,4 @@
-package core.application.movies.models.dto;
+package core.application.movies.models.dto.response;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -35,10 +35,10 @@ public class CommentRespDTO {
 
 	@Schema(description = "한줄평 작성 시간", example = "2024-10-05")
 	private Instant createdAt;
-	
+
 	@Schema(description = "현재 사용자가 해당 한줄평 좋아요 여부", example = "false")
 	private Boolean isLiked;
-	
+
 	@Schema(description = "현재 사용자가 해당 한줄평 싫어요 여부", example = "false")
 	private Boolean isDisliked;
 
@@ -50,8 +50,10 @@ public class CommentRespDTO {
 			.userId(comment.getUserId())
 			.like(comment.getLike())
 			.dislike(comment.getDislike())
-			.rating(comment.getDislike())
+			.rating(comment.getRating())
 			.createdAt(comment.getCreatedAt())
+			.isLiked(false)
+			.isDisliked(false)
 			.build();
 	}
 }

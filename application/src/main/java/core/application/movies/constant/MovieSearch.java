@@ -13,10 +13,14 @@ public enum MovieSearch {
 
 	public static boolean isNotValid(String sort) {
 		for (MovieSearch value : MovieSearch.values()) {
-			if (value.name().equals(sort)) {
+			if (value.name().equalsIgnoreCase(sort)) {
 				return false;
 			}
 		}
 		return true;
+	}
+
+	public static boolean isRatingOrder(String sort) {
+		return RATING.name().equalsIgnoreCase(sort);
 	}
 }

@@ -3,7 +3,7 @@ package core.application.movies.models.entities;
 import java.time.Instant;
 import java.util.UUID;
 
-import core.application.movies.models.dto.CommentWriteReqDTO;
+import core.application.movies.models.dto.request.CommentWriteReqDTO;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

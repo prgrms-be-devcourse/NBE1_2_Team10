@@ -4,7 +4,7 @@
 <mapper namespace="core.application.users.mapper.DibMapper">
     <insert id="saveNewDib">
         INSERT INTO dib_table(user_id, movie_id)
-        VALUES (#{userId}, #{dib.movieId})
+        VALUES (#{userId}, #{movieId})
     </insert>
 
     <delete id="deleteDibByDibId">

@@ -1,4 +1,4 @@
-package core.application.movies.models.dto;
+package core.application.movies.models.dto.response;
 
 import core.application.movies.models.entities.CachedMovieEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
