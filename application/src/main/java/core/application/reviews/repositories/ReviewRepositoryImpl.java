@@ -123,6 +123,13 @@ public class ReviewRepositoryImpl implements
         return mapper.findByReviewId(reviewId).orElseThrow();
     }
 
+    @Override
+    @Transactional
+    public ReviewEntity updateReviewLikes(Long reviewId, int givenLikes) {
+        mapper.updateLikes(reviewId, givenLikes);
+        return mapper.findByReviewId(reviewId).orElseThrow();
+    }
+
     /**
      * {@inheritDoc}
      */

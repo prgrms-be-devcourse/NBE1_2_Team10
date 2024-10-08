@@ -145,6 +145,15 @@ public interface ReviewRepository {
      */
     ReviewEntity editReviewInfo(Long reviewId, ReviewEntity replacement);
 
+    /**
+     * 특정 후기 포스팅에 좋아요를 {@code likes} 값으로 재설정
+     *
+     * @param reviewId   변경할 포스팅의 ID
+     * @param givenLikes 변경할 좋아요 값
+     * @return {@link ReviewEntity} 변경된 정보
+     */
+    ReviewEntity updateReviewLikes(Long reviewId, int givenLikes);
+
     // DELETE
 
     /**

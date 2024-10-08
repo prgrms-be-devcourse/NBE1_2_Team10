@@ -64,5 +64,10 @@ public interface ReviewMapper {
             @Param("reviewId") Long reviewId,
             @Param("replacement") ReviewEntity replacement);
 
+    int updateLikes(
+            @Param("reviewId") Long reviewId,
+            @Param("givenLikes") int givenLikes
+    );
+
     void deleteReview(Long reviewId);
 }
