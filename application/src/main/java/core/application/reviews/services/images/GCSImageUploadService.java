@@ -25,7 +25,7 @@ public class GCSImageUploadService implements
     /**
      * {@code GCS} 버킷 이름
      */
-    @Value("${spring.cloud.gcp.storage.bucket}")
+    @Value("${gcp.bucket.name}")
     private String cloudBucketName;
 
     /**
