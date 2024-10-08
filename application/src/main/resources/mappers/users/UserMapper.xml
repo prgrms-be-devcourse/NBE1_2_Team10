@@ -4,18 +4,17 @@
 <mapper namespace="core.application.users.mapper.UserMapper">
     <insert id="saveNewUser" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO user_table(user_email, user_pw, user_name, role, alias, phone_num)
-        VALUES (#{userEmail}, #{userPw}, #{userName}, #{role}, #{alias}, #{phoneNum})
+        VALUES (#{newUser.userEmail},#{newUser.userPw}, #{newUser.userName}, #{newUser.role}, #{newUser.alias}, #{newUser.phoneNum})
     </insert>
 
-    <update id="editUserInfo">
+    <update id="editUserInfo" useGeneratedKeys="true" keyProperty="userId">
         UPDATE user_table
-        SET user_email = #{replacement.userEmail},
-            user_pw = #{replacement.userPw},
+        SET user_pw = #{replacement.userPw},
             user_name = #{replacement.userName},
             role = #{replacement.role},
             alias = #{replacement.alias},
             phone_num = #{replacement.phoneNum}
-        WHERE user_id = #{userId}
+        WHERE user_id = #{replacement.userId}
     </update>
 
     <delete id="deleteUser">
@@ -45,6 +44,12 @@
         SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
         FROM user_table
         WHERE role = #{role}
+    </select>
+
+    <select id="selectDibsOnUserId" resultType="core.application.users.models.entities.DibEntity">
+        SELECT dib_id, user_id, movie_id
+        FROM dib_table
+        WHERE user_id = #{userId}
     </select>
 
     <select id="findAll" resultType="core.application.users.models.entities.UserEntity">
