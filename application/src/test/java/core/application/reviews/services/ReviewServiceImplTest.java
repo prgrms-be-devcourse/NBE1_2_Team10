@@ -243,10 +243,10 @@ class ReviewServiceImplTest {
     void testLikes() {
         Random random = new Random();
 
-        assertThatThrownBy(() -> reviewService.increaseLikes(random.nextLong(), null))
+        assertThatThrownBy(() -> reviewService.increaseLikes(random.nextLong()))
                 .isInstanceOf(NoReviewFoundException.class);
 
-        assertThatThrownBy(() -> reviewService.decreaseLikes(random.nextLong(), null))
+        assertThatThrownBy(() -> reviewService.decreaseLikes(random.nextLong()))
                 .isInstanceOf(NoReviewFoundException.class);
     }
 }

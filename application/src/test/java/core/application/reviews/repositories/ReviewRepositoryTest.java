@@ -4,7 +4,7 @@ import static java.util.Comparator.comparing;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import core.application.movies.models.entities.CachedMovieEntity;
-import core.application.movies.repositories.CachedMovieRepository;
+import core.application.movies.repositories.movie.CachedMovieRepository;
 import core.application.reviews.models.entities.ReviewEntity;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
@@ -51,7 +51,7 @@ class ReviewRepositoryTest {
     // Table DDL 에서 UUID 가 generate 되는게 아니라 DEFAULT EXPRESSION 으로 생성되서
     // MyBatis useGeneratedKey 인식을 못함
     // 그래서 나중에 saveNewUser 메서드 UUID 도 제공 받아서 저장되도록 만들어야됨 tq
-    private static UUID userId = UUID.fromString("01cbb144-851e-11ef-b878-00d861a152a7");
+    private static final UUID userId = UUID.fromString("01cbb144-851e-11ef-b878-00d861a152a7");
     private static UserEntity testUser;
     private static CachedMovieEntity testMovie;
 
@@ -97,7 +97,7 @@ class ReviewRepositoryTest {
         try {
             movieRepo.saveNewMovie(testMovie);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warning(e.getMessage());
         }
 
         testReviews1 = IntStream.range(0, TEST_SIZE).parallel()
