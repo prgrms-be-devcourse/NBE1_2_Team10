@@ -150,7 +150,7 @@ class UserRepositoryImplTest {
         userRepo.saveNewUser(testUser);
 
         UserEntity editUser = UserEntity.builder()
-                .userEmail("edit.com")
+                .userEmail(testUser.getUserEmail())
                 .userPw("editPw")
                 .role(UserRole.USER)
                 .alias("소소은")
