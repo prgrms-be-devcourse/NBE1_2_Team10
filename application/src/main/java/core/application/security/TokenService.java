@@ -119,7 +119,6 @@ public class TokenService {
         }
 
         String userEmail = jwtUtil.getUserEmail(accessToken);
-        System.out.println(userEmail);
         Optional<UserEntity> userEntity = userService.getUserByUserEmail(userEmail);
 
         if (userEntity.isEmpty()) {
@@ -165,7 +164,6 @@ public class TokenService {
      * @return 비활성화 결과 메시지
      */
     public String inactiveAccessToken(String refreshToken) {
-        System.out.println(refreshToken);
         if (validateRefreshToken(refreshToken).equals("valid token")) {
             redisService.deleteValue(jwtUtil.getUserEmail(refreshToken));
         }

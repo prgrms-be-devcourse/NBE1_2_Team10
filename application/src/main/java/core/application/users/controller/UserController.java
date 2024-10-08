@@ -6,6 +6,7 @@ import core.application.security.TokenService;
 import core.application.users.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,7 +47,7 @@ public class UserController {
      */
 
     @PostMapping("/signup")
-    public MessageResponseDTO singUp(@RequestBody UserDTO userDTO) {
+    public MessageResponseDTO singUp(@Valid @RequestBody UserDTO userDTO) {
         return userService.signup(userDTO);
     }
 
@@ -65,7 +66,7 @@ public class UserController {
      */
 
     @PatchMapping("/update")
-    public MessageResponseDTO updateUser(@RequestBody UserDTO userDTO) {
+    public MessageResponseDTO updateUser(@Valid @RequestBody UserDTO userDTO) {
         return userService.updateUserInfo(userDTO);
     }
 

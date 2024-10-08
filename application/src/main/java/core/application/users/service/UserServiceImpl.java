@@ -6,6 +6,7 @@ import core.application.users.models.dto.UserDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;
 import core.application.users.repositories.UserRepositoryImpl;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +43,20 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public MessageResponseDTO signup(UserDTO userDTO) {
-        userRepository.saveNewUser(userDTO.toEntity());
+        if (userDTO.getAlias() == null) {
+            String email = userDTO.getUserEmail();
+            UserDTO userWithAlias = UserDTO.builder()
+                    .userEmail(userDTO.getUserEmail())
+                    .userPw(userDTO.getUserPw())
+                    .userName(userDTO.getUserName())
+                    .alias(email.substring(0, email.indexOf("@")))
+                    .phoneNum(userDTO.getPhoneNum())
+                    .role(userDTO.getRole())
+                    .build();
+            userRepository.saveNewUser(userWithAlias.toEntity());
+        } else {
+            userRepository.saveNewUser(userDTO.toEntity());
+        }
         Optional<UserEntity> userEntity = userRepository.findByUserEmail(userDTO.getUserEmail());
         return new MessageResponseDTO(userEntity.get().getUserId(), "signUp success");
     }
@@ -55,6 +69,18 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public MessageResponseDTO updateUserInfo(UserDTO userDTO) {
+        UserEntity originUserEntity = userRepository.findByUserId(userDTO.getUserId()).get();
+
+        // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
+        UserEntity updatedUserEntity = UserEntity.builder()
+                .userId(originUserEntity.getUserId()) // 기존 userId 유지
+                .userPw(userDTO.getUserPw() != null ? userDTO.getUserPw() : originUserEntity.getUserPw()) // userPw 업데이트
+                .role(userDTO.getRole() != null ? userDTO.getRole() : originUserEntity.getRole()) // role 업데이트
+                .alias(userDTO.getAlias() != null ? userDTO.getAlias() : originUserEntity.getAlias()) // alias 업데이트
+                .phoneNum(userDTO.getPhoneNum() != null ? userDTO.getPhoneNum() : originUserEntity.getPhoneNum()) // phoneNum 업데이트
+                .userName(userDTO.getUserName() != null ? userDTO.getUserName() : originUserEntity.getUserName()) // userName 업데이트
+                .build();
+
         if (userRepository.editUserInfo(userDTO.toEntity()) == 1) {
             return new MessageResponseDTO(userDTO.getUserId(), "update success");
         }

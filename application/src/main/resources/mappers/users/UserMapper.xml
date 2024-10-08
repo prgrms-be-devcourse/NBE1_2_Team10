@@ -23,25 +23,25 @@
     </delete>
 
     <select id="findByUserId" resultType="core.application.users.models.entities.UserEntity">
-        SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
         FROM user_table
         WHERE user_id = #{userId}
     </select>
 
     <select id="findByUserEmail" resultType="core.application.users.models.entities.UserEntity">
-        SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
         FROM user_table
         WHERE user_email = #{userEmail}
     </select>
 
     <select id="findByUserEmailAndPassword" resultType="core.application.users.models.entities.UserEntity">
-        SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
         FROM user_table
         WHERE user_email = #{userEmail} AND user_pw = #{userPw}
     </select>
 
     <select id="findByUserRole" resultType="core.application.users.models.entities.UserEntity">
-        SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
         FROM user_table
         WHERE role = #{role}
     </select>
@@ -53,7 +53,7 @@
     </select>
 
     <select id="findAll" resultType="core.application.users.models.entities.UserEntity">
-        SELECT user_id, user_email, user_pw, user_name, role, refresh_token, alias, phone_num
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
         FROM user_table
     </select>
 </mapper>
