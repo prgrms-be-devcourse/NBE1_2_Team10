@@ -1,17 +1,12 @@
 package core.application.reviews.models.entities;
 
+import lombok.*;
+
+import java.util.Objects;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
  * {@code  ReviewRepository} 와 관련된 엔티티
@@ -24,12 +19,12 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class ReviewEntity {
-    private Long    reviewId;
-    private String  title;
-    private String  content;
-    private UUID    userId;
-    private String  movieId;
-    private int     like;
+    private Long reviewId;
+    private String title;
+    private String content;
+    private UUID userId;
+    private String movieId;
+    private int like;
 
     @Setter
     private Instant createdAt;
@@ -37,21 +32,13 @@ public class ReviewEntity {
     @Setter
     private Instant updatedAt;
 
-    private Set<UUID> likeUsers = new HashSet<>();
+	private Set<UUID> likeUsers = new HashSet<>();
 
-    /* builder 사용하려면...
-     * public static ReviewEntity from(ReviewReqDTO dto) {
-     *     return ReviewEntity.builder()
-     *     ...
-     *     .build();
-     * }
-     */
-
-    public ReviewEntity increaseLikes(UUID userId){
-        this.like++;
-        likeUsers.add(userId);
-        return this;
-    }
+	public ReviewEntity increaseLikes(UUID userId) {
+		this.like++;
+		likeUsers.add(userId);
+		return this;
+	}
 
     public ReviewEntity decreaseLikes(UUID userId){
         this.like--;

@@ -14,12 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import core.application.movies.models.dto.CommentRespDTO;
+import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.models.entities.CommentEntity;
-import core.application.movies.repositories.CachedMovieRepository;
-import core.application.movies.repositories.CommentLikeRepository;
-import core.application.movies.repositories.CommentRepository;
+import core.application.movies.repositories.movie.CachedMovieRepository;
+import core.application.movies.repositories.comment.CommentLikeRepository;
+import core.application.movies.repositories.comment.CommentRepository;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
 import core.application.users.repositories.UserRepository;

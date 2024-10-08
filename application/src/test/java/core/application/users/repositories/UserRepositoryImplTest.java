@@ -159,7 +159,7 @@ class UserRepositoryImplTest {
                 .build();
 
         // When
-        userRepo.editUserInfo(testUser.getUserId(), editUser);
+        userRepo.editUserInfo(editUser);
 
         // Then
         Optional<UserEntity> find = userRepo.findByUserId(testUser.getUserId());

@@ -1,12 +1,10 @@
 package core.application.movies.service;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 
-import core.application.movies.models.dto.MovieDetailRespDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,10 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import core.application.movies.models.dto.MainPageMovieRespDTO;
-import core.application.movies.models.dto.MainPageMoviesRespDTO;
+import core.application.movies.models.dto.response.MainPageMovieRespDTO;
+import core.application.movies.models.dto.response.MainPageMoviesRespDTO;
+import core.application.movies.models.dto.response.MovieDetailRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
-import core.application.movies.repositories.CachedMovieRepository;
+import core.application.movies.repositories.movie.CachedMovieRepository;
 
 @SpringBootTest
 @Transactional
@@ -77,14 +76,14 @@ public class MovieServiceTest {
 	@DisplayName("영화 상세 정보 가져오기 서비스 테스트")
 	void testGetMovieDetailInfo_MovieExistsInCache() {
 		// GIVEN
-		String movieId = "K36062";
+		String movieId = "K-36062";
 
 		// Act
 		MovieDetailRespDTO result = movieService.getMovieDetailInfo(movieId);
 
 		// Assert
 		assertNotNull(result);
-		assertEquals("K36062", result.getMovieId());
+		assertEquals("K-36062", result.getMovieId());
 		assertEquals("댓글부대", result.getTitle());
 		assertEquals("드라마,범죄", result.getGenre());
 		assertEquals("20240327", result.getReleaseDate());
