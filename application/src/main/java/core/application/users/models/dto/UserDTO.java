@@ -18,7 +18,7 @@ public class UserDTO {
     private UUID userId;
 
     @Email
-    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message="이메일 주소 양식을 확인해주세요")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message="이메일 주소 양식을 확인해주세요.")
     private String userEmail;
 
     @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,15}$", message = "비밀번호는 8자 이상 15자 이하이며, 영문자, 숫자 및 특수문자를 포함해야 합니다.")

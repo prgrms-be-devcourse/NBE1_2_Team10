@@ -6,7 +6,6 @@ import core.application.users.models.dto.UserDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;
 import core.application.users.repositories.UserRepositoryImpl;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
