@@ -77,6 +77,7 @@ public class CommentController {
 		return ApiResponse.onCreateSuccess(commentRespDTO);
 	}
 
+	@Operation(summary = "한줄평 삭제")
 	@DeleteMapping("/{movieId}/comments/{commentId}")
 	public ApiResponse<Message> deleteComment(@PathVariable String movieId, @PathVariable String commentId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
