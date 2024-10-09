@@ -90,6 +90,7 @@ CineVerse(영화 소개 및 평론 사이트)
 * [Sequence Diagram](https://www.notion.so/11990d1ee4be810593e0f3a71943910b)
 
 ### 8. ERD
+![image-3](https://github.com/user-attachments/assets/e0dc7923-1ba3-4389-bc5d-325a5fd1536b)
 
 
 ### 9. 프로젝트 패키지 구성
