@@ -32,7 +32,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -55,7 +54,7 @@ public class ReviewCommentController {
 
 	private static final int COMMENTS_PER_PAGE = 10;
 
-	private static final String COOKIE_NAME = "ReviewCommentLikeAdjustment";
+	private static final String COOKIE_NAME_PREFIX = "ReviewCommentLikeAdjustment";
 
 	/**
 	 * 부모 댓글 보여주는 앤드포인트
@@ -223,7 +222,8 @@ public class ReviewCommentController {
 	 * 좋아요 증감시키는 엔드포인트
 	 *
 	 * @param reviewCommentId {@code pathVariable}
-	 * @param cookie          좋아요 눌렀는지 안눌렀는지 확인용 쿠키
+	 * @param userDetails {@code userEmail} 가져오기 위한 {@code principal}
+	 * @param req              쿠키 가져올 {@code servletRequest}
 	 * @param resp            쿠키 저장하고 삭제할 {@code servletResponse}
 	 * @return 응답용 {@code DTO}
 	 */
@@ -231,34 +231,44 @@ public class ReviewCommentController {
 	@PatchMapping("/comments/{reviewCommentId}/like")
 	public ApiResponse<Message> editLikes(
 		@PathVariable("reviewCommentId") Long reviewCommentId,
-		@CookieValue(value = COOKIE_NAME, required = false) Cookie cookie,
-		HttpServletResponse resp) {
+			@AuthenticationPrincipal CustomUserDetails userDetails,
+			HttpServletRequest req, HttpServletResponse resp) {
 
-		// TODO 로그인 된 유저만 좋아요 증감시킬 수 있어야 함.
-		// TODO_IMP 로그인 된 유저만 좋아요 증감시킬 수 있어야 함.
-		// TODO 유저별 쿠키 value 다르게 해야 함.
-		// TODO 댓글별 쿠키 name 도 다르게 해야 함.
+		// hash 값 이용해서 쿠키 이름, 값 증빌할 거임
+		String validCookieValue = String.valueOf(
+				Objects.hash(reviewCommentId, userDetails.getUserEmail()));
 
-		String resultMessage;
-		ReviewCommentEntity entity;
+		// request 내 쿠키 중 이름 일치하는 쿠키 확인
+		Cookie cookie = req.getCookies() == null ? null :
+				Arrays.stream(req.getCookies())
+						.filter(c -> c.getName().equals(COOKIE_NAME_PREFIX + validCookieValue))
+						.findFirst()
+						.orElse(null);
 
-		if (cookie != null && cookie.getValue().equals(String.valueOf(reviewCommentId))) {
-			resultMessage = "댓글의 좋아요를 감소시켰습니다.";
-			entity = reviewCommentService.decreaseCommentLike(reviewCommentId);
-			deleteCookie(reviewCommentId, resp);
-		} else {
-			resultMessage = "댓글의 좋아요를 증가시켰습니다. ";
-			entity = reviewCommentService.increaseCommentLike(reviewCommentId);
-			saveCookie(reviewCommentId, resp);
-		}
+		// 쿠키 이름 & 값 일치하는지 확인
+		boolean doesCookieExist = cookie != null && cookie.getValue().equals(validCookieValue);
 
+		// 쿠키 없으면 좋아요 증가, 있으면 감소
+		Function<Long, ReviewCommentEntity> adjustLike = doesCookieExist ?
+				reviewCommentService::decreaseCommentLike
+				: reviewCommentService::increaseCommentLike;
+
+		// 쿠키 없으면 새로 생성, 있으면 삭제
+		BiConsumer<HttpServletResponse, String> handleCookie = doesCookieExist ?
+				this::deleteCookie : this::saveCookie;
+
+		// 댓글 좋아요 증감, 쿠키 처리 진행
+		ReviewCommentEntity entity = adjustLike.apply(reviewCommentId);
+		handleCookie.accept(resp, validCookieValue);
+
+		String resultMessage = "댓글의 좋아요를 " + (doesCookieExist ? "감소" : "증가") + "시켰습니다.";
 		resultMessage += " [" + entity.getLike() + "]";
 
 		return ApiResponse.onSuccess(Message.createMessage(resultMessage));
 	}
 
-	private void saveCookie(Long reviewCommentId, HttpServletResponse resp) {
-		Cookie cookie = new Cookie(COOKIE_NAME, String.valueOf(reviewCommentId));
+	private void saveCookie(HttpServletResponse resp, String validCookieValue) {
+		Cookie cookie = new Cookie(COOKIE_NAME_PREFIX + validCookieValue, validCookieValue);
 
 		int year = 365 * 24 * 60 * 60;
 		cookie.setMaxAge(year);
@@ -267,8 +277,8 @@ public class ReviewCommentController {
 		resp.addCookie(cookie);
 	}
 
-	private void deleteCookie(Long reviewCommentId, HttpServletResponse resp) {
-		Cookie cookie = new Cookie(COOKIE_NAME, String.valueOf(reviewCommentId));
+	private void deleteCookie(HttpServletResponse resp, String validCookieValue) {
+		Cookie cookie = new Cookie(COOKIE_NAME_PREFIX + validCookieValue, validCookieValue);
 		cookie.setMaxAge(0);
 		resp.addCookie(cookie);
 	}
