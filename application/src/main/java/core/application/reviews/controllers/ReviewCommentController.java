@@ -1,22 +1,5 @@
 package core.application.reviews.controllers;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import core.application.api.response.ApiResponse;
 import core.application.api.response.code.Message;
 import core.application.reviews.exceptions.InvalidCommentContentException;
@@ -35,8 +18,23 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -50,7 +48,7 @@ public class ReviewCommentController {
 
 	private static final int COMMENTS_PER_PAGE = 10;
 
-	private static final String COOKIE_NAME = "RCLDA";
+	private static final String COOKIE_NAME = "ReviewCommentLikeAdjustment";
 
 	/**
 	 * 부모 댓글 보여주는 앤드포인트
@@ -227,6 +225,8 @@ public class ReviewCommentController {
 
 		// TODO 로그인 된 유저만 좋아요 증감시킬 수 있어야 함.
 		// TODO_IMP 로그인 된 유저만 좋아요 증감시킬 수 있어야 함.
+		// TODO 유저별 쿠키 value 다르게 해야 함.
+		// TODO 댓글별 쿠키 name 도 다르게 해야 함.
 
 		String resultMessage;
 		ReviewCommentEntity entity;

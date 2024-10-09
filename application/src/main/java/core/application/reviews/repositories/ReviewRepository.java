@@ -2,7 +2,6 @@ package core.application.reviews.repositories;
 
 
 import core.application.reviews.models.entities.ReviewEntity;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +23,6 @@ public interface ReviewRepository {
      */
     ReviewEntity saveNewReview(String movieId, UUID userId, ReviewEntity review);
 
-
     //<editor-fold desc="READ">
 
     /**
@@ -35,31 +33,45 @@ public interface ReviewRepository {
      */
     Optional<ReviewEntity> findByReviewId(Long reviewId);
 
+    /**
+     * 후기 포스팅 ID 로 검색 {@code (본문 없이 가져오기)}
+     *
+     * @param reviewId 후기 포스팅 ID
+     * @return {@link Optional}{@code <}{@link ReviewEntity}{@code >}
+     */
+    Optional<ReviewEntity> findByReviewIdWithoutContent(Long reviewId);
+
     //<editor-fold desc="특정 영화의 후기 포스팅들을 검색">
 
     /**
      * 특정 영화의 후기 포스팅들을 검색
      *
      * @param movieId 검색할 영화 ID
+     * @param offset  페이징 {@code offset}
+     * @param num     가져올 포스팅 수
      * @return {@link List}{@code <}{@link ReviewEntity}{@code >}
      */
-    List<ReviewEntity> findByMovieId(String movieId);
+    List<ReviewEntity> findByMovieId(String movieId, int offset, int num);
 
     /**
      * 특정 영화의 후기 포스팅들을 최신순으로 검색
      *
      * @param movieId 검색할 영화 ID
+     * @param offset  페이징 {@code offset}
+     * @param num     가져올 포스팅 수
      * @return {@link List}{@code <}{@link ReviewEntity}{@code >}
      */
-    List<ReviewEntity> findByMovieIdOnDateDescend(String movieId);
+    List<ReviewEntity> findByMovieIdOnDateDescend(String movieId, int offset, int num);
 
     /**
      * 특정 영화의 후기 포스팅들을 좋아요 순으로 검색
      *
      * @param movieId 검색할 영화 ID
+     * @param offset  페이징 {@code offset}
+     * @param num     가져올 포스팅 수
      * @return {@link List}{@code <}{@link ReviewEntity}{@code >}
      */
-    List<ReviewEntity> findByMovieIdOnLikeDescend(String movieId);
+    List<ReviewEntity> findByMovieIdOnLikeDescend(String movieId, int offset, int num);
     //</editor-fold>
 
     //<editor-fold desc="특정 영화의 포스팅을 본문 없이 검색">
@@ -70,9 +82,11 @@ public interface ReviewRepository {
      * 이 때 포스팅의 본문을 load 하지 않음.
      *
      * @param movieId 검색할 영화 ID
+     * @param offset  페이징 {@code offset}
+     * @param num     가져올 포스팅 수
      * @return {@link List}{@code <}{@link ReviewEntity}{@code >}
      */
-    List<ReviewEntity> findByMovieIdWithoutContent(String movieId);
+    List<ReviewEntity> findByMovieIdWithoutContent(String movieId, int offset, int num);
 
     /**
      * 특정 영화의 후기 포스팅들을 최신순으로 검색
@@ -80,9 +94,12 @@ public interface ReviewRepository {
      * 이 때 포스팅의 본문을 load 하지 않음.
      *
      * @param movieId 검색할 영화 ID
+     * @param offset  페이징 {@code offset}
+     * @param num     가져올 포스팅 수
      * @return {@link List}{@code <}{@link ReviewEntity}{@code >}
      */
-    List<ReviewEntity> findByMovieIdWithoutContentOnDateDescend(String movieId);
+    List<ReviewEntity> findByMovieIdWithoutContentOnDateDescend(String movieId, int offset,
+            int num);
 
     /**
      * 특정 영화의 후기 포스팅들을 좋아요 순으로 검색
@@ -90,9 +107,12 @@ public interface ReviewRepository {
      * 이 때 포스팅의 본문을 load 하지 않음.
      *
      * @param movieId 검색할 영화 ID
+     * @param offset  페이징 {@code offset}
+     * @param num     가져올 포스팅 수
      * @return {@link List}{@code <}{@link ReviewEntity}{@code >}
      */
-    List<ReviewEntity> findByMovieIdWithoutContentOnLikeDescend(String movieId);
+    List<ReviewEntity> findByMovieIdWithoutContentOnLikeDescend(String movieId, int offset,
+            int num);
     //</editor-fold>
 
     /**
@@ -111,13 +131,13 @@ public interface ReviewRepository {
     List<ReviewEntity> selectAll();
     //</editor-fold>
 
-
     // UPDATE
 
     /**
      * 특정 후기 포스팅의 정보를 {@code replacement} 정보로 변경.
      * <p>
-     * 이 때 {@code title}, {@code content} 만 {@code replacement} 의 것으로 변경. {@code updatedAt} 은 자동으로 변경.
+     * 이 때 {@code title}, {@code content} 만 {@code replacement} 의 것으로 변경. {@code updatedAt} 은 자동으로
+     * 변경.
      *
      * @param reviewId    정보 변경할 포스팅의 ID
      * @param replacement 변경할 정보
@@ -125,6 +145,14 @@ public interface ReviewRepository {
      */
     ReviewEntity editReviewInfo(Long reviewId, ReviewEntity replacement);
 
+    /**
+     * 특정 후기 포스팅에 좋아요를 {@code likes} 값으로 재설정
+     *
+     * @param reviewId   변경할 포스팅의 ID
+     * @param givenLikes 변경할 좋아요 값
+     * @return {@link ReviewEntity} 변경된 정보
+     */
+    ReviewEntity updateReviewLikes(Long reviewId, int givenLikes);
 
     // DELETE
 
