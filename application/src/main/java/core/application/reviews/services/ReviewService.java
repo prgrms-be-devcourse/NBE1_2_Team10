@@ -1,8 +1,9 @@
 package core.application.reviews.services;
 
+import core.application.movies.exception.NoMovieException;
 import core.application.reviews.exceptions.NoReviewFoundException;
 import core.application.reviews.models.entities.ReviewEntity;
-
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,17 +13,42 @@ import java.util.UUID;
 public interface ReviewService {
 
     /**
-     * 리뷰글 보기
+     * 특정 영화에 달린 리뷰 포스팅 목록을 보여주는 서비스
      *
-     * @param reviewId    리뷰 포스팅 id
+     * @param movieId     검색할 영화 ID
      * @param order       리뷰 포스팅 정렬 순서 {@code (최신순, 좋아요순)}
+     * @param withContent 본문을 포함해서 불러올지 {@code Y/N}
+     * @param offset      페이징 {@code offset}
+     * @param num         가져올 포스팅 개수
+     * @return 리뷰 포스팅 목록
+     * @throws NoMovieException 영화 ID 에 해당하는 영화가 DB 에 존재하지 않을 시
+     */
+    List<ReviewEntity> getReviewsOnMovieId(String movieId, ReviewSortOrder order,
+            boolean withContent, int offset, int num) throws NoMovieException;
+
+    /**
+     * 새로운 리뷰 포스팅을 생성하는 서비스
+     *
+     * @param movieId 포스팅을 작성할 영화 ID
+     * @param userId  포스팅을 작성하는 사용자 ID
+     * @param title   포스팅 제목
+     * @param content 포스팅 본문
+     * @return 생성된 포스팅 정보
+     */
+    ReviewEntity createNewReview(String movieId, UUID userId, String title, String content)
+            throws NoMovieException;
+
+    /**
+     * 한 리뷰의 상세 정보를 가져오는 서비스
+     *
+     * @param reviewId    리뷰 포스팅 ID
      * @param withContent 본문을 포함해서 불러올지 {@code Y/N}
      * @return {@link Optional}{@code <}{@link ReviewEntity}{@code >}
      * @throws NoReviewFoundException {@code reviewId} 에 해당하는 리뷰 포스팅을 찾지 못했을 시
      * @author semin9809
      * @see ReviewSortOrder
      */
-    Optional<ReviewEntity> loadReview(Long reviewId, ReviewSortOrder order, boolean withContent)
+    ReviewEntity getReviewInfo(Long reviewId, boolean withContent)
             throws NoReviewFoundException;
 
 
@@ -35,7 +61,8 @@ public interface ReviewService {
      * @throws NoReviewFoundException {@code reviewId} 에 해당하는 리뷰 포스팅을 찾지 못했을 시
      * @author semin9809
      */
-    ReviewEntity updateReview(Long reviewId, ReviewEntity updateReview) throws NoReviewFoundException;
+    ReviewEntity updateReviewInfo(Long reviewId, ReviewEntity updateReview)
+            throws NoReviewFoundException;
 
 
     /**
@@ -55,12 +82,11 @@ public interface ReviewService {
      * userId로 확인하여 중복 좋아요 방지
      *
      * @param reviewId 리뷰 포스팅 ID
-     * @param userId   사용자 ID
      * @return {@link ReviewEntity} 좋아요가 1 증가된 리뷰 정보
      * @throws NoReviewFoundException {@code reviewId} 에 해당하는 리뷰 포스팅을 찾지 못했을 시
      * @author semin9809
      */
-    ReviewEntity likeCount(Long reviewId, UUID userId) throws NoReviewFoundException;
+    ReviewEntity increaseLikes(Long reviewId) throws NoReviewFoundException;
 
     /**
      * 리뷰에 누른 좋아요 취소하기
@@ -68,11 +94,17 @@ public interface ReviewService {
      * userId로 확인하여 중복 처리 못하게 하기
      *
      * @param reviewId 리뷰 포스팅 ID
-     * @param userId   사용자 ID
      * @return {@link ReviewEntity} 좋아요가 1 감소된 리뷰 정보
      * @throws NoReviewFoundException {@code reviewId} 에 해당하는 리뷰 포스팅을 찾지 못했을 시
      * @author semin9809
      */
-    ReviewEntity likeCancel(Long reviewId, UUID userId) throws NoReviewFoundException;
+    ReviewEntity decreaseLikes(Long reviewId) throws NoReviewFoundException;
 
+    /**
+     * 주어진 {@code movieId} 에 해당하는 영화가 존재하는지 확인하는 서비스
+     *
+     * @param movieId 영화 ID
+     * @throws NoMovieException 영화가 DB 에 존재하지 않을 시
+     */
+    void checkWhetherMovieExist(String movieId) throws NoMovieException;
 }
