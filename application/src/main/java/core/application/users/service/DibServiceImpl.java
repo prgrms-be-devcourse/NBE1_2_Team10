@@ -17,10 +17,8 @@ public class DibServiceImpl implements DibService {
     private final DibRepository dibRepo;
     private final CachedMovieRepository movieRepo;
 
-    // userId 파라미터 제거해야 함 -> interface도
     @Override
     public DibRespDTO dibProcess(UUID userId, String movieId) {
-        // 현재 유저 불러오기 -> 나중에 로직 수정
 
         // 찜 취소 혹은 생성할 영화 객체
         Optional<CachedMovieEntity> movie = movieRepo.findByMovieId(movieId);
