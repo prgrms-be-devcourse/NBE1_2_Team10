@@ -12,16 +12,23 @@ import core.application.reviews.models.dto.response.ShowCommentsRespDTO;
 import core.application.reviews.models.entities.ReviewCommentEntity;
 import core.application.reviews.services.ReviewCommentService;
 import core.application.reviews.services.ReviewCommentSortOrder;
+import core.application.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -116,6 +123,7 @@ public class ReviewCommentController {
 	 * 댓글 생성하는 엔드포인트
 	 *
 	 * @param reviewId {@code pathVariable}
+	 * @param customUserDetails {@code Security context holder} 에 존재하는 유저 {@code principal}
 	 * @param dtoReq   요청 {@code DTO}
 	 * @return 응답 {@code DTO}
 	 */
@@ -124,6 +132,7 @@ public class ReviewCommentController {
 	@Parameter(name = "reviewId", description = "댓글을 조회할 게시글 ID", example = "20")
 	public ApiResponse<CreateCommentRespDTO> createComment(
 		@PathVariable("reviewId") Long reviewId,
+			@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@RequestBody @Validated CreateCommentReqDTO dtoReq,
 		BindingResult bindingResult
 	) {
@@ -133,9 +142,8 @@ public class ReviewCommentController {
 				bindingResult.getAllErrors().get(0).getDefaultMessage());
 		}
 
-		// TODO 추후 spring security context 에서 유저 아이디 받아야 함.
-		// TODO_IMP 추후 spring security context 에서 유저 아이디 받아야 함.
-		UUID userId = UUID.fromString("74062e0a-7fb6-11ef-95a5-00d861a152a7");
+		// principal 로 부터 ID 받음
+		UUID userId = customUserDetails.getUserId();
 
 		Long groupId = dtoReq.getGroupId();
 		ReviewCommentEntity validData = dtoReq.toEntity(userId);
@@ -151,6 +159,7 @@ public class ReviewCommentController {
 	 * 댓글 수정하는 엔드포인트
 	 *
 	 * @param reviewCommentId {@code pathVariable}
+	 * @param customUserDetails {@code Security context holder} 에 존재하는 유저 {@code principal}
 	 * @param dtoReq          요청 {@code DTO}
 	 * @return 응답 {@code DTO}
 	 */
@@ -158,6 +167,7 @@ public class ReviewCommentController {
 	@PatchMapping("/comments/{reviewCommentId}")
 	public ApiResponse<EditCommentRespDTO> editComment(
 		@PathVariable("reviewCommentId") Long reviewCommentId,
+			@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@RequestBody @Validated CreateCommentReqDTO dtoReq,
 		BindingResult bindingResult
 	) {
@@ -167,9 +177,8 @@ public class ReviewCommentController {
 				bindingResult.getAllErrors().get(0).getDefaultMessage());
 		}
 
-		// TODO 추후 spring security context 에서 유저 아이디 받아야 함.
-		// TODO_IMP 추후 spring security context 에서 유저 아이디 받아야 함.
-		UUID userId = UUID.fromString("74062e0a-7fb6-11ef-95a5-00d861a152a7");
+		// principal 로 부터 ID 받음
+		UUID userId = customUserDetails.getUserId();
 
 		if (!reviewCommentService.doesUserOwnsComment(userId, reviewCommentId)) {
 			throw new NotCommentOwnerException("Only comment owner can edit comments");
@@ -188,16 +197,18 @@ public class ReviewCommentController {
 	 * 댓글 삭제하는 엔드포인트
 	 *
 	 * @param reviewCommentId {@code pathVariable}
+	 * @param customUserDetails {@code Security context holder} 에 존재하는 유저 {@code principal}
 	 * @return 응답 {@code DTO}
 	 */
 	@Operation(summary = "댓글 삭제", description = "작성한 댓글을 삭제")
 	@DeleteMapping("/comments/{reviewCommentId}")
 	public ApiResponse<Message> deleteComment(
-		@PathVariable("reviewCommentId") Long reviewCommentId) {
+			@PathVariable("reviewCommentId") Long reviewCommentId,
+			@AuthenticationPrincipal CustomUserDetails customUserDetails
+	) {
 
-		// TODO 추후 spring security context 에서 유저 아이디 받아야 함.
-		// TODO_IMP 추후 spring security context 에서 유저 아이디 받아야 함.
-		UUID userId = UUID.fromString("74062e0a-7fb6-11ef-95a5-00d861a152a7");
+		// principal 로 부터 ID 받음
+		UUID userId = customUserDetails.getUserId();
 
 		if (!reviewCommentService.doesUserOwnsComment(userId, reviewCommentId)) {
 			throw new NotCommentOwnerException("Only comment owner can delete comments");
