@@ -1,5 +1,7 @@
 package core.application.reviews.controllers;
 
+import core.application.api.response.ApiResponse;
+import core.application.api.response.code.Message;
 import core.application.reviews.exceptions.InvalidPageException;
 import core.application.reviews.exceptions.InvalidReviewEditException;
 import core.application.reviews.exceptions.InvalidReviewWriteException;
@@ -61,7 +63,7 @@ public class ReviewController {
      * @see ReviewSortOrder
      */
     @GetMapping("/list")
-    public ListReviewsRespDTO listReviews(
+    public ApiResponse<ListReviewsRespDTO> listReviews(
             @PathVariable String movieId,
             @RequestParam("page") int page,
             @RequestParam(value = "sort", required = false, defaultValue = "latest") String sort,
@@ -81,7 +83,7 @@ public class ReviewController {
         List<ReviewEntity> searchResult = reviewService.getReviewsOnMovieId(movieId, order, content,
                 offset, REVIEWS_PER_PAGE);
 
-        return ListReviewsRespDTO.of(searchResult);
+        return ApiResponse.onSuccess(ListReviewsRespDTO.of(searchResult));
     }
 
     /**
@@ -91,7 +93,7 @@ public class ReviewController {
      * @return 포스팅 정보를 담은 DTO
      */
     @GetMapping("/{reviewId}")
-    public ReviewInfoRespDTO getReviewInfo(@PathVariable("reviewId") Long reviewId) {
+    public ApiResponse<ReviewInfoRespDTO> getReviewInfo(@PathVariable("reviewId") Long reviewId) {
 
         ReviewEntity searchResult = reviewService.getReviewInfo(reviewId, true);
 
@@ -101,7 +103,7 @@ public class ReviewController {
                 .orElseThrow()
                 .getAlias();
 
-        return ReviewInfoRespDTO.valueOf(userAlias, searchResult);
+        return ApiResponse.onSuccess(ReviewInfoRespDTO.valueOf(userAlias, searchResult));
     }
 
     /**
@@ -112,7 +114,7 @@ public class ReviewController {
      * @param reqDTO      포스팅 생성 요청 {@code DTO}
      */
     @PostMapping
-    public String createReview(
+    public ApiResponse<Message> createReview(
             @PathVariable("movieId") String movieId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Validated CreateReviewReqDTO reqDTO,
@@ -133,8 +135,7 @@ public class ReviewController {
                 reqDTO.getTitle().trim(),
                 reqDTO.getContent());
 
-        // TODO API 명세서에 응답이 형식이 없음..
-        return "성공적으로 글을 작성하였습니다.";
+        return ApiResponse.onCreateSuccess(Message.createMessage("성공적으로 글을 작성하였습니다."));
     }
 
     /**
@@ -145,7 +146,7 @@ public class ReviewController {
      * @param reqDTO      수정 요청 {@code DTO}
      */
     @PatchMapping("/{reviewId}")
-    public String updateReview(
+    public ApiResponse<Message> updateReview(
             @PathVariable("reviewId") Long reviewId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Validated EditReviewReqDTO reqDTO,
@@ -176,7 +177,7 @@ public class ReviewController {
         ReviewEntity result = reviewService.updateReviewInfo(reviewId, replacement);
 
         // TODO API 명세서에 응답이 형식이 없음..
-        return "성공적으로 글을 수정하였습니다.";
+        return ApiResponse.onSuccess(Message.createMessage("성공적으로 글을 수정하였습니다."));
     }
 
     /**
@@ -186,7 +187,7 @@ public class ReviewController {
      * @param userDetails {@code Security context holder} 에 존재하는 유저 {@code principal}
      */
     @DeleteMapping("/{reviewId}")
-    public String deleteReview(
+    public ApiResponse<Message> deleteReview(
             @PathVariable("reviewId") Long reviewId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
@@ -203,8 +204,7 @@ public class ReviewController {
 
         ReviewEntity result = reviewService.deleteReview(reviewId);
 
-        // TODO API 명세서에 응답이 형식이 없음..
-        return "성공적으로 글을 삭제하였습니다.";
+        return ApiResponse.onSuccess(Message.createMessage("성공적으로 글을 삭제하였습니다."));
     }
 
     /**
@@ -216,7 +216,7 @@ public class ReviewController {
      * @param resp        쿠키 저장하기 위한 {@code response}
      */
     @PatchMapping("/{reviewId}/like")
-    public AdjustLikeRespDTO adjustLike(
+    public ApiResponse<AdjustLikeRespDTO> adjustLike(
             @PathVariable("reviewId") Long reviewId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             HttpServletRequest req, HttpServletResponse resp) {
@@ -250,7 +250,8 @@ public class ReviewController {
         String resultMessage = "리뷰의 좋아요를 " + (doesCookieExist ? "감소" : "증가") + "시켰습니다.";
         resultMessage += " [" + entity.getLike() + "]";
 
-        return new AdjustLikeRespDTO(resultMessage);
+        AdjustLikeRespDTO adjustLikeRespDTO = new AdjustLikeRespDTO(resultMessage);
+        return ApiResponse.onSuccess(adjustLikeRespDTO);
     }
 
     private void saveCookie(HttpServletResponse resp, String validCookieValue) {
