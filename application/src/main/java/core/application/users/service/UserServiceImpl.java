@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
-        UserEntity originUserEntity = userRepository.findByUserId(userDTO.getUserId()).get();
+        UserEntity originUserEntity = userRepository.findByUserEmail(userDTO.getUserEmail()).get();
 
         // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
         UserEntity updatedUserEntity = UserEntity.builder()
