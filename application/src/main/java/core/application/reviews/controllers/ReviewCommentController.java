@@ -29,7 +29,6 @@ import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,7 +46,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/movies/{movieId}/reviews/{reviewId}")
 @Tag(name = "Review Comment", description = "영화 후기 포스팅 댓글과 관련된 API")
-@Transactional(readOnly = true)
 public class ReviewCommentController {
 
 	private final ReviewCommentService reviewCommentService;
@@ -71,12 +69,13 @@ public class ReviewCommentController {
 	})
 	public ApiResponse<ShowCommentsRespDTO> showParentReviewComments(
 		@PathVariable("reviewId") Long reviewId,
-		@RequestParam("page") int page) {
-		if (page < 1) {
+			@RequestParam(value = "page", defaultValue = "0") int page) {
+
+		if (page < 0) {
 			throw new InvalidPageException("잘못된 댓글 페이지입니다.");
 		}
 
-		int offset = (page - 1) * COMMENTS_PER_PAGE;
+		int offset = page * COMMENTS_PER_PAGE;
 
 		List<ReviewCommentEntity> parentReviewComments = reviewCommentService.getParentReviewComments(
 			reviewId, ReviewCommentSortOrder.LIKE, offset, COMMENTS_PER_PAGE);
@@ -103,13 +102,14 @@ public class ReviewCommentController {
 	public ApiResponse<ShowCommentsRespDTO> showChildComments(
 		@PathVariable("reviewId") Long reviewId,
 		@PathVariable("groupId") Long groupId,
-		@RequestParam("page") int page
+			@RequestParam(value = "page", defaultValue = "0") int page
 	) {
-		if (page < 1) {
+
+		if (page < 0) {
 			throw new InvalidPageException("잘못된 댓글 페이지입니다.");
 		}
 
-		int offset = (page - 1) * COMMENTS_PER_PAGE;
+		int offset = page * COMMENTS_PER_PAGE;
 
 		List<ReviewCommentEntity> childReviewComments = reviewCommentService.getChildReviewCommentsOnParent(
 			reviewId, groupId, offset, COMMENTS_PER_PAGE);

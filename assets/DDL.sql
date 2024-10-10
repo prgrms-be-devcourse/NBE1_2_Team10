@@ -112,7 +112,7 @@ create table review_table
     user_id    binary(16)                         not null comment '리뷰 작성자 ID',
     `like`     int      default 0                 not null comment '좋아요 수',
     created_at datetime default CURRENT_TIMESTAMP not null comment '작성 시간',
-    updated_at datetime default CURRENT_TIMESTAMP not null comment '수정 시간',
+    updated_at datetime default CURRENT_TIMESTAMP null comment '수정 시간',
     constraint REVIEW_TABLE_user_table_user_id_fk
         foreign key (user_id) references user_table (user_id)
             on update cascade on delete cascade,
@@ -145,4 +145,3 @@ create table review_comment_table
             on update cascade on delete cascade
 )
     comment '리뷰 댓글 테이블';
-
