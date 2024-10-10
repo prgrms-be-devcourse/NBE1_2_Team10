@@ -98,12 +98,13 @@ public class SecurityConfig {
         // 다양한 엔드포인트에 대한 인가 규칙 정의
         http
                 .authorizeRequests((auth) -> auth
+                                   
                     // 영화
-					.requestMatchers(HttpMethod.GET, "/movies/{movieId}/comments").permitAll() // 영화 한줄평 조회
-					.requestMatchers(HttpMethod.GET, "/movies/{movieId}").permitAll() // 영화 내용 상세 조회
+					.requestMatchers(HttpMethod.GET, "/movies/*/comments").permitAll() // 영화 한줄평 조회
+					.requestMatchers(HttpMethod.GET, "/movies/*").permitAll() // 영화 내용 상세 조회
 					.requestMatchers(HttpMethod.GET, "/movies/list").permitAll() // 영화 목록 조회 (메인 페이지)
 					.requestMatchers(HttpMethod.GET, "/movies/search").permitAll() // 영화 검색
-					.requestMatchers(HttpMethod.GET, "/movies/genre/{genre}").permitAll() // 영화 검색
+					.requestMatchers(HttpMethod.GET, "/movies/genre/*").permitAll() // 영화 검색
 
 					// 리뷰
 					.requestMatchers(HttpMethod.GET, "/movies/*/reviews/list").permitAll() // 리뷰 목록 조회
