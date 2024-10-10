@@ -1,6 +1,7 @@
 package core.application.users.service;
 
 import core.application.security.AuthenticatedUserService;
+import core.application.users.exception.DuplicateEmailException;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
 import core.application.users.models.entities.UserEntity;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.DuplicateFormatFlagsException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,6 +48,9 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public MessageResponseDTO signup(UserDTO userDTO) {
+        if (userRepository.existsByEmail(userDTO.getUserEmail())) {
+            throw new DuplicateEmailException("중복된 이메일입니다.");
+        }
         userDTO.encodePassword(passwordEncoder);
         if (userDTO.getAlias() == null) {
             String email = userDTO.getUserEmail();
