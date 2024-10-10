@@ -1,6 +1,7 @@
 package core.application.users.service;
 
 import core.application.security.AuthenticatedUserService;
+import core.application.security.TokenService;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
 import core.application.users.models.entities.UserEntity;
@@ -68,6 +69,13 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public MessageResponseDTO updateUserInfo(UserDTO userDTO) {
+        UUID userId = authenticatedUserInfo.getAuthenticatedUserId();
+
+        // 요청 시 토큰의 userId와 다른 userId를 가지고 있는 사용자의 정보를 바꾸려고 할 때 반환 값 null
+        if (!userId.equals(userDTO.getUserId())) {
+            return null;
+        }
+
         UserEntity originUserEntity = userRepository.findByUserId(userDTO.getUserId()).get();
 
         // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성

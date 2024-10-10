@@ -76,8 +76,12 @@ public class UserController {
      */
 
     @DeleteMapping("/delete")
-    public MessageResponseDTO deleteUser() {
-        return userService.deleteUser();
+    public MessageResponseDTO deleteUser(HttpServletRequest request) {
+        MessageResponseDTO messageResponseDTO = userService.deleteUser();
+        if (messageResponseDTO != null) {
+            tokenService.inactiveRefreshToken(request);
+        }
+        return messageResponseDTO;
     }
 
     /**
