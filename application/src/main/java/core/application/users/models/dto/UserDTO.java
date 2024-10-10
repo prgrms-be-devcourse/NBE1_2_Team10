@@ -8,6 +8,8 @@ import lombok.*;
 
 import java.util.UUID;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 @Builder
 @Getter
 @NoArgsConstructor
@@ -38,5 +40,9 @@ public class UserDTO {
                 .phoneNum(this.phoneNum)
                 .userName(this.userName)
                 .build();
+    }
+
+    public void encodePassword(BCryptPasswordEncoder bCryptPasswordEncoder) {
+        this.userPw = bCryptPasswordEncoder.encode(this.userPw);
     }
 }
