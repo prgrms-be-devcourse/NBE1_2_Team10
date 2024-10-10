@@ -50,7 +50,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return bCryptPasswordEncoder.encode(userEntity.get().getUserPw());
+        return userEntity.get().getUserPw();
     }
 
     @Override

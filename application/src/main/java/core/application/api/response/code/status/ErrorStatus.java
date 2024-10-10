@@ -9,8 +9,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorStatus {
 	// 공통 관련 에러
-	NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON404"),
+	INVALID_LOGIN(HttpStatus.BAD_REQUEST, "COMMON400"),
 	FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403"),
+	NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON404"),
 
 	// 한줄평 관련 에러
 	INVALID_REACTION(HttpStatus.BAD_REQUEST, "COMMENT4000"),
@@ -21,6 +22,9 @@ public enum ErrorStatus {
 	// 영화 관련 에러
 	NO_SEARCH_RESULT(HttpStatus.BAD_REQUEST, "MOVIE4000"),
 	NO_MOVIE(HttpStatus.BAD_REQUEST, "MOVIE4001"),
+
+	// 유저 관련 에러
+	DUPLICATE_EMAIL(HttpStatus.BAD_REQUEST, "USER4000"),
 
 	// 리뷰 관련 에러
 	INVALID_COMMENT_CONTENT(HttpStatus.BAD_REQUEST, "REVIEW4000"),

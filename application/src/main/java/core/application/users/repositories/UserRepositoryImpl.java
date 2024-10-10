@@ -34,6 +34,11 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     @Override
+    public Boolean existsByEmail(String email) {
+        return mapper.findByUserEmail(email).isPresent();
+    }
+
+    @Override
     public Optional<UserEntity> findByUserEmail(String email) {
         return mapper.findByUserEmail(email);
     }

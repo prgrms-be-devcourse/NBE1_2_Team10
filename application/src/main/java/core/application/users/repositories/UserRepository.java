@@ -35,6 +35,8 @@ public interface UserRepository {
      */
     Optional<UserEntity> findByUserId(UUID userId);
 
+    Boolean existsByEmail(String email);
+
     /**
      * 유저 이메일로 검색
      *

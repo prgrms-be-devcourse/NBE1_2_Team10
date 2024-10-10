@@ -1,6 +1,7 @@
 package core.application.users.service;
 
 import core.application.security.AuthenticatedUserService;
+import core.application.users.exception.DuplicateEmailException;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
 import core.application.users.models.dto.UserRequestDTO;
@@ -8,8 +9,10 @@ import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;
 import core.application.users.repositories.UserRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.DuplicateFormatFlagsException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +25,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final AuthenticatedUserService authenticatedUserInfo;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     /**
      * 생성자
@@ -30,10 +34,12 @@ public class UserServiceImpl implements UserService {
      * @param authenticatedUserInfo 인증된 사용자 서비스
      */
     @Autowired
-    public UserServiceImpl(UserRepositoryImpl userRepositoryImpl, AuthenticatedUserService authenticatedUserInfo) {
+    public UserServiceImpl(UserRepositoryImpl userRepositoryImpl, AuthenticatedUserService authenticatedUserInfo,
+		BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepositoryImpl;
         this.authenticatedUserInfo = authenticatedUserInfo;
-    }
+		this.passwordEncoder = passwordEncoder;
+	}
 
     /**
      * 사용자 회원가입 처리
@@ -42,9 +48,14 @@ public class UserServiceImpl implements UserService {
      * @return 회원가입 결과 메시지를 포함하는 MessageResponseDTO
      */
     @Override
-    public MessageResponseDTO signup(UserRequestDTO userRequestDTO) {
-        if (userRequestDTO.getAlias() == null) {
-            String email = userRequestDTO.getUserEmail();
+    public MessageResponseDTO signup(UserDTO userDTO) {
+        if (userRepository.existsByEmail(userDTO.getUserEmail())) {
+            throw new DuplicateEmailException("중복된 이메일입니다.");
+        }
+        userDTO.encodePassword(passwordEncoder);
+        if (userDTO.getAlias() == null) {
+            String email = userDTO.getUserEmail();
+          
             UserDTO userWithAlias = UserDTO.builder()
                     .userEmail(userRequestDTO.getUserEmail())
                     .userPw(userRequestDTO.getUserPw())
