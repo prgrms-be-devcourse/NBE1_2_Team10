@@ -16,6 +16,8 @@ import core.application.reviews.services.ReviewService;
 import core.application.reviews.services.ReviewSortOrder;
 import core.application.security.CustomUserDetails;
 import core.application.users.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -44,6 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/movies/{movieId}/reviews")
+@Tag(name = "Review", description = "Review 관련 API")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -62,6 +65,7 @@ public class ReviewController {
      * @return 응답용 포스팅 목록들
      * @see ReviewSortOrder
      */
+    @Operation(summary = "리뷰 목록 조회")
     @GetMapping("/list")
     public ApiResponse<ListReviewsRespDTO> listReviews(
             @PathVariable String movieId,
@@ -92,6 +96,7 @@ public class ReviewController {
      * @param reviewId 포스팅 ID
      * @return 포스팅 정보를 담은 DTO
      */
+    @Operation(summary = "특정 리뷰 조회")
     @GetMapping("/{reviewId}")
     public ApiResponse<ReviewInfoRespDTO> getReviewInfo(@PathVariable("reviewId") Long reviewId) {
 
@@ -113,6 +118,7 @@ public class ReviewController {
      * @param userDetails {@code Security context holder} 에 존재하는 유저 {@code principal}
      * @param reqDTO      포스팅 생성 요청 {@code DTO}
      */
+    @Operation(summary = "리뷰 작성")
     @PostMapping
     public ApiResponse<Message> createReview(
             @PathVariable("movieId") String movieId,
@@ -145,6 +151,7 @@ public class ReviewController {
      * @param userDetails {@code Security context holder} 에 존재하는 유저 {@code principal}
      * @param reqDTO      수정 요청 {@code DTO}
      */
+    @Operation(summary = "리뷰 수정")
     @PatchMapping("/{reviewId}")
     public ApiResponse<Message> updateReview(
             @PathVariable("reviewId") Long reviewId,
@@ -186,6 +193,7 @@ public class ReviewController {
      * @param reviewId    삭제할 포스팅 ID
      * @param userDetails {@code Security context holder} 에 존재하는 유저 {@code principal}
      */
+    @Operation(summary = "리뷰 삭제")
     @DeleteMapping("/{reviewId}")
     public ApiResponse<Message> deleteReview(
             @PathVariable("reviewId") Long reviewId,
@@ -215,6 +223,7 @@ public class ReviewController {
      * @param req         쿠키 가져오기 위한 {@code request}
      * @param resp        쿠키 저장하기 위한 {@code response}
      */
+    @Operation(summary = "리뷰 좋아요")
     @PatchMapping("/{reviewId}/like")
     public ApiResponse<AdjustLikeRespDTO> adjustLike(
             @PathVariable("reviewId") Long reviewId,
