@@ -1,22 +1,5 @@
 package core.application.reviews.controllers;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import core.application.api.response.ApiResponse;
 import core.application.api.response.code.Message;
 import core.application.reviews.exceptions.InvalidCommentContentException;
@@ -29,14 +12,35 @@ import core.application.reviews.models.dto.response.ShowCommentsRespDTO;
 import core.application.reviews.models.entities.ReviewCommentEntity;
 import core.application.reviews.services.ReviewCommentService;
 import core.application.reviews.services.ReviewCommentSortOrder;
+import core.application.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -50,7 +54,7 @@ public class ReviewCommentController {
 
 	private static final int COMMENTS_PER_PAGE = 10;
 
-	private static final String COOKIE_NAME = "RCLDA";
+	private static final String COOKIE_NAME_PREFIX = "ReviewCommentLikeAdjustment";
 
 	/**
 	 * 부모 댓글 보여주는 앤드포인트
@@ -118,6 +122,7 @@ public class ReviewCommentController {
 	 * 댓글 생성하는 엔드포인트
 	 *
 	 * @param reviewId {@code pathVariable}
+	 * @param customUserDetails {@code Security context holder} 에 존재하는 유저 {@code principal}
 	 * @param dtoReq   요청 {@code DTO}
 	 * @return 응답 {@code DTO}
 	 */
@@ -126,6 +131,7 @@ public class ReviewCommentController {
 	@Parameter(name = "reviewId", description = "댓글을 조회할 게시글 ID", example = "20")
 	public ApiResponse<CreateCommentRespDTO> createComment(
 		@PathVariable("reviewId") Long reviewId,
+			@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@RequestBody @Validated CreateCommentReqDTO dtoReq,
 		BindingResult bindingResult
 	) {
@@ -135,9 +141,8 @@ public class ReviewCommentController {
 				bindingResult.getAllErrors().get(0).getDefaultMessage());
 		}
 
-		// TODO 추후 spring security context 에서 유저 아이디 받아야 함.
-		// TODO_IMP 추후 spring security context 에서 유저 아이디 받아야 함.
-		UUID userId = UUID.fromString("74062e0a-7fb6-11ef-95a5-00d861a152a7");
+		// principal 로 부터 ID 받음
+		UUID userId = customUserDetails.getUserId();
 
 		Long groupId = dtoReq.getGroupId();
 		ReviewCommentEntity validData = dtoReq.toEntity(userId);
@@ -153,6 +158,7 @@ public class ReviewCommentController {
 	 * 댓글 수정하는 엔드포인트
 	 *
 	 * @param reviewCommentId {@code pathVariable}
+	 * @param customUserDetails {@code Security context holder} 에 존재하는 유저 {@code principal}
 	 * @param dtoReq          요청 {@code DTO}
 	 * @return 응답 {@code DTO}
 	 */
@@ -160,6 +166,7 @@ public class ReviewCommentController {
 	@PatchMapping("/comments/{reviewCommentId}")
 	public ApiResponse<EditCommentRespDTO> editComment(
 		@PathVariable("reviewCommentId") Long reviewCommentId,
+			@AuthenticationPrincipal CustomUserDetails customUserDetails,
 		@RequestBody @Validated CreateCommentReqDTO dtoReq,
 		BindingResult bindingResult
 	) {
@@ -169,9 +176,8 @@ public class ReviewCommentController {
 				bindingResult.getAllErrors().get(0).getDefaultMessage());
 		}
 
-		// TODO 추후 spring security context 에서 유저 아이디 받아야 함.
-		// TODO_IMP 추후 spring security context 에서 유저 아이디 받아야 함.
-		UUID userId = UUID.fromString("74062e0a-7fb6-11ef-95a5-00d861a152a7");
+		// principal 로 부터 ID 받음
+		UUID userId = customUserDetails.getUserId();
 
 		if (!reviewCommentService.doesUserOwnsComment(userId, reviewCommentId)) {
 			throw new NotCommentOwnerException("Only comment owner can edit comments");
@@ -190,16 +196,18 @@ public class ReviewCommentController {
 	 * 댓글 삭제하는 엔드포인트
 	 *
 	 * @param reviewCommentId {@code pathVariable}
+	 * @param customUserDetails {@code Security context holder} 에 존재하는 유저 {@code principal}
 	 * @return 응답 {@code DTO}
 	 */
 	@Operation(summary = "댓글 삭제", description = "작성한 댓글을 삭제")
 	@DeleteMapping("/comments/{reviewCommentId}")
 	public ApiResponse<Message> deleteComment(
-		@PathVariable("reviewCommentId") Long reviewCommentId) {
+			@PathVariable("reviewCommentId") Long reviewCommentId,
+			@AuthenticationPrincipal CustomUserDetails customUserDetails
+	) {
 
-		// TODO 추후 spring security context 에서 유저 아이디 받아야 함.
-		// TODO_IMP 추후 spring security context 에서 유저 아이디 받아야 함.
-		UUID userId = UUID.fromString("74062e0a-7fb6-11ef-95a5-00d861a152a7");
+		// principal 로 부터 ID 받음
+		UUID userId = customUserDetails.getUserId();
 
 		if (!reviewCommentService.doesUserOwnsComment(userId, reviewCommentId)) {
 			throw new NotCommentOwnerException("Only comment owner can delete comments");
@@ -214,7 +222,8 @@ public class ReviewCommentController {
 	 * 좋아요 증감시키는 엔드포인트
 	 *
 	 * @param reviewCommentId {@code pathVariable}
-	 * @param cookie          좋아요 눌렀는지 안눌렀는지 확인용 쿠키
+	 * @param userDetails {@code userEmail} 가져오기 위한 {@code principal}
+	 * @param req              쿠키 가져올 {@code servletRequest}
 	 * @param resp            쿠키 저장하고 삭제할 {@code servletResponse}
 	 * @return 응답용 {@code DTO}
 	 */
@@ -222,32 +231,44 @@ public class ReviewCommentController {
 	@PatchMapping("/comments/{reviewCommentId}/like")
 	public ApiResponse<Message> editLikes(
 		@PathVariable("reviewCommentId") Long reviewCommentId,
-		@CookieValue(value = COOKIE_NAME, required = false) Cookie cookie,
-		HttpServletResponse resp) {
+			@AuthenticationPrincipal CustomUserDetails userDetails,
+			HttpServletRequest req, HttpServletResponse resp) {
 
-		// TODO 로그인 된 유저만 좋아요 증감시킬 수 있어야 함.
-		// TODO_IMP 로그인 된 유저만 좋아요 증감시킬 수 있어야 함.
+		// hash 값 이용해서 쿠키 이름, 값 증빌할 거임
+		String validCookieValue = String.valueOf(
+				Objects.hash(reviewCommentId, userDetails.getUserEmail()));
 
-		String resultMessage;
-		ReviewCommentEntity entity;
+		// request 내 쿠키 중 이름 일치하는 쿠키 확인
+		Cookie cookie = req.getCookies() == null ? null :
+				Arrays.stream(req.getCookies())
+						.filter(c -> c.getName().equals(COOKIE_NAME_PREFIX + validCookieValue))
+						.findFirst()
+						.orElse(null);
 
-		if (cookie != null && cookie.getValue().equals(String.valueOf(reviewCommentId))) {
-			resultMessage = "댓글의 좋아요를 감소시켰습니다.";
-			entity = reviewCommentService.decreaseCommentLike(reviewCommentId);
-			deleteCookie(reviewCommentId, resp);
-		} else {
-			resultMessage = "댓글의 좋아요를 증가시켰습니다. ";
-			entity = reviewCommentService.increaseCommentLike(reviewCommentId);
-			saveCookie(reviewCommentId, resp);
-		}
+		// 쿠키 이름 & 값 일치하는지 확인
+		boolean doesCookieExist = cookie != null && cookie.getValue().equals(validCookieValue);
 
+		// 쿠키 없으면 좋아요 증가, 있으면 감소
+		Function<Long, ReviewCommentEntity> adjustLike = doesCookieExist ?
+				reviewCommentService::decreaseCommentLike
+				: reviewCommentService::increaseCommentLike;
+
+		// 쿠키 없으면 새로 생성, 있으면 삭제
+		BiConsumer<HttpServletResponse, String> handleCookie = doesCookieExist ?
+				this::deleteCookie : this::saveCookie;
+
+		// 댓글 좋아요 증감, 쿠키 처리 진행
+		ReviewCommentEntity entity = adjustLike.apply(reviewCommentId);
+		handleCookie.accept(resp, validCookieValue);
+
+		String resultMessage = "댓글의 좋아요를 " + (doesCookieExist ? "감소" : "증가") + "시켰습니다.";
 		resultMessage += " [" + entity.getLike() + "]";
 
 		return ApiResponse.onSuccess(Message.createMessage(resultMessage));
 	}
 
-	private void saveCookie(Long reviewCommentId, HttpServletResponse resp) {
-		Cookie cookie = new Cookie(COOKIE_NAME, String.valueOf(reviewCommentId));
+	private void saveCookie(HttpServletResponse resp, String validCookieValue) {
+		Cookie cookie = new Cookie(COOKIE_NAME_PREFIX + validCookieValue, validCookieValue);
 
 		int year = 365 * 24 * 60 * 60;
 		cookie.setMaxAge(year);
@@ -256,8 +277,8 @@ public class ReviewCommentController {
 		resp.addCookie(cookie);
 	}
 
-	private void deleteCookie(Long reviewCommentId, HttpServletResponse resp) {
-		Cookie cookie = new Cookie(COOKIE_NAME, String.valueOf(reviewCommentId));
+	private void deleteCookie(HttpServletResponse resp, String validCookieValue) {
+		Cookie cookie = new Cookie(COOKIE_NAME_PREFIX + validCookieValue, validCookieValue);
 		cookie.setMaxAge(0);
 		resp.addCookie(cookie);
 	}

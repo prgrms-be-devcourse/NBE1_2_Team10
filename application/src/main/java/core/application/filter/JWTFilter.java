@@ -1,5 +1,6 @@
 package core.application.filter;
 
+import core.application.api.exception.CommonForbiddenException;
 import core.application.users.models.entities.UserEntity;
 import core.application.security.CustomUserDetails;
 import core.application.security.TokenService;
@@ -7,6 +8,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +24,7 @@ import java.util.Optional;
  * HTTP 요청에서 Access Token을 추출하여
  * 사용자의 인증 정보를 SecurityContext에 설정
  */
+@Slf4j
 public class JWTFilter extends OncePerRequestFilter {
     TokenService tokenService;
 
@@ -49,23 +53,24 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
-            System.out.println("Access token is null");
+            log.info("Access Token이 없는 사용자의 요청");
+            request.setAttribute("exception", new CommonForbiddenException("Access Token이 존재하지 않습니다."));
             filterChain.doFilter(request, response);
-            return;
         }
+        else {
+            Optional<UserEntity> userEntity = tokenService.getUserByAccessToken(accessToken);
 
-        Optional<UserEntity> userEntity = tokenService.getUserByAccessToken(accessToken);
+            // UserDetails에 회원 정보 객체 담기
+            CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
 
-        // UserDetails에 회원 정보 객체 담기
-        CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
+            // 스프링 시큐리티 인증 토큰 생성
+            Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
 
-        // 스프링 시큐리티 인증 토큰 생성
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+            // 세션에 사용자 등록
+            SecurityContextHolder.getContext().setAuthentication(authToken);
 
-        // 세션에 사용자 등록
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        // 다음 필터로 요청 전달
-        filterChain.doFilter(request, response);
+            // 다음 필터로 요청 전달
+            filterChain.doFilter(request, response);
+        }
     }
 }

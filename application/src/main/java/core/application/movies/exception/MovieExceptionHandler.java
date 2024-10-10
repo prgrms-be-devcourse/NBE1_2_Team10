@@ -53,4 +53,10 @@ public class MovieExceptionHandler {
 		log.error(e.getMessage());
 		return ApiResponse.onFailure(ErrorStatus.NOT_COMMENT_WRITER.getCode(), e.getMessage(), null);
 	}
+
+	@ExceptionHandler(NotMatchMovieCommentException.class)
+	public ApiResponse<?> handleNotMatchMovieCommentException(NotMatchMovieCommentException e) {
+		log.error(e.getMessage());
+		return ApiResponse.onFailure(ErrorStatus.NOT_MATCH_MOVIECOMMENT.getCode(), e.getMessage(), null);
+	}
 }

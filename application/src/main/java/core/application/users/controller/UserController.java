@@ -1,9 +1,13 @@
 package core.application.users.controller;
 
+import core.application.api.response.ApiResponse;
+import core.application.api.response.code.Message;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
 import core.application.security.TokenService;
 import core.application.users.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/users")
+@Tag(name = "User", description = "유저 관련 API")
 public class UserController {
     private final UserService userService;
     private final TokenService tokenService;
@@ -37,8 +42,10 @@ public class UserController {
      * /users/signin
      */
 
+    @Operation(summary = "로그인")
     @PostMapping("/signin")
-    public void login() {
+    public ApiResponse<Message> login() {
+        return ApiResponse.onSuccess(Message.createMessage("성공적으로 로그인하였습니다."));
     }
 
     /**
@@ -46,9 +53,11 @@ public class UserController {
      * /users/signup
      */
 
+    @Operation(summary = "회원가입")
     @PostMapping("/signup")
-    public MessageResponseDTO singUp(@Valid @RequestBody UserDTO userDTO) {
-        return userService.signup(userDTO);
+    public ApiResponse<MessageResponseDTO> singUp(@Valid @RequestBody UserDTO userDTO) {
+        MessageResponseDTO msg = userService.signup(userDTO);
+        return ApiResponse.onCreateSuccess(msg);
     }
 
     /**
@@ -56,8 +65,10 @@ public class UserController {
      * /users/signout
      */
 
+    @Operation(summary = "로그아웃")
     @DeleteMapping("/signout")
-    public void logout() {
+    public ApiResponse<Message> logout() {
+        return ApiResponse.onSuccess(Message.createMessage("성공적으로 로그아웃하였습니다."));
     }
 
     /**
@@ -65,9 +76,11 @@ public class UserController {
      * /users/update
      */
 
+    @Operation(summary = "유저 정보 업데이트")
     @PatchMapping("/update")
-    public MessageResponseDTO updateUser(@Valid @RequestBody UserDTO userDTO) {
-        return userService.updateUserInfo(userDTO);
+    public ApiResponse<MessageResponseDTO> updateUser(@Valid @RequestBody UserDTO userDTO) {
+        MessageResponseDTO messageResponseDTO = userService.updateUserInfo(userDTO);
+        return ApiResponse.onSuccess(messageResponseDTO);
     }
 
     /**
@@ -75,13 +88,14 @@ public class UserController {
      * /users/delete
      */
 
+    @Operation(summary = "유저 삭제")
     @DeleteMapping("/delete")
-    public MessageResponseDTO deleteUser(HttpServletRequest request) {
+    public ApiResponse<MessageResponseDTO> deleteUser(HttpServletRequest request) {
         MessageResponseDTO messageResponseDTO = userService.deleteUser();
         if (messageResponseDTO != null) {
             tokenService.inactiveRefreshToken(request);
         }
-        return messageResponseDTO;
+        return ApiResponse.onDeleteSuccess(messageResponseDTO);
     }
 
     /**
@@ -89,12 +103,14 @@ public class UserController {
      * /users/reissue
      */
 
+    @Operation(summary = "Access Token 재발급")
     @GetMapping("/reissue") // 추후 반환 값에 수정
-    public void reissueAccessToken(HttpServletRequest request, HttpServletResponse response) {
+    public ApiResponse<Message> reissueAccessToken(HttpServletRequest request, HttpServletResponse response) {
         String reissuedAccessToken = tokenService.reissueAccessToken(request);
 
         if (reissuedAccessToken != null) {
             response.setHeader("accessToken", reissuedAccessToken);
         }
+        return ApiResponse.onSuccess(Message.createMessage("Access Token 재발급 완료"));
     }
 }
