@@ -9,8 +9,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorStatus {
 	// 공통 관련 에러
-	NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON404"),
+	INVALID_LOGIN(HttpStatus.BAD_REQUEST, "COMMON400"),
 	FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403"),
+	NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON404"),
 
 	// 한줄평 관련 에러
 	INVALID_REACTION(HttpStatus.BAD_REQUEST, "COMMENT4000"),

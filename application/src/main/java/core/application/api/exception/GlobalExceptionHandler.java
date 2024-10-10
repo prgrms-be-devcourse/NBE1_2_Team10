@@ -16,4 +16,10 @@ public class GlobalExceptionHandler {
 		log.error(e.getMessage());
 		return ApiResponse.onFailure(ErrorStatus.FORBIDDEN.getCode(), e.getMessage(), null);
 	}
+
+	@ExceptionHandler(InvalidLoginException.class)
+	public ApiResponse<?> handleInvalidLoginException(InvalidLoginException e) {
+		log.error(e.getMessage());
+		return ApiResponse.onFailure(ErrorStatus.INVALID_LOGIN.getCode(), e.getMessage(), null);
+	}
 }
