@@ -5,9 +5,12 @@ import core.application.users.models.entities.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import lombok.*;
-
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Builder
 @Getter
@@ -48,5 +51,9 @@ public class UserRequestDTO {
                 .phoneNum(this.phoneNum)
                 .userName(this.userName)
                 .build();
+    }
+
+    public void encodePassword(BCryptPasswordEncoder bCryptPasswordEncoder) {
+        this.userPw = bCryptPasswordEncoder.encode(this.userPw);
     }
 }
