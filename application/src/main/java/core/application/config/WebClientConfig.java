@@ -14,7 +14,7 @@ public class WebClientConfig {
 	public WebClient webClient() {
 		return WebClient.builder()
 			.baseUrl(apiUrl)
-			.codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs().maxInMemorySize(1024*1024))
+			.codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs().maxInMemorySize(10*1024*1024))
 			.build();
 	}
 }

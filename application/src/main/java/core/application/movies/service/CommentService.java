@@ -12,6 +12,7 @@ import core.application.movies.exception.InvalidWriteCommentException;
 import core.application.movies.exception.NoMovieException;
 import core.application.movies.exception.NotCommentWriterException;
 import core.application.movies.exception.NotFoundCommentException;
+import core.application.movies.exception.NotMatchMovieCommentException;
 import core.application.movies.models.dto.request.CommentWriteReqDTO;
 import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
@@ -67,10 +68,16 @@ public class CommentService {
 		if (!comment.getUserId().equals(userId)) {
 			throw new NotCommentWriterException("한줄평 작성자가 아닙니다.");
 		}
+		if (!comment.getMovieId().equals(movieId)) {
+			throw new NotMatchMovieCommentException("해당 영화의 한줄평이 아닙니다.");
+		}
 		commentRepository.deleteComment(commentId);
 		CachedMovieEntity movie = movieRepository.findByMovieId(movieId)
 			.orElseThrow(() -> new NoMovieException("존재하는 영화가 아닙니다."));
+		log.info("[MovieService.deleteCommentOnMovie] 영화 정보 수정");
+		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(), movie.getCommentCount());
 		movie.deleteComment(comment.getRating());
+		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(), movie.getCommentCount());
 		movieRepository.editMovie(movieId, movie);
 	}
 
