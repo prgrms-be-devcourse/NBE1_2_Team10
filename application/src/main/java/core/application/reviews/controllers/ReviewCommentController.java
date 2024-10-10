@@ -71,12 +71,13 @@ public class ReviewCommentController {
 	})
 	public ApiResponse<ShowCommentsRespDTO> showParentReviewComments(
 		@PathVariable("reviewId") Long reviewId,
-		@RequestParam("page") int page) {
-		if (page < 1) {
+			@RequestParam(value = "page", defaultValue = "0") int page) {
+
+		if (page < 0) {
 			throw new InvalidPageException("잘못된 댓글 페이지입니다.");
 		}
 
-		int offset = (page - 1) * COMMENTS_PER_PAGE;
+		int offset = page * COMMENTS_PER_PAGE;
 
 		List<ReviewCommentEntity> parentReviewComments = reviewCommentService.getParentReviewComments(
 			reviewId, ReviewCommentSortOrder.LIKE, offset, COMMENTS_PER_PAGE);
@@ -103,13 +104,14 @@ public class ReviewCommentController {
 	public ApiResponse<ShowCommentsRespDTO> showChildComments(
 		@PathVariable("reviewId") Long reviewId,
 		@PathVariable("groupId") Long groupId,
-		@RequestParam("page") int page
+			@RequestParam(value = "page", defaultValue = "0") int page
 	) {
-		if (page < 1) {
+
+		if (page < 0) {
 			throw new InvalidPageException("잘못된 댓글 페이지입니다.");
 		}
 
-		int offset = (page - 1) * COMMENTS_PER_PAGE;
+		int offset = page * COMMENTS_PER_PAGE;
 
 		List<ReviewCommentEntity> childReviewComments = reviewCommentService.getChildReviewCommentsOnParent(
 			reviewId, groupId, offset, COMMENTS_PER_PAGE);

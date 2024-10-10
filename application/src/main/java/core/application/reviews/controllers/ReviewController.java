@@ -69,16 +69,16 @@ public class ReviewController {
     @GetMapping("/list")
     public ApiResponse<ListReviewsRespDTO> listReviews(
             @PathVariable String movieId,
-            @RequestParam("page") int page,
+            @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "sort", required = false, defaultValue = "latest") String sort,
             @RequestParam(value = "content", defaultValue = "true") boolean content
     ) {
 
-        if (page < 1) {
+        if (page < 0) {
             throw new InvalidPageException("잘못된 리뷰 페이지입니다.");
         }
 
-        int offset = (page - 1) * REVIEWS_PER_PAGE;
+        int offset = page * REVIEWS_PER_PAGE;
 
         ReviewSortOrder order = Arrays.stream(ReviewSortOrder.values())
                 .anyMatch(r -> r.name().equalsIgnoreCase(sort)) ?
