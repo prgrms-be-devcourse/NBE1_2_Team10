@@ -24,7 +24,7 @@ public class DibController {
 
     @Operation(summary = "영화 찜 등록/취소")
     @PutMapping("/{movieId}/dib")
-    public ApiResponse<DibRespDTO> dibPRocess(
+    public ApiResponse<DibRespDTO> dibProcess(
             @PathVariable String movieId,
             @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
