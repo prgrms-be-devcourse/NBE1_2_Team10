@@ -1,7 +1,6 @@
 package core.application.users.service;
 
 import core.application.security.AuthenticatedUserService;
-import core.application.security.TokenService;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
 import core.application.users.models.entities.UserEntity;
