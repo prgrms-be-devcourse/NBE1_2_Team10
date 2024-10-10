@@ -49,6 +49,9 @@ create table dib_table
     movie_id varchar(50) not null comment '영화 API 에 따라 달라질 수 있음',
     constraint DIB_TABLE_user_table_user_id_fk
         foreign key (user_id) references user_table (user_id)
+            on update cascade on delete cascade,
+    constraint dib_table_cached_movie_table_movie_id_fk
+        foreign key (movie_id) references cached_movie_table (movie_id)
             on update cascade on delete cascade
 )
     comment '찜 목록 테이블';
@@ -123,19 +126,22 @@ create table review_comment_table
 )
     comment '리뷰 댓글 테이블';
 
-create table comment_like_table (
+create table comment_like_table
+(
     comment_like_id bigint auto_increment primary key,
     comment_id      bigint not null,
     user_id         binary(16),
     constraint foreign key (comment_id) references comment_table (comment_id),
-    constraint foreign key (user_id) references user_table (user_id));
+    constraint foreign key (user_id) references user_table (user_id)
+);
 
-create table comment_dislike_table (
-                                       comment_dislike_id bigint auto_increment primary key,
-                                       comment_id         bigint not null,
-                                       user_id            binary(16),
-                                       constraint foreign key (comment_id) references comment_table (comment_id),
-                                       constraint foreign key (user_id) references user_table (user_id)
+create table comment_dislike_table
+(
+    comment_dislike_id bigint auto_increment primary key,
+    comment_id         bigint not null,
+    user_id            binary(16),
+    constraint foreign key (comment_id) references comment_table (comment_id),
+    constraint foreign key (user_id) references user_table (user_id)
 );
 create table comment_like_table
 (
@@ -149,7 +155,8 @@ create table comment_like_table
 create table comment_dislike_table
 (
     comment_dislike_id bigint auto_increment primary key,
-    comment_id      bigint not null,
-    user_id         binary(16),
+    comment_id bigint not null,
+    user_id    binary(16),
     constraint foreign key (comment_id) references comment_table (comment_id),
-    constraint foreign key (user_id) references user_table (user_id));
+    constraint foreign key (user_id) references user_table (user_id)
+);
