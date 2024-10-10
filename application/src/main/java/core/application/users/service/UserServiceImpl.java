@@ -6,8 +6,8 @@ import core.application.users.models.dto.UserDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;
 import core.application.users.repositories.UserRepositoryImpl;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,6 +22,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final AuthenticatedUserService authenticatedUserInfo;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     /**
      * 생성자
@@ -30,10 +31,12 @@ public class UserServiceImpl implements UserService {
      * @param authenticatedUserInfo 인증된 사용자 서비스
      */
     @Autowired
-    public UserServiceImpl(UserRepositoryImpl userRepositoryImpl, AuthenticatedUserService authenticatedUserInfo) {
+    public UserServiceImpl(UserRepositoryImpl userRepositoryImpl, AuthenticatedUserService authenticatedUserInfo,
+		BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepositoryImpl;
         this.authenticatedUserInfo = authenticatedUserInfo;
-    }
+		this.passwordEncoder = passwordEncoder;
+	}
 
     /**
      * 사용자 회원가입 처리
@@ -43,6 +46,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public MessageResponseDTO signup(UserDTO userDTO) {
+        userDTO.encodePassword(passwordEncoder);
         if (userDTO.getAlias() == null) {
             String email = userDTO.getUserEmail();
             UserDTO userWithAlias = UserDTO.builder()
