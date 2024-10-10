@@ -4,6 +4,7 @@ import core.application.api.exception.CommonForbiddenException;
 import core.application.users.models.entities.UserEntity;
 import core.application.security.CustomUserDetails;
 import core.application.security.TokenService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,16 +59,27 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }
         else {
-            Optional<UserEntity> userEntity = tokenService.getUserByAccessToken(accessToken);
+            try {
+                Optional<UserEntity> userEntity = tokenService.getUserByAccessToken(accessToken);
 
-            // UserDetails에 회원 정보 객체 담기
-            CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
+                // UserDetails에 회원 정보 객체 담기
+                CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
 
-            // 스프링 시큐리티 인증 토큰 생성
-            Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+                // 스프링 시큐리티 인증 토큰 생성
+                Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null,
+                    customUserDetails.getAuthorities());
 
-            // 세션에 사용자 등록
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+                // 세션에 사용자 등록
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            } catch (ExpiredJwtException e) {
+                log.error(e.getMessage());
+                request.setAttribute("exception", e);
+                filterChain.doFilter(request, response);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                request.setAttribute("exception", new CommonForbiddenException("잘못된 접근입니다."));
+                filterChain.doFilter(request, response);
+            }
 
             // 다음 필터로 요청 전달
             filterChain.doFilter(request, response);
