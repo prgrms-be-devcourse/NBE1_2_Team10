@@ -7,6 +7,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,7 @@ import java.util.UUID;
  * Spring Security의 UsernamePasswordAuthenticationFilter를 확장하여
  * JSON 형식의 로그인 요청을 처리하고 JWT 발급
  */
+@Slf4j
 public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtUtil;
@@ -41,7 +44,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     public CustomLoginFilter(AuthenticationManager authenticationManager, JwtTokenUtil jwtUtil) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        setFilterProcessesUrl("/users/signin");
+		setFilterProcessesUrl("/users/signin");
     }
 
     /**
@@ -72,12 +75,12 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
             return authenticationManager.authenticate(authToken);
         } catch (AuthenticationException e) {
             // 인증 과정에서 발생한 예외를 로그로 남김
-            System.err.println("Authentication failed: " + e.getMessage());
+            log.info("Authentication Failed:{}", e.getMessage());
             request.setAttribute("exception", new InvalidLoginException("잘못된 아이디 또는 비밀번호입니다."));
             throw new InvalidLoginException("잘못된 아이디 또는 비밀번호입니다.");
         } catch (IOException | JSONException e) {
             // JSON 파싱 또는 IO 오류 처리
-            System.err.println("Invalid request format: " + e.getMessage());
+            log.info("Invalid request format: " + e.getMessage());
             request.setAttribute("exception", new InvalidLoginException("잘못된 형식입니다."));
             throw new InvalidLoginException("잘못된 형식입니다.");
         }
