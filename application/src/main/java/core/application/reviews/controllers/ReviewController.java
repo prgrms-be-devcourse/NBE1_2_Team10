@@ -183,7 +183,6 @@ public class ReviewController {
 
         ReviewEntity result = reviewService.updateReviewInfo(reviewId, replacement);
 
-        // TODO API 명세서에 응답이 형식이 없음..
         return ApiResponse.onSuccess(Message.createMessage("성공적으로 글을 수정하였습니다."));
     }
 
