@@ -68,10 +68,10 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public MessageResponseDTO updateUserInfo(UserDTO userDTO) {
-        UUID userId = authenticatedUserInfo.getAuthenticatedUserId();
+        String userEmail = authenticatedUserInfo.getAuthenticatedUserEmail();
 
-        // 요청 시 토큰의 userId와 다른 userId를 가지고 있는 사용자의 정보를 바꾸려고 할 때 반환 값 null
-        if (!userId.equals(userDTO.getUserId())) {
+        // 요청 시 토큰의 userEmail과 다른 userEmail을 가지고 있는 사용자의 정보를 바꾸려고 할 때 반환 값 null
+        if (!userEmail.equals(userDTO.getUserEmail())) {
             return null;
         }
 
