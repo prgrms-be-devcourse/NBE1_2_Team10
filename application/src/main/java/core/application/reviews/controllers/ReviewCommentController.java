@@ -29,7 +29,6 @@ import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,7 +46,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/movies/{movieId}/reviews/{reviewId}")
 @Tag(name = "Review Comment", description = "영화 후기 포스팅 댓글과 관련된 API")
-@Transactional(readOnly = true)
 public class ReviewCommentController {
 
 	private final ReviewCommentService reviewCommentService;
