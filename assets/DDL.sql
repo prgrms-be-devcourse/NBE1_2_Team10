@@ -49,6 +49,9 @@ create table dib_table
     movie_id varchar(50) not null comment '영화 API 에 따라 달라질 수 있음',
     constraint DIB_TABLE_user_table_user_id_fk
         foreign key (user_id) references user_table (user_id)
+            on update cascade on delete cascade,
+    constraint dib_table_cached_movie_table_movie_id_fk
+        foreign key (movie_id) references cached_movie_table (movie_id)
             on update cascade on delete cascade
 )
     comment '찜 목록 테이블';
@@ -76,6 +79,26 @@ create table comment_table
 )
     comment '한줄평 테이블';
 
+-- 한줄평 좋아요 로그 테이블
+create table comment_like_table
+(
+    comment_like_id bigint auto_increment primary key,
+    comment_id      bigint not null,
+    user_id         binary(16),
+    constraint foreign key (comment_id) references comment_table (comment_id),
+    constraint foreign key (user_id) references user_table (user_id)
+);
+
+-- 한줄평 싫어요 로그 테이블
+create table comment_like_table
+(
+    comment_like_id bigint auto_increment primary key,
+    comment_id      bigint not null,
+    user_id         binary(16),
+    constraint foreign key (comment_id) references comment_table (comment_id),
+    constraint foreign key (user_id) references user_table (user_id)
+);
+
 
 -- auto-generated definition
 -- 리뷰 테이블
@@ -89,7 +112,7 @@ create table review_table
     user_id    binary(16)                         not null comment '리뷰 작성자 ID',
     `like`     int      default 0                 not null comment '좋아요 수',
     created_at datetime default CURRENT_TIMESTAMP not null comment '작성 시간',
-    updated_at datetime default CURRENT_TIMESTAMP not null comment '수정 시간',
+    updated_at datetime default CURRENT_TIMESTAMP null comment '수정 시간',
     constraint REVIEW_TABLE_user_table_user_id_fk
         foreign key (user_id) references user_table (user_id)
             on update cascade on delete cascade,
@@ -122,34 +145,3 @@ create table review_comment_table
             on update cascade on delete cascade
 )
     comment '리뷰 댓글 테이블';
-
-create table comment_like_table (
-    comment_like_id bigint auto_increment primary key,
-    comment_id      bigint not null,
-    user_id         binary(16),
-    constraint foreign key (comment_id) references comment_table (comment_id),
-    constraint foreign key (user_id) references user_table (user_id));
-
-create table comment_dislike_table (
-                                       comment_dislike_id bigint auto_increment primary key,
-                                       comment_id         bigint not null,
-                                       user_id            binary(16),
-                                       constraint foreign key (comment_id) references comment_table (comment_id),
-                                       constraint foreign key (user_id) references user_table (user_id)
-);
-create table comment_like_table
-(
-    comment_like_id bigint auto_increment primary key,
-    comment_id      bigint not null,
-    user_id         binary(16),
-    constraint foreign key (comment_id) references comment_table (comment_id),
-    constraint foreign key (user_id) references user_table (user_id)
-);
-
-create table comment_dislike_table
-(
-    comment_dislike_id bigint auto_increment primary key,
-    comment_id      bigint not null,
-    user_id         binary(16),
-    constraint foreign key (comment_id) references comment_table (comment_id),
-    constraint foreign key (user_id) references user_table (user_id));

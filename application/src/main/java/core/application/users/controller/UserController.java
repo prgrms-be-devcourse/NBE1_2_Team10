@@ -5,6 +5,7 @@ import core.application.api.response.code.Message;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
 import core.application.security.TokenService;
+import core.application.users.models.dto.UserRequestDTO;
 import core.application.users.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,8 +56,8 @@ public class UserController {
 
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
-    public ApiResponse<MessageResponseDTO> singUp(@Valid @RequestBody UserDTO userDTO) {
-        MessageResponseDTO msg = userService.signup(userDTO);
+    public ApiResponse<MessageResponseDTO> singUp(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+        MessageResponseDTO msg = userService.signup(userRequestDTO);
         return ApiResponse.onCreateSuccess(msg);
     }
 
@@ -78,8 +79,8 @@ public class UserController {
 
     @Operation(summary = "유저 정보 업데이트")
     @PatchMapping("/update")
-    public ApiResponse<MessageResponseDTO> updateUser(@Valid @RequestBody UserDTO userDTO) {
-        MessageResponseDTO messageResponseDTO = userService.updateUserInfo(userDTO);
+    public ApiResponse<MessageResponseDTO> updateUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+        MessageResponseDTO messageResponseDTO = userService.updateUserInfo(userRequestDTO);
         return ApiResponse.onSuccess(messageResponseDTO);
     }
 
@@ -90,8 +91,11 @@ public class UserController {
 
     @Operation(summary = "유저 삭제")
     @DeleteMapping("/delete")
-    public ApiResponse<MessageResponseDTO> deleteUser() {
+    public ApiResponse<MessageResponseDTO> deleteUser(HttpServletRequest request) {
         MessageResponseDTO messageResponseDTO = userService.deleteUser();
+        if (messageResponseDTO != null) {
+            tokenService.inactiveRefreshToken(request);
+        }
         return ApiResponse.onDeleteSuccess(messageResponseDTO);
     }
 

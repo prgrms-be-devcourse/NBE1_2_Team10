@@ -69,7 +69,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         // Refresh 토큰 유효성 검증
         if (tokenService.validateRefreshToken(refreshToken).equals("valid token")) {
             // 로그아웃 진행 -> Refresh 토큰 DB에서 제거
-            tokenService.inactiveAccessToken(refreshToken);
+            tokenService.inactiveRefreshToken(request);
         }
 
         // Refresh 토큰 쿠키 값을 0으로 설정하여 삭제

@@ -4,6 +4,7 @@ import core.application.security.AuthenticatedUserService;
 import core.application.users.exception.DuplicateEmailException;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
+import core.application.users.models.dto.UserRequestDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;
 import core.application.users.repositories.UserRepositoryImpl;
@@ -43,7 +44,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 사용자 회원가입 처리
      *
-     * @param userDTO 사용자 정보를 담고 있는 DTO
+     * @param userRequestDTO 사용자 정보를 담고 있는 DTO
      * @return 회원가입 결과 메시지를 포함하는 MessageResponseDTO
      */
     @Override
@@ -54,44 +55,52 @@ public class UserServiceImpl implements UserService {
         userDTO.encodePassword(passwordEncoder);
         if (userDTO.getAlias() == null) {
             String email = userDTO.getUserEmail();
+          
             UserDTO userWithAlias = UserDTO.builder()
-                    .userEmail(userDTO.getUserEmail())
-                    .userPw(userDTO.getUserPw())
-                    .userName(userDTO.getUserName())
+                    .userEmail(userRequestDTO.getUserEmail())
+                    .userPw(userRequestDTO.getUserPw())
+                    .userName(userRequestDTO.getUserName())
                     .alias(email.substring(0, email.indexOf("@")))
-                    .phoneNum(userDTO.getPhoneNum())
-                    .role(userDTO.getRole())
+                    .phoneNum(userRequestDTO.getPhoneNum())
+                    .role(userRequestDTO.getRole())
                     .build();
             userRepository.saveNewUser(userWithAlias.toEntity());
         } else {
-            userRepository.saveNewUser(userDTO.toEntity());
+            userRepository.saveNewUser(userRequestDTO.toEntity());
         }
-        Optional<UserEntity> userEntity = userRepository.findByUserEmail(userDTO.getUserEmail());
+        Optional<UserEntity> userEntity = userRepository.findByUserEmail(userRequestDTO.getUserEmail());
         return new MessageResponseDTO(userEntity.get().getUserId(), "signUp success");
     }
 
     /**
      * 사용자 정보 수정
      *
-     * @param userDTO 수정할 사용자 정보를 담고 있는 DTO
+     * @param userRequestDTO 수정할 사용자 정보를 담고 있는 DTO
      * @return 수정 결과 메시지를 포함하는 MessageResponseDTO, 수정이 실패할 경우 null
      */
     @Override
-    public MessageResponseDTO updateUserInfo(UserDTO userDTO) {
-        UserEntity originUserEntity = userRepository.findByUserId(userDTO.getUserId()).get();
+    public MessageResponseDTO updateUserInfo(UserRequestDTO userRequestDTO) {
+        String userEmail = authenticatedUserInfo.getAuthenticatedUserEmail();
+
+        // 요청 시 토큰의 userEmail과 다른 userEmail을 가지고 있는 사용자의 정보를 바꾸려고 할 때 반환 값 null
+        if (!userEmail.equals(userRequestDTO.getUserEmail())) {
+            return null;
+        }
+
+        UserEntity originUserEntity = userRepository.findByUserEmail(userRequestDTO.getUserEmail()).get();
 
         // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
         UserEntity updatedUserEntity = UserEntity.builder()
                 .userId(originUserEntity.getUserId()) // 기존 userId 유지
-                .userPw(userDTO.getUserPw() != null ? userDTO.getUserPw() : originUserEntity.getUserPw()) // userPw 업데이트
-                .role(userDTO.getRole() != null ? userDTO.getRole() : originUserEntity.getRole()) // role 업데이트
-                .alias(userDTO.getAlias() != null ? userDTO.getAlias() : originUserEntity.getAlias()) // alias 업데이트
-                .phoneNum(userDTO.getPhoneNum() != null ? userDTO.getPhoneNum() : originUserEntity.getPhoneNum()) // phoneNum 업데이트
-                .userName(userDTO.getUserName() != null ? userDTO.getUserName() : originUserEntity.getUserName()) // userName 업데이트
+                .userPw(userRequestDTO.getUserPw() != null ? userRequestDTO.getUserPw() : originUserEntity.getUserPw()) // userPw 업데이트
+                .role(userRequestDTO.getRole() != null ? userRequestDTO.getRole() : originUserEntity.getRole()) // role 업데이트
+                .alias(userRequestDTO.getAlias() != null ? userRequestDTO.getAlias() : originUserEntity.getAlias()) // alias 업데이트
+                .phoneNum(userRequestDTO.getPhoneNum() != null ? userRequestDTO.getPhoneNum() : originUserEntity.getPhoneNum()) // phoneNum 업데이트
+                .userName(userRequestDTO.getUserName() != null ? userRequestDTO.getUserName() : originUserEntity.getUserName()) // userName 업데이트
                 .build();
 
-        if (userRepository.editUserInfo(userDTO.toEntity()) == 1) {
-            return new MessageResponseDTO(userDTO.getUserId(), "update success");
+        if (userRepository.editUserInfo(userRequestDTO.toEntity()) == 1) {
+            return new MessageResponseDTO(originUserEntity.getUserId(), "update success");
         }
         return null;
     }

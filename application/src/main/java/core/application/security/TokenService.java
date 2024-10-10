@@ -162,7 +162,8 @@ public class TokenService {
      * @param refreshToken 리프레시 토큰 문자열
      * @return 비활성화 결과 메시지
      */
-    public String inactiveAccessToken(String refreshToken) {
+    public String inactiveRefreshToken(HttpServletRequest request) {
+        String refreshToken = getRefreshToken(request);
         if (validateRefreshToken(refreshToken).equals("valid token")) {
             redisService.deleteValue(jwtUtil.getUserEmail(refreshToken));
         }
