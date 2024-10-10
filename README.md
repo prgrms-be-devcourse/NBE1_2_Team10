@@ -19,7 +19,7 @@ CineVerse(영화 소개 및 평론 사이트)
 ---
 ### 개발 도구
 
-[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1728451050577?alt=media&token=0321c463-3a38-4c0d-b830-717d959179fa)](https://github.com/msdio/stackticon)
+[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1728542745170?alt=media&token=684f61eb-f61e-4ef8-8989-1e145ca4099a)](https://github.com/msdio/stackticon)
 
 ### 백엔드 기술 스택
 | 소프트웨어           | 비고       |
@@ -349,7 +349,7 @@ CineVerse(영화 소개 및 평론 사이트)
 |이름|역할|프로젝트 담당 기능|
 |------|---|---|
 |민성훈|팀원|영화 상세 조회, 프론트|
-|이민정|팀원|테스트3|
+|이민정|팀원|회원 관리(로그인, 회원 정보 수정 등)|
 |정소은|팀원|프론트|
 |정준상|팀장|테스트3|
 |황건하|팀원|영화 검색,영화 한줄평|
