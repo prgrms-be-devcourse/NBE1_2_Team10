@@ -1,5 +1,6 @@
 package core.application.filter;
 
+import core.application.api.exception.InvalidLoginException;
 import core.application.security.JwtTokenUtil;
 import core.application.security.CustomUserDetails;
 import jakarta.servlet.FilterChain;
@@ -72,11 +73,13 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         } catch (AuthenticationException e) {
             // 인증 과정에서 발생한 예외를 로그로 남김
             System.err.println("Authentication failed: " + e.getMessage());
-            throw e; // 예외를 다시 던져서 로그인 실패로 처리
+            request.setAttribute("exception", new InvalidLoginException("잘못된 아이디 또는 비밀번호입니다."));
+            throw new InvalidLoginException("잘못된 아이디 또는 비밀번호입니다.");
         } catch (IOException | JSONException e) {
             // JSON 파싱 또는 IO 오류 처리
             System.err.println("Invalid request format: " + e.getMessage());
-            throw new AuthenticationException("Invalid request format") {};
+            request.setAttribute("exception", new InvalidLoginException("잘못된 형식입니다."));
+            throw new InvalidLoginException("잘못된 형식입니다.");
         }
     }
 
@@ -134,6 +137,5 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
      */
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
-        response.setStatus(401); // 인증 실패 시 401 상태 코드 설정
     }
 }
