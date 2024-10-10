@@ -90,8 +90,11 @@ public class UserController {
 
     @Operation(summary = "유저 삭제")
     @DeleteMapping("/delete")
-    public ApiResponse<MessageResponseDTO> deleteUser() {
+    public ApiResponse<MessageResponseDTO> deleteUser(HttpServletRequest request) {
         MessageResponseDTO messageResponseDTO = userService.deleteUser();
+        if (messageResponseDTO != null) {
+            tokenService.inactiveRefreshToken(request);
+        }
         return ApiResponse.onDeleteSuccess(messageResponseDTO);
     }
 

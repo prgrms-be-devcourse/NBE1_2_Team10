@@ -6,7 +6,6 @@ import core.application.users.models.dto.UserDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;
 import core.application.users.repositories.UserRepositoryImpl;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,7 +68,14 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public MessageResponseDTO updateUserInfo(UserDTO userDTO) {
-        UserEntity originUserEntity = userRepository.findByUserId(userDTO.getUserId()).get();
+        String userEmail = authenticatedUserInfo.getAuthenticatedUserEmail();
+
+        // 요청 시 토큰의 userEmail과 다른 userEmail을 가지고 있는 사용자의 정보를 바꾸려고 할 때 반환 값 null
+        if (!userEmail.equals(userDTO.getUserEmail())) {
+            return null;
+        }
+
+        UserEntity originUserEntity = userRepository.findByUserEmail(userDTO.getUserEmail()).get();
 
         // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
         UserEntity updatedUserEntity = UserEntity.builder()
