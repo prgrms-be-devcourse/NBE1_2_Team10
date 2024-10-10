@@ -53,7 +53,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
-            log.info("Access Token이 없는 사용자의 요청");
+            log.info("[Access Token이 없는 사용자의 요청] 접근 URL : {}", request.getRequestURL());
             request.setAttribute("exception", new CommonForbiddenException("Access Token이 존재하지 않습니다."));
             filterChain.doFilter(request, response);
         }
