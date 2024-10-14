@@ -13,7 +13,7 @@ import java.util.UUID;
 /**
  * 사용자 정보를 처리하는 {@link UserRepository}의 구현체
  *
- * 이 클래스는 사용자 정보에 대한 CRUD 작업을 수행하며,
+ * 사용자 정보에 대한 CRUD 작업을 수행하고
  * {@link UserMapper}를 사용하여 데이터베이스와 상호작용함
  */
 @Repository

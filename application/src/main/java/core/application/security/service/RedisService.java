@@ -1,9 +1,9 @@
-package core.application.security;
+package core.application.security.service;
 
 public interface RedisService {
     void setValueWithTTL(String key, String value);
 
     String getValue(String key);
 
-    boolean deleteValue(String key);
+    void deleteValue(String key);
 }

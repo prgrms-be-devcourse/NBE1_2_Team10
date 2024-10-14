@@ -1,4 +1,4 @@
-package core.application.security;
+package core.application.security.service;
 
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,14 +12,14 @@ import java.util.UUID;
 
 /**
  * JWT(JSON Web Token) 관련 유틸리티 클래스
- * 이 클래스는 JWT 생성, 검증 및 관련 정보 추출 기능을 제공
+ * JWT 생성, 검증 및 관련 정보 추출 기능을 제공
  */
 @Component
 public class JwtTokenUtil {
 
-    private SecretKey secretKey;
-    private Long accessTimeout;
-    private Long refreshTimeout;
+    private final SecretKey secretKey;
+    private final Long accessTimeout;
+    private final Long refreshTimeout;
     private final RedisService redisService;
 
     /**
@@ -29,7 +29,10 @@ public class JwtTokenUtil {
      * @param accessTimeout 액세스 토큰의 만료 시간(밀리초)
      * @param refreshTimeout 리프레시 토큰의 만료 시간(일 수)
      */
-    public JwtTokenUtil(@Value("${spring.jwt.secret}") String secret, @Value("${token.access.timeout}") Long accessTimeout, @Value("${token.refresh.timeout}") Long refreshTimeout, RedisService redisService) {
+    public JwtTokenUtil(@Value("${spring.jwt.secret}") String secret,
+                        @Value("${token.access.timeout}") Long accessTimeout,
+                        @Value("${token.refresh.timeout}") Long refreshTimeout,
+                        RedisService redisService) {
         this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
         this.accessTimeout = accessTimeout;
         this.refreshTimeout = refreshTimeout;
