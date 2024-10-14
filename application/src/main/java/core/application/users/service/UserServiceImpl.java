@@ -1,7 +1,8 @@
 package core.application.users.service;
 
-import core.application.security.AuthenticatedUserService;
+import core.application.security.service.AuthenticatedUserService;
 import core.application.users.exception.DuplicateEmailException;
+import core.application.users.exception.UserNotFoundException;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
 import core.application.users.models.dto.UserRequestDTO;
@@ -10,15 +11,18 @@ import core.application.users.repositories.UserRepository;
 import core.application.users.repositories.UserRepositoryImpl;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 사용자 관련 서비스 구현 클래스
- * 이 클래스는 사용자 회원가입, 정보 수정, 삭제 및 조회 기능을 제공
+ * 사용자 회원가입, 정보 수정, 삭제 및 조회 기능을 제공
  */
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -67,22 +71,27 @@ public class UserServiceImpl implements UserService {
             userRepository.saveNewUser(userRequestDTO.toEntity());
         }
         Optional<UserEntity> userEntity = userRepository.findByUserEmail(userRequestDTO.getUserEmail());
-        return new MessageResponseDTO(userEntity.get().getUserId(), "signUp success");
+
+        if (userEntity.isPresent()) {
+            return new MessageResponseDTO(userEntity.get().getUserId(), "signUp success");
+        } else {
+            throw new UserNotFoundException("회원 가입에 실패했습니다.");
+        }
     }
 
     /**
      * 사용자 정보 수정
      *
      * @param userRequestDTO 수정할 사용자 정보를 담고 있는 DTO
-     * @return 수정 결과 메시지를 포함하는 MessageResponseDTO, 수정이 실패할 경우 null
+     * @return 수정 결과 메시지를 포함하는 MessageResponseDTO, 수정이 실패할 경우 예외 발생
      */
     @Override
     public MessageResponseDTO updateUserInfo(UserRequestDTO userRequestDTO) {
         String userEmail = authenticatedUserInfo.getAuthenticatedUserEmail();
 
-        // 요청 시 토큰의 userEmail과 다른 userEmail을 가지고 있는 사용자의 정보를 바꾸려고 할 때 반환 값 null
+        // 요청 시 토큰의 userEmail과 다른 userEmail을 가지고 있는 사용자의 정보를 바꾸려고 할 때 예외 발생
         if (!userEmail.equals(userRequestDTO.getUserEmail())) {
-            return null;
+            throw new UserNotFoundException("해당 사용자의 정보를 수정할 수 없습니다: 권한이 없습니다.");
         }
 
         UserEntity originUserEntity = userRepository.findByUserEmail(userRequestDTO.getUserEmail()).get();
@@ -100,13 +109,13 @@ public class UserServiceImpl implements UserService {
         if (userRepository.editUserInfo(userRequestDTO.toEntity()) == 1) {
             return new MessageResponseDTO(originUserEntity.getUserId(), "update success");
         }
-        return null;
+        throw new UserNotFoundException("회원 정보 수정에 실패했습니다.");
     }
 
     /**
      * 현재 인증된 사용자 계정 삭제
      *
-     * @return 삭제 결과 메시지를 포함하는 MessageResponseDTO, 삭제가 실패할 경우 null
+     * @return 삭제 결과 메시지를 포함하는 MessageResponseDTO, 삭제가 실패할 경우 예외 발생
      */
     @Override
     public MessageResponseDTO deleteUser() {
@@ -114,7 +123,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.deleteUser(userId) == 1) {
             return new MessageResponseDTO(userId, "delete success");
         }
-        return null;
+        throw new UserNotFoundException("사용자 삭제를 실패했습니다.");
     }
 
     /**

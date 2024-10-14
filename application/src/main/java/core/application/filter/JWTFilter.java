@@ -2,8 +2,8 @@ package core.application.filter;
 
 import core.application.api.exception.CommonForbiddenException;
 import core.application.users.models.entities.UserEntity;
-import core.application.security.CustomUserDetails;
-import core.application.security.TokenService;
+import core.application.security.service.CustomUserDetails;
+import core.application.security.service.TokenService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -60,7 +60,7 @@ public class JWTFilter extends OncePerRequestFilter {
         }
         else {
             try {
-                Optional<UserEntity> userEntity = tokenService.getUserByAccessToken(accessToken);
+                UserEntity userEntity = tokenService.getUserByAccessToken(accessToken).get();
 
                 // UserDetails에 회원 정보 객체 담기
                 CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);

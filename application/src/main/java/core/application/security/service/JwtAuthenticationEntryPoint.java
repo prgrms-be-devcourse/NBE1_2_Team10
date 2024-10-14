@@ -1,4 +1,4 @@
-package core.application.security;
+package core.application.security.service;
 
 import java.io.IOException;
 

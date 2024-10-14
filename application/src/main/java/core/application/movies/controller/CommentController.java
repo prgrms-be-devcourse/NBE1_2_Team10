@@ -22,7 +22,7 @@ import core.application.movies.exception.InvalidWriteCommentException;
 import core.application.movies.models.dto.request.CommentWriteReqDTO;
 import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.service.CommentService;
-import core.application.security.CustomUserDetails;
+import core.application.security.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;

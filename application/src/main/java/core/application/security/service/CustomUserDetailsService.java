@@ -1,4 +1,4 @@
-package core.application.security;
+package core.application.security.service;
 
 import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;
@@ -14,7 +14,7 @@ import java.util.Optional;
  *
  * {@link UserDetailsService} 인터페이스를 구현하여,
  * 이메일을 사용하여 사용자 정보를 데이터베이스에서 검색
- * 사용자 정보가 존재하면 {@link CustomUserDetails} 객체를 반환하며,
+ * 사용자 정보가 존재하면 {@link CustomUserDetails} 객체를 반환,
  * 사용자가 존재하지 않는 경우 {@link UsernameNotFoundException} 예외 발생
  */
 @Service
@@ -41,9 +41,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
         Optional<UserEntity> userEntity = userRepository.findByUserEmail(userEmail);
         if (userEntity.isPresent()) {
-            return new CustomUserDetails(userEntity);
+            return new CustomUserDetails(userEntity.get());
         } else {
-            throw new UsernameNotFoundException("User not found: " + userEmail);
+            throw new UsernameNotFoundException("해당 사용자를 찾을 수 없습니다.: " + userEmail);
         }
     }
 }

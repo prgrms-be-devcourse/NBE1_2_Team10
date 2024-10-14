@@ -3,8 +3,7 @@ package core.application.users.controller;
 import core.application.api.response.ApiResponse;
 import core.application.api.response.code.Message;
 import core.application.users.models.dto.MessageResponseDTO;
-import core.application.users.models.dto.UserDTO;
-import core.application.security.TokenService;
+import core.application.security.service.TokenService;
 import core.application.users.models.dto.UserRequestDTO;
 import core.application.users.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,8 +56,8 @@ public class UserController {
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
     public ApiResponse<MessageResponseDTO> singUp(@Valid @RequestBody UserRequestDTO userRequestDTO) {
-        MessageResponseDTO msg = userService.signup(userRequestDTO);
-        return ApiResponse.onCreateSuccess(msg);
+        MessageResponseDTO messageResponseDTO = userService.signup(userRequestDTO);
+        return ApiResponse.onCreateSuccess(messageResponseDTO);
     }
 
     /**

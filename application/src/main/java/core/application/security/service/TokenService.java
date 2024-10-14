@@ -1,5 +1,8 @@
-package core.application.security;
+package core.application.security.service;
 
+import core.application.security.exception.InvalidTokenCategoryException;
+import core.application.security.exception.InvalidTokenException;
+import core.application.users.exception.UserNotFoundException;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -13,14 +16,14 @@ import java.util.UUID;
 /**
  * JWT 토큰을 관리하는 서비스 클래스
  *
- * 이 클래스는 액세스 토큰과 리프레시 토큰을 검증하고, 사용자 정보를 추출하며,
+ * 액세스 토큰과 리프레시 토큰을 검증, 사용자 정보를 추출,
  * 새로운 액세스 토큰을 재발급하는 기능 제공
  */
 @Service
 public class TokenService {
-    private JwtTokenUtil jwtUtil;
-    private UserService userService;
-    private RedisService redisService;
+    private final JwtTokenUtil jwtUtil;
+    private final UserService userService;
+    private final RedisService redisService;
 
     /**
      * TokenService의 생성자
@@ -56,52 +59,54 @@ public class TokenService {
      * 주어진 리프레시 토큰의 유효성을 검증함
      *
      * @param refreshToken 리프레시 토큰 문자열
-     * @return 유효성 검사 결과 메시지
+     * @return 유효성 검사 결과
      */
-    public String validateRefreshToken(String refreshToken) {
+    public Boolean isRefreshTokenValid(String refreshToken) {
         if (refreshToken == null) {
-            //response status code
-            return "refresh token null";
+            throw new InvalidTokenException("Refresh Token이 없습니다.");
         }
 
         try {
             jwtUtil.isExpired(refreshToken);
         } catch (ExpiredJwtException e) {
-            return "refresh token expired";
+            throw new InvalidTokenException("만료된 Refresh Token 입니다.");
         }
 
         String category = jwtUtil.getCategory(refreshToken);
 
-        if(!category.equals("refresh")) {
-            return "refresh token expired";
+        if (!category.equals("refresh")) {
+            throw new InvalidTokenCategoryException("잘못된 토큰 유형입니다: Refresh Token이 아닙니다.");
         }
 
         if (redisService.getValue(jwtUtil.getUserEmail(refreshToken)) == null) {
-            return "refresh token not recognized.";
+            throw new InvalidTokenException("유효하지 않은 Refresh Token 입니다.");
         }
-
-        return "valid token";
+        return true;
     }
 
     /**
      * 주어진 액세스 토큰의 유효성 검증
      *
      * @param accessToken 액세스 토큰 문자열
-     * @return 유효성 검사 결과 메시지
+     * @return 유효성 검사 결과
      */
-    public String validateAccessToken(String accessToken) {
+    public Boolean isAccessTokenValid(String accessToken) {
+        if (accessToken == null) {
+            throw new InvalidTokenException("Access Token이 없습니다.");
+        }
+
         try {
             jwtUtil.isExpired(accessToken);
         } catch (ExpiredJwtException e) {
-            return "access token expired";
+            throw new InvalidTokenException("만료된 Access Token 입니다.");
         }
 
         String category = jwtUtil.getCategory(accessToken);
 
         if (!category.equals("access")) {
-            return "Invalid access token";
+            throw new InvalidTokenCategoryException("잘못된 토큰 유형입니다: Access Token이 아닙니다.");
         }
-        return "valid token";
+        return true;
     }
 
     /**
@@ -112,27 +117,20 @@ public class TokenService {
      *         사용자 정보가 포함된 Optional 객체
      */
     public Optional<UserEntity> getUserByAccessToken(String accessToken) {
-
-        if (accessToken == null) {
-            return Optional.empty();
+        if (!isAccessTokenValid(accessToken)) {
+            throw new InvalidTokenException("유효하지 않은 Access Token 입니다.");
         }
 
         String userEmail = jwtUtil.getUserEmail(accessToken);
         Optional<UserEntity> userEntity = userService.getUserByUserEmail(userEmail);
 
-        if (userEntity.isEmpty()) {
-            return Optional.empty();
-        }
-
         // 주요한 정보 제외한 UserEntity 반환
-        Optional<UserEntity> userWithoutSensitiveInfo = Optional.ofNullable(UserEntity.builder()
-                .userEmail(userEntity.get().getUserEmail())
-                .userId(userEntity.get().getUserId())
-                .userName(userEntity.get().getUserName())
-                .role(userEntity.get().getRole())
+        return userEntity.map(entity -> UserEntity.builder()
+                .userEmail(entity.getUserEmail())
+                .userId(entity.getUserId())
+                .userName(entity.getUserName())
+                .role(entity.getRole())
                 .build());
-
-        return userWithoutSensitiveInfo;
     }
 
     /**
@@ -144,29 +142,32 @@ public class TokenService {
     public String reissueAccessToken(HttpServletRequest request) {
         String refreshToken = getRefreshToken(request);
 
-        if (validateRefreshToken(refreshToken).equals("valid token")) {
+        if (isRefreshTokenValid(refreshToken)) {
             String userEmail =  jwtUtil.getUserEmail(refreshToken);
             Optional<UserEntity> userEntity = userService.getUserByUserEmail(userEmail);
-            UUID userId = userEntity.get().getUserId();
-            String role = userEntity.get().getRole().toString();
 
-            return jwtUtil.creatAccessToken(userEmail, userId, role, "access");
+            if (userEntity.isPresent()) {
+                UUID userId = userEntity.get().getUserId();
+                String role = userEntity.get().getRole().toString();
+
+                return jwtUtil.creatAccessToken(userEmail, userId, role, "access");
+            } else {
+                throw new UserNotFoundException("사용자를 찾을 수 없습니다.");
+            }
         } else {
-            return null;
+            throw new InvalidTokenException("유효하지 않은 Refresh Token 입니다.");
         }
     }
 
     /**
      * 주어진 리프레시 토큰 비활성화
      *
-     * @param refreshToken 리프레시 토큰 문자열
-     * @return 비활성화 결과 메시지
+     * @param request HTTP 요청 객체
      */
-    public String inactiveRefreshToken(HttpServletRequest request) {
+    public void inactiveRefreshToken(HttpServletRequest request) {
         String refreshToken = getRefreshToken(request);
-        if (validateRefreshToken(refreshToken).equals("valid token")) {
+        if (isRefreshTokenValid(refreshToken)) {
             redisService.deleteValue(jwtUtil.getUserEmail(refreshToken));
         }
-        return "inactive refresh token success";
     }
 }

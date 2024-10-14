@@ -12,7 +12,7 @@ import core.application.reviews.models.dto.response.ShowCommentsRespDTO;
 import core.application.reviews.models.entities.ReviewCommentEntity;
 import core.application.reviews.services.ReviewCommentService;
 import core.application.reviews.services.ReviewCommentSortOrder;
-import core.application.security.CustomUserDetails;
+import core.application.security.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;

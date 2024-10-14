@@ -14,7 +14,7 @@ import core.application.reviews.models.dto.response.reviews.ReviewInfoRespDTO;
 import core.application.reviews.models.entities.ReviewEntity;
 import core.application.reviews.services.ReviewService;
 import core.application.reviews.services.ReviewSortOrder;
-import core.application.security.CustomUserDetails;
+import core.application.security.service.CustomUserDetails;
 import core.application.users.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
