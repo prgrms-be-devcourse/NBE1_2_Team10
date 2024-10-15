@@ -100,7 +100,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
-        UserEntity updatedUserEntity = UserEntity.builder()
+        UserDTO updatedUserDTO = UserDTO.builder()
                 .userId(originUserEntity.get().getUserId()) // 기존 userId 유지
                 .userPw(userRequestDTO.getUserPw() != null ? userRequestDTO.getUserPw() : originUserEntity.get().getUserPw()) // userPw 업데이트
                 .role(userRequestDTO.getRole() != null ? userRequestDTO.getRole() : originUserEntity.get().getRole()) // role 업데이트
@@ -108,9 +108,10 @@ public class UserServiceImpl implements UserService {
                 .phoneNum(userRequestDTO.getPhoneNum() != null ? userRequestDTO.getPhoneNum() : originUserEntity.get().getPhoneNum()) // phoneNum 업데이트
                 .userName(userRequestDTO.getUserName() != null ? userRequestDTO.getUserName() : originUserEntity.get().getUserName()) // userName 업데이트
                 .build();
+        updatedUserDTO.encodePassword(passwordEncoder);
 
-        if (userRepository.editUserInfo(userRequestDTO.toEntity()) == 1) {
-            return new MessageResponseDTO(updatedUserEntity.getUserId(), "update success");
+        if (userRepository.editUserInfo(updatedUserDTO.toEntity()) == 1) {
+            return new MessageResponseDTO(originUserEntity.get().getUserId(), "update success");
         }
         throw new UserNotFoundException("회원 정보 수정에 실패했습니다.");
     }
