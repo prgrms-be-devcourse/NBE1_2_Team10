@@ -94,20 +94,23 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException("해당 사용자의 정보를 수정할 수 없습니다: 권한이 없습니다.");
         }
 
-        UserEntity originUserEntity = userRepository.findByUserEmail(userRequestDTO.getUserEmail()).get();
+        Optional<UserEntity> originUserEntity = userRepository.findByUserEmail(userRequestDTO.getUserEmail());
+        if (originUserEntity.isEmpty()) {
+            throw new UserNotFoundException("기존에 입력된 회원 정보가 존재하지 않습니다.");
+        }
 
         // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
         UserEntity updatedUserEntity = UserEntity.builder()
-                .userId(originUserEntity.getUserId()) // 기존 userId 유지
-                .userPw(userRequestDTO.getUserPw() != null ? userRequestDTO.getUserPw() : originUserEntity.getUserPw()) // userPw 업데이트
-                .role(userRequestDTO.getRole() != null ? userRequestDTO.getRole() : originUserEntity.getRole()) // role 업데이트
-                .alias(userRequestDTO.getAlias() != null ? userRequestDTO.getAlias() : originUserEntity.getAlias()) // alias 업데이트
-                .phoneNum(userRequestDTO.getPhoneNum() != null ? userRequestDTO.getPhoneNum() : originUserEntity.getPhoneNum()) // phoneNum 업데이트
-                .userName(userRequestDTO.getUserName() != null ? userRequestDTO.getUserName() : originUserEntity.getUserName()) // userName 업데이트
+                .userId(originUserEntity.get().getUserId()) // 기존 userId 유지
+                .userPw(userRequestDTO.getUserPw() != null ? userRequestDTO.getUserPw() : originUserEntity.get().getUserPw()) // userPw 업데이트
+                .role(userRequestDTO.getRole() != null ? userRequestDTO.getRole() : originUserEntity.get().getRole()) // role 업데이트
+                .alias(userRequestDTO.getAlias() != null ? userRequestDTO.getAlias() : originUserEntity.get().getAlias()) // alias 업데이트
+                .phoneNum(userRequestDTO.getPhoneNum() != null ? userRequestDTO.getPhoneNum() : originUserEntity.get().getPhoneNum()) // phoneNum 업데이트
+                .userName(userRequestDTO.getUserName() != null ? userRequestDTO.getUserName() : originUserEntity.get().getUserName()) // userName 업데이트
                 .build();
 
         if (userRepository.editUserInfo(userRequestDTO.toEntity()) == 1) {
-            return new MessageResponseDTO(originUserEntity.getUserId(), "update success");
+            return new MessageResponseDTO(updatedUserEntity.getUserId(), "update success");
         }
         throw new UserNotFoundException("회원 정보 수정에 실패했습니다.");
     }
