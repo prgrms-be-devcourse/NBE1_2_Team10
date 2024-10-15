@@ -1,6 +1,7 @@
 package core.application.filter;
 
 import core.application.api.response.ApiResponse;
+import core.application.api.response.code.Message;
 import core.application.security.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -79,6 +80,6 @@ public class CustomLogoutFilter extends GenericFilterBean {
         cookie.setPath("/");
 
         response.addCookie(cookie); // 쿠키 추가
-        ApiResponse.onDeleteSuccess("Refresh Token 삭제를 완료했습니다.");
+        ApiResponse.onDeleteSuccess(Message.createMessage("Refresh Token 삭제를 완료했습니다."));
     }
 }
