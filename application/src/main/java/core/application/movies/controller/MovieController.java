@@ -2,6 +2,7 @@ package core.application.movies.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -72,10 +73,10 @@ public class MovieController {
 		@Parameter(name = "sort", description = "정렬 타입", example = "latest")
 	})
 	@GetMapping("/genre/{genre}")
-	public ApiResponse<List<MovieSearchRespDTO>> searchGenre(@PathVariable("genre") String genre,
-		@RequestParam(defaultValue = "0") Integer page,
-		@RequestParam(defaultValue = "latest") String sort) {
-		List<MovieSearchRespDTO> result;
+	public ApiResponse<Page<MovieSearchRespDTO>> searchGenre(@PathVariable("genre") String genre,
+															 @RequestParam(defaultValue = "0") Integer page,
+															 @RequestParam(defaultValue = "latest") String sort) {
+		Page<MovieSearchRespDTO> result;
 		// 잘못된 장르 검색 시, 아예 페이지 제공 X
 		if (Genre.isNotValid(genre)) {
 			throw new NotFoundUrlException("존재하지 않는 페이지입니다.");
