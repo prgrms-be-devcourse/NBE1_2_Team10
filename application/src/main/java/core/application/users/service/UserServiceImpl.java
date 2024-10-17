@@ -5,7 +5,8 @@ import core.application.users.exception.DuplicateEmailException;
 import core.application.users.exception.UserNotFoundException;
 import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.UserDTO;
-import core.application.users.models.dto.UserRequestDTO;
+import core.application.users.models.dto.SignupReqDTO;
+import core.application.users.models.dto.UserUpdateReqDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;
 import core.application.users.repositories.UserRepositoryImpl;
@@ -50,7 +51,7 @@ public class UserServiceImpl implements UserService {
      * @return 회원가입 결과 메시지를 포함하는 MessageResponseDTO
      */
     @Override
-    public MessageResponseDTO signup(UserRequestDTO userRequestDTO) {
+    public MessageResponseDTO signup(SignupReqDTO userRequestDTO) {
         if (userRepository.existsByEmail(userRequestDTO.getUserEmail())) {
             throw new DuplicateEmailException("중복된 이메일입니다.");
         }
@@ -82,19 +83,19 @@ public class UserServiceImpl implements UserService {
     /**
      * 사용자 정보 수정
      *
-     * @param userRequestDTO 수정할 사용자 정보를 담고 있는 DTO
+     * @param userUpdateRequestDTO 수정할 사용자 정보를 담고 있는 DTO
      * @return 수정 결과 메시지를 포함하는 MessageResponseDTO, 수정이 실패할 경우 예외 발생
      */
     @Override
-    public MessageResponseDTO updateUserInfo(UserRequestDTO userRequestDTO) {
+    public MessageResponseDTO updateUserInfo(UserUpdateReqDTO userUpdateRequestDTO) {
         String userEmail = authenticatedUserInfo.getAuthenticatedUserEmail();
 
         // 요청 시 토큰의 userEmail과 다른 userEmail을 가지고 있는 사용자의 정보를 바꾸려고 할 때 예외 발생
-        if (!userEmail.equals(userRequestDTO.getUserEmail())) {
+        if (!userEmail.equals(userUpdateRequestDTO.getUserEmail())) {
             throw new UserNotFoundException("해당 사용자의 정보를 수정할 수 없습니다: 권한이 없습니다.");
         }
 
-        Optional<UserEntity> originUserEntity = userRepository.findByUserEmail(userRequestDTO.getUserEmail());
+        Optional<UserEntity> originUserEntity = userRepository.findByUserEmail(userUpdateRequestDTO.getUserEmail());
         if (originUserEntity.isEmpty()) {
             throw new UserNotFoundException("기존에 입력된 회원 정보가 존재하지 않습니다.");
         }
@@ -102,11 +103,11 @@ public class UserServiceImpl implements UserService {
         // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
         UserDTO updatedUserDTO = UserDTO.builder()
                 .userId(originUserEntity.get().getUserId()) // 기존 userId 유지
-                .userPw(userRequestDTO.getUserPw() != null ? userRequestDTO.getUserPw() : originUserEntity.get().getUserPw()) // userPw 업데이트
-                .role(userRequestDTO.getRole() != null ? userRequestDTO.getRole() : originUserEntity.get().getRole()) // role 업데이트
-                .alias(userRequestDTO.getAlias() != null ? userRequestDTO.getAlias() : originUserEntity.get().getAlias()) // alias 업데이트
-                .phoneNum(userRequestDTO.getPhoneNum() != null ? userRequestDTO.getPhoneNum() : originUserEntity.get().getPhoneNum()) // phoneNum 업데이트
-                .userName(userRequestDTO.getUserName() != null ? userRequestDTO.getUserName() : originUserEntity.get().getUserName()) // userName 업데이트
+                .userPw(userUpdateRequestDTO.getUserPw() != null ? userUpdateRequestDTO.getUserPw() : originUserEntity.get().getUserPw()) // userPw 업데이트
+                .role(originUserEntity.get().getRole()) // 기존 role 유지
+                .alias(userUpdateRequestDTO.getAlias() != null ? userUpdateRequestDTO.getAlias() : originUserEntity.get().getAlias()) // alias 업데이트
+                .phoneNum(userUpdateRequestDTO.getPhoneNum() != null ? userUpdateRequestDTO.getPhoneNum() : originUserEntity.get().getPhoneNum()) // phoneNum 업데이트
+                .userName(userUpdateRequestDTO.getUserName() != null ? userUpdateRequestDTO.getUserName() : originUserEntity.get().getUserName()) // userName 업데이트
                 .build();
         updatedUserDTO.encodePassword(passwordEncoder);
 

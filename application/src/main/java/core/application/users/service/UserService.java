@@ -1,7 +1,8 @@
 package core.application.users.service;
 
 import core.application.users.models.dto.MessageResponseDTO;
-import core.application.users.models.dto.UserRequestDTO;
+import core.application.users.models.dto.SignupReqDTO;
+import core.application.users.models.dto.UserUpdateReqDTO;
 import core.application.users.models.entities.UserEntity;
 
 import java.util.Optional;
@@ -16,9 +17,9 @@ import java.util.UUID;
 
 public interface UserService {
 
-    public MessageResponseDTO signup (UserRequestDTO userRequestDTO);
+    public MessageResponseDTO signup (SignupReqDTO userRequestDTO);
 
-    public MessageResponseDTO updateUserInfo (UserRequestDTO userRequestDTO);
+    public MessageResponseDTO updateUserInfo (UserUpdateReqDTO userUpdateRequestDTO);
 
     public MessageResponseDTO deleteUser ();
 
