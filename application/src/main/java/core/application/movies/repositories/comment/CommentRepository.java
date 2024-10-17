@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+
 import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.models.entities.CommentEntity;
+import org.springframework.data.domain.Pageable;
 
 /**
  * {@code COMMENT_TABLE} 과 관련된 {@code Repository}
@@ -41,11 +44,8 @@ public interface CommentRepository {
 	 *
 	 * @param movieId 검색할 영화 ID
 	 * @return {@link List}{@code <}{@link CommentEntity}{@code >}
-	 * @see #findByMovieIdOnDateDescend(String, UUID, int)
-	 * @see #findByMovieIdOnLikeDescend(String, UUID, int)
-	 * @see #findByMovieIdOnDislikeDescend(String, UUID, int)
 	 */
-	List<CommentRespDTO> findByMovieId(String movieId, UUID userId, int offset);
+	Page<CommentRespDTO> findByMovieId(String movieId, UUID userId, Pageable pageable);
 
 	/**
 	 * 특정 영화에 달린 한줄평 댓글을 최신순으로 검색
@@ -53,7 +53,7 @@ public interface CommentRepository {
 	 * @param movieId 검색할 영화 ID
 	 * @return {@link List}{@code <}{@link CommentEntity}{@code >}
 	 */
-	List<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, int offset);
+	Page<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, Pageable pageable);
 
 	/**
 	 * 특정 영화에 달린 한줄평 댓글을 좋아요 순으로 검색
@@ -61,7 +61,7 @@ public interface CommentRepository {
 	 * @param movieId 검색할 영화 ID
 	 * @return {@link List}{@code <}{@link CommentEntity}{@code >}
 	 */
-	List<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, int offset);
+	Page<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, Pageable pageable);
 
 	/**
 	 * 특정 영화에 달린 한줄평 댓글을 싫어요 순으로 검색
@@ -69,7 +69,7 @@ public interface CommentRepository {
 	 * @param movieId 검색할 영화 ID
 	 * @return {@link List}{@code <}{@link CommentEntity}{@code >}
 	 */
-	List<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, int offset);
+	Page<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, Pageable pageable);
 
 	/**
 	 * DB 의 모든 한줄평 댓글을 검색

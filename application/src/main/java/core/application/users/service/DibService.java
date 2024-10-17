@@ -2,6 +2,8 @@ package core.application.users.service;
 
 import core.application.users.models.dto.DibRespDTO;
 
+import core.application.users.models.entities.UserEntity;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface DibService {
@@ -13,5 +15,5 @@ public interface DibService {
      * 이때 cached_movie_table에 찜하려는 객체가 없다면 추가
      * @return{"찜 취소 완료" / "찜 완료" 메시지, dibId, movieId 반환}
      */
-    DibRespDTO dibProcess(UUID userId, String movieId);
+    DibRespDTO dibProcess(UserEntity user, String movieId);
 }

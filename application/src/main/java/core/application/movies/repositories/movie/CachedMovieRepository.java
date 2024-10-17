@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import core.application.movies.models.entities.CachedMovieEntity;
+import org.springframework.data.domain.Page;
 
 /**
  * {@code CACHED_MOVIE_TABLE} 과 관련된 {@code Repository}
@@ -31,26 +32,12 @@ public interface CachedMovieRepository {
 	Optional<CachedMovieEntity> findByMovieId(String movieId);
 
 	/**
-	 * 캐시된 모든 영화를 찜 많은 순으로 검색
-	 *
-	 * @return {@link List}{@code <}{@link CachedMovieEntity}{@code >}
-	 */
-	List<CachedMovieEntity> selectOnDibOrderDescend();
-
-	/**
 	 * 캐시된 영화를 찜 많은 순으로 {@code num} 개 검색
 	 *
 	 * @param num 가져올 영화 개수
 	 * @return {@link List}{@code <}{@link CachedMovieEntity}{@code >}
 	 */
 	List<CachedMovieEntity> selectOnDibOrderDescend(int num);
-
-	/**
-	 * 캐시된 모든 영화를 평점 높은 순으로 검색
-	 *
-	 * @return {@link List}{@code <}{@link CachedMovieEntity}{@code >}
-	 */
-	List<CachedMovieEntity> selectOnAVGRatingDescend();
 
 	/**
 	 * 캐시된 영화를 평점 높은 순으로 {@code num} 개 검색
@@ -72,11 +59,11 @@ public interface CachedMovieRepository {
 	/**
 	 * 카테고리 검색 중 평점순 조회
 	 *
-	 * @param offset 오프셋
+	 * @param page 페이지
 	 * @param genre 장르
 	 * @return 해당 카테고리 영화의 평점순
 	 */
-	List<CachedMovieEntity> findMoviesOnRatingDescendWithGenre(int offset, String genre);
+	Page<CachedMovieEntity> findMoviesOnRatingDescendWithGenre(int page, String genre);
 
 	// UPDATE
 

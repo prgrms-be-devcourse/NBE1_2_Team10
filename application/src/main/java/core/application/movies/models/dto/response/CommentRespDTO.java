@@ -1,16 +1,19 @@
 package core.application.movies.models.dto.response;
 
+import core.application.users.models.entities.UserEntity;
 import java.time.Instant;
 import java.util.UUID;
 
 import core.application.movies.models.entities.CommentEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
 @Schema(description = "한줄평 작성 응답 정보")
+@AllArgsConstructor
 public class CommentRespDTO {
 	@Schema(description = "한줄평 ID", example = "1")
 	private Long commentId;
@@ -42,12 +45,12 @@ public class CommentRespDTO {
 	@Schema(description = "현재 사용자가 해당 한줄평 싫어요 여부", example = "false")
 	private Boolean isDisliked;
 
-	public static CommentRespDTO from(CommentEntity comment) {
+	public static CommentRespDTO of(CommentEntity comment, UserEntity user) {
 		return CommentRespDTO.builder()
 			.commentId(comment.getCommentId())
-			.movieId(comment.getMovieId())
 			.content(comment.getContent())
-			.userId(comment.getUserId())
+			.movieId(comment.getMovie().getMovieId())
+			.userId(user.getUserId())
 			.like(comment.getLike())
 			.dislike(comment.getDislike())
 			.rating(comment.getRating())

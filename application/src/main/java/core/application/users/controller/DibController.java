@@ -3,9 +3,11 @@ package core.application.users.controller;
 import core.application.api.response.ApiResponse;
 import core.application.security.CustomUserDetails;
 import core.application.users.models.dto.DibRespDTO;
+import core.application.users.models.entities.UserEntity;
 import core.application.users.service.DibService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,7 +31,8 @@ public class DibController {
             @AuthenticationPrincipal CustomUserDetails userDetails
             ) {
         UUID userId = userDetails.getUserId();
-        DibRespDTO dibRespDTO = dibService.dibProcess(userId, movieId);
+        UserEntity user = userDetails.getUserEntity().orElseThrow();
+        DibRespDTO dibRespDTO = dibService.dibProcess(user, movieId);
         return ApiResponse.onSuccess(dibRespDTO);
     }
 }

@@ -1,70 +1,69 @@
 package core.application.movies.repositories.comment;
 
+import core.application.movies.models.dto.response.CommentRespDTO;
+import core.application.movies.models.entities.CommentEntity;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import org.springframework.stereotype.Repository;
-
-import core.application.movies.models.dto.response.CommentRespDTO;
-import core.application.movies.models.entities.CommentEntity;
-import core.application.movies.repositories.mapper.CommentMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class CommentRepositoryImpl implements CommentRepository {
 
-	private final CommentMapper commentMapper;
+    private final JpaCommentRepository jpaCommentRepository;
 
-	@Override
-	public CommentEntity saveNewComment(String movieId, UUID userId, CommentEntity comment) {
-		commentMapper.save(movieId, userId, comment);
-		return findByCommentId(comment.getCommentId()).orElse(null);
-	}
+    @Override
+    public CommentEntity saveNewComment(String movieId, UUID userId, CommentEntity comment) {
+        return jpaCommentRepository.save(comment);
+    }
 
-	@Override
-	public Optional<CommentEntity> findByCommentId(Long commentId) {
-		return commentMapper.findByCommentId(commentId);
-	}
+    @Override
+    public Optional<CommentEntity> findByCommentId(Long commentId) {
+        return jpaCommentRepository.findById(commentId);
+    }
 
-	@Override
-	public Boolean existsByMovieIdAndUserId(String movieId, UUID userId) {
-		return commentMapper.findByMovieIdAndUserId(movieId, userId).isPresent();
-	}
+    @Override
+    public Boolean existsByMovieIdAndUserId(String movieId, UUID userId) {
+        return jpaCommentRepository.existsByMovie_MovieIdAndUser_UserId(movieId, userId);
+    }
 
-	@Override
-	public List<CommentRespDTO> findByMovieId(String movieId, UUID userId, int offset) {
-		return commentMapper.findByMovieId(movieId, userId, offset);
-	}
+    @Override
+    public Page<CommentRespDTO> findByMovieId(String movieId, UUID userId, Pageable pageable) {
+        return jpaCommentRepository.findByMovieId(movieId, userId, pageable);
+    }
 
-	@Override
-	public List<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, int offset) {
-		return commentMapper.findByMovieIdOnDateDescend(movieId, userId, offset);
-	}
+    @Override
+    public Page<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, Pageable pageable) {
+        return jpaCommentRepository.findByMovieIdOrderByCreatedAt(movieId, userId, pageable);
+    }
 
-	@Override
-	public List<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, int offset) {
-		return commentMapper.findByMovieIdOnLikeDescend(movieId, userId, offset);
-	}
+    @Override
+    public Page<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, Pageable pageable) {
+        return jpaCommentRepository.findByMovieIdOrderByLikeDesc(movieId, userId, pageable);
+    }
 
-	@Override
-	public List<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, int offset) {
-		return commentMapper.findByMovieIdOnDislikeDescend(movieId, userId, offset);
-	}
+    @Override
+    public Page<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, Pageable pageable) {
+        return jpaCommentRepository.findByMovieIdOrderByDislikeDesc(movieId, userId, pageable);
+    }
 
-	@Override
-	public List<CommentEntity> selectAll() {
-		return commentMapper.selectAll();
-	}
+    @Override
+    public List<CommentEntity> selectAll() {
+        return jpaCommentRepository.findAll();
+    }
 
-	@Override
-	public void update(CommentEntity comment) {
-		commentMapper.update(comment);
-	}
+    @Override
+    public void update(CommentEntity comment) {
+    }
 
-	@Override
-	public void deleteComment(Long commentId) {
-		commentMapper.delete(commentId);
-	}
+    @Override
+    public void deleteComment(Long commentId) {
+        jpaCommentRepository.deleteById(commentId);
+    }
 }

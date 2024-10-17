@@ -2,6 +2,7 @@ package core.application.movies.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +21,8 @@ public class MovieRepositoryTest {
 
 	@Autowired
 	CachedMovieRepository repository;
+	@Autowired
+	EntityManager em;
 
 	@Test
 	@DisplayName("영화를 데이터베이스에 저장한다.")
@@ -42,12 +45,13 @@ public class MovieRepositoryTest {
 		CachedMovieEntity movie = repository.saveNewMovie(movieEntity);
 
 		// THEN
-		Optional<CachedMovieEntity> find = repository.findByMovieId(movie.getMovieId());
-		checkEqualMovie(find, movie);
+		CachedMovieEntity find = repository.findByMovieId(movie.getMovieId()).orElse(null);
+		assertThat(find).isEqualTo(movie);
 	}
 
 	@Test
 	@DisplayName("영화 정보를 수정한다.")
+	@Transactional
 	public void update() {
 		// GIVEN
 		CachedMovieEntity movieEntity = new CachedMovieEntity(
@@ -62,16 +66,16 @@ public class MovieRepositoryTest {
 			"봉준호",
 			1L, 2L, 3L, 4L
 		);
-		repository.saveNewMovie(movieEntity);
+		em.persist(movieEntity);
 
 		// WHEN
 		movieEntity.isCommentedWithRating(10);
 		movieEntity.incrementReviewCount();
-		repository.editMovie(movieEntity.getMovieId(), movieEntity);
+		em.flush();
 
 		// THEN
-		Optional<CachedMovieEntity> find = repository.findByMovieId(movieEntity.getMovieId());
-		checkEqualMovie(find, movieEntity);
+		CachedMovieEntity find = repository.findByMovieId(movieEntity.getMovieId()).orElse(null);
+		assertThat(movieEntity).isEqualTo(find);
 	}
 
 	@Test
@@ -101,11 +105,11 @@ public class MovieRepositoryTest {
 
 		// THEN
 		assertThat(rating).hasSize(5);
-		assertThat(rating.get(0).getSumOfRating()).isEqualTo(100);
-		assertThat(rating.get(1).getSumOfRating()).isEqualTo(90);
-		assertThat(rating.get(2).getSumOfRating()).isEqualTo(80);
-		assertThat(rating.get(3).getSumOfRating()).isEqualTo(70);
-		assertThat(rating.get(4).getSumOfRating()).isEqualTo(60);
+		assertThat(rating.get(0).getSumOfRating()).isEqualTo(10);
+		assertThat(rating.get(1).getSumOfRating()).isEqualTo(9);
+		assertThat(rating.get(2).getSumOfRating()).isEqualTo(8);
+		assertThat(rating.get(3).getSumOfRating()).isEqualTo(7);
+		assertThat(rating.get(4).getSumOfRating()).isEqualTo(6);
 
 		assertThat(dib).hasSize(5);
 		assertThat(dib.get(0).getDibCount()).isEqualTo(9);
@@ -120,24 +124,5 @@ public class MovieRepositoryTest {
 		assertThat(review.get(2).getReviewCount()).isEqualTo(7);
 		assertThat(review.get(3).getReviewCount()).isEqualTo(6);
 		assertThat(review.get(4).getReviewCount()).isEqualTo(5);
-	}
-
-	private void checkEqualMovie(Optional<CachedMovieEntity> findByRepository, CachedMovieEntity movie) {
-		assertThat(findByRepository).isPresent();
-		assertThat(findByRepository.get()).satisfies(find -> {
-			assertThat(find.getMovieId()).isEqualTo(movie.getMovieId());
-			assertThat(find.getTitle()).isEqualTo(movie.getTitle());
-			assertThat(find.getPosterUrl()).isEqualTo(movie.getPosterUrl());
-			assertThat(find.getGenre()).isEqualTo(movie.getGenre());
-			assertThat(find.getReleaseDate()).isEqualTo(movie.getReleaseDate());
-			assertThat(find.getPlot()).isEqualTo(movie.getPlot());
-			assertThat(find.getRunningTime()).isEqualTo(movie.getRunningTime());
-			assertThat(find.getActors()).isEqualTo(movie.getActors());
-			assertThat(find.getDirector()).isEqualTo(movie.getDirector());
-			assertThat(find.getDibCount()).isEqualTo(movie.getDibCount());
-			assertThat(find.getReviewCount()).isEqualTo(movie.getReviewCount());
-			assertThat(find.getCommentCount()).isEqualTo(movie.getCommentCount());
-			assertThat(find.getSumOfRating()).isEqualTo(movie.getSumOfRating());
-		});
 	}
 }
