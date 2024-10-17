@@ -111,8 +111,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public MessageResponseDTO deleteUser() {
         UUID userId = authenticatedUserInfo.getAuthenticatedUserId();
-        if (userRepository.deleteUser(userId) == 1) {
-            return new MessageResponseDTO(userId, "delete success");
+        userRepository.deleteUser(userId);
+        if (userRepository.existsByUserId(userId)) {
+            return new MessageResponseDTO(userId, "정상적으로 삭제되었습니다.");
         }
         return null;
     }

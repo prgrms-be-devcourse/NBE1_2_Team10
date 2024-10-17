@@ -22,7 +22,7 @@ public interface UserRepository {
      * @param newUser 새 유저 정보
      * @return {@link UserEntity} 등록된 유저 정보
      */
-    int saveNewUser(UserEntity newUser);
+    UserEntity saveNewUser(UserEntity newUser);
 
 
     //<editor-fold desc="READ">
@@ -68,6 +68,8 @@ public interface UserRepository {
      * @return {@link List}{@code <}{@link UserEntity}{@code >}
      */
     List<UserEntity> findAll();
+
+    Boolean existsByUserId(UUID userId);
     //</editor-fold>
 
 
@@ -90,5 +92,5 @@ public interface UserRepository {
      *
      * @param userId 삭제할 유저 ID
      */
-    int deleteUser(UUID userId);
+    void deleteUser(UUID userId);
 }

@@ -4,6 +4,8 @@ import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.movie.CachedMovieRepository;
 import core.application.movies.service.MovieService;
 import core.application.users.models.dto.DibRespDTO;
+import core.application.users.models.entities.DibEntity;
+import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.DibRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,31 +25,32 @@ public class DibServiceImpl implements DibService {
 
     @Override
     @Transactional
-    public DibRespDTO dibProcess(UUID userId, String movieId) {
+    public DibRespDTO dibProcess(UserEntity user, String movieId) {
         String dibMovieId = movieService.getMovieDetailInfo(movieId).getMovieId();
-        Optional<CachedMovieEntity> movie = movieRepo.findByMovieId(dibMovieId);
+        CachedMovieEntity movie = movieRepo.findByMovieId(dibMovieId).orElseThrow();
 
         // dib_table에 이미 존재하는 객체 -> 찜 취소하기
-        if(dibRepo.findByUserIdAndMovieId(userId, dibMovieId).isPresent()) {
+        if(dibRepo.findByUserIdAndMovieId(user.getUserId(), dibMovieId).isPresent()) {
             // 찜 레코드 삭제
-            dibRepo.deleteDib(userId, dibMovieId);
+            dibRepo.deleteDib(user.getUserId(), dibMovieId);
 
             // dib_count 1 감소하는 로직 추가
-            movie.get().decrementDibCount();
+            movie.decrementDibCount();
             movieRepo.editMovie(dibMovieId, movie.get());
 
             DibRespDTO dibDTO = DibRespDTO.builder()
                     .message("찜 취소 완료되습니다.")
-                    .userId(userId)
+                    .userId(user.getUserId())
                     .movieId(dibMovieId)
                     .build();
             return dibDTO;
 
         } else {
-            dibRepo.saveNewDib(userId, dibMovieId);
+
+            dibRepo.saveNewDib(DibEntity.of(user, movie));
 
             // dib_count 1 증가하는 로직 추가
-            movie.get().incrementDibCount();
+            movie.incrementDibCount();
             movieRepo.editMovie(dibMovieId, movie.get());
 
             DibRespDTO dibDTO = DibRespDTO.builder()

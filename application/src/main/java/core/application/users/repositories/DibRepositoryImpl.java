@@ -2,6 +2,7 @@ package core.application.users.repositories;
 
 import core.application.users.mapper.DibMapper;
 import core.application.users.models.entities.DibEntity;
+import core.application.users.models.entities.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -14,23 +15,26 @@ import java.util.UUID;
 public class DibRepositoryImpl implements DibRepository{
 
     private final DibMapper mapper;
+    private final JpaDibRepository jpaRepository;
 
     @Override
-    public Optional<DibEntity> saveNewDib(UUID userId, String movieId) {
-        mapper.saveNewDib(userId, movieId);
-        return mapper.findByUserIdAndMovieId(userId, movieId);
+    public DibEntity saveNewDib(DibEntity dib) {
+//        mapper.saveNewDib(userId, movieId);
+//        return mapper.findByUserIdAndMovieId(userId, movieId);
+        return jpaRepository.save(dib);
     }
 
     @Override
     public Optional<DibEntity> findByDibId(Long id) {
-        return mapper.findByDibId(id);
+//        return mapper.findByDibId(id);
+        return jpaRepository.findById(id);
     }
 
     @Override
 
-    public List<DibEntity> findByUserId(UUID userId) { return mapper.findByUserId(userId); }
+    public List<DibEntity> findByUserId(UUID userId) { return jpaRepository.findByUser_UserId(userId); }
 
-    public Optional<DibEntity> findByUserIdAndMovieId(UUID userId, String movieId) { return mapper.findByUserIdAndMovieId(userId, movieId); }
+    public Optional<DibEntity> findByUserIdAndMovieId(UUID userId, String movieId) { return jpaRepository.findByUser_UserIdAndMovie_MovieId(userId, movieId); }
 
 
     @Override
@@ -40,21 +44,25 @@ public class DibRepositoryImpl implements DibRepository{
 
     @Override
     public List<DibEntity> selectAll() {
-        return mapper.selectAll();
+//        return mapper.selectAll();
+        return jpaRepository.findAll();
     }
 
     @Override
     public void deleteDib(Long dibId) {
-        mapper.deleteDibByDibId(dibId);
+//        mapper.deleteDibByDibId(dibId);
+        jpaRepository.deleteById(dibId);
     }
 
     @Override
     public void deleteDib(UUID userId) {
-        mapper.deleteDibByUserId(userId);
+//        mapper.deleteDibByUserId(userId);
+        jpaRepository.deleteByUser_UserId(userId);
     }
 
     @Override
     public void deleteDib(UUID userId, String movieId) {
-        mapper.deleteBidByUserIdAndMovieId(userId, movieId);
+//        mapper.deleteBidByUserIdAndMovieId(userId, movieId);
+        jpaRepository.deleteByUser_UserIdAndMovie_MovieId(userId, movieId);
     }
 }
