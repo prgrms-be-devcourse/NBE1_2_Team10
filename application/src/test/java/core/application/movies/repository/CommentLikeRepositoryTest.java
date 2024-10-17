@@ -80,7 +80,7 @@ public class CommentLikeRepositoryTest {
         // GIVEN
 
         // WHEN
-        CommentLike save = likeRepository.save(CommentLike.of(comment, user.getUserId()));
+        CommentLike save = likeRepository.save(CommentLike.of(comment, user));
 
         // THEN
         CommentLike find = likeRepository.findById(save.getCommentLikeId()).orElseThrow();
@@ -91,10 +91,10 @@ public class CommentLikeRepositoryTest {
     @DisplayName("좋아요를 삭제한다.")
     public void deleteTest() {
         // GIVEN
-        CommentLike save = likeRepository.save(CommentLike.of(comment, user.getUserId()));
+        CommentLike save = likeRepository.save(CommentLike.of(comment, user));
 
         // WHEN
-        likeRepository.deleteByCommentAndUserId(comment, user.getUserId());
+        likeRepository.deleteByCommentAndUser_UserId(comment, user.getUserId());
 
         // THEN
         assertThat(likeRepository.findById(save.getCommentLikeId())).isEmpty();

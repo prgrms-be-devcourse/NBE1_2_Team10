@@ -1,6 +1,11 @@
 package core.application.users.repositories;
 
+import core.application.movies.models.entities.CachedMovieEntity;
+import core.application.movies.repositories.movie.CachedMovieRepository;
 import core.application.users.models.entities.DibEntity;
+import core.application.users.models.entities.UserEntity;
+import core.application.users.models.entities.UserRole;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,24 +23,65 @@ class DibRepositoryImplTest {
 
     @Autowired
     private DibRepository dibRepo;
+    @Autowired
+    private UserRepository userRepo;
+    @Autowired
+    private CachedMovieRepository movieRepo;
+
+    private CachedMovieEntity movie;
+    private UserEntity user1;
+    private UserEntity user2;
+
+    @BeforeEach
+    public void setup() {
+        user1 = UserEntity.builder()
+                .userEmail("testEmail")
+                .userPw("test")
+                .role(UserRole.USER)
+                .alias("nickname")
+                .phoneNum("phone")
+                .userName("test")
+                .build();
+        userRepo.saveNewUser(user1);
+
+        user2 = UserEntity.builder()
+                .userEmail("test2")
+                .userPw("test")
+                .role(UserRole.USER)
+                .alias("nickname")
+                .phoneNum("phone")
+                .userName("test")
+                .build();
+        userRepo.saveNewUser(user2);
+
+        movie = new CachedMovieEntity(
+                "test",
+                "testTitle",
+                "posterUrl",
+                "액션",
+                "2024-09-30",
+                "줄거리",
+                "122",
+                "마동석, 김무열",
+                "봉준호",
+                1L, 1L, 10L, 10L
+        );
+        movieRepo.saveNewMovie(movie);
+    }
 
     @Test
     @DisplayName("찜하기")
     @Transactional
     void saveNewDib() {
-        // Given
-        UUID userId = UUID.fromString("b7172110-7e18-11ef-8da5-467268b55380");
-        String movieId = "K-1234";
-        dibRepo.saveNewDib(userId, movieId);
+        dibRepo.saveNewDib(user1.getUserId(), movie.getMovieId());
 
         // When
-        Optional<DibEntity> find = dibRepo.findByUserIdAndMovieId(userId, movieId);
+        DibEntity find = dibRepo.findByUserIdAndMovieId(user1.getUserId(), movie.getMovieId()).orElseThrow();
         System.out.println(find);
 
         // Then
-        assertThat(find.isPresent());
-        assertThat(find.get().getUserId() == UUID.fromString("b7172110-7e18-11ef-8da5-467268b55380"));
-        assertThat(find.get().getMovieId().equals(movieId));
+        assertThat(find.getUser().getUserId() == UUID.fromString("b7172110-7e18-11ef-8da5-467268b55380"));
+        assertThat(find.getMovie().getMovieId().equals(movie.getMovieId()));
     }
 
     @Test
@@ -44,20 +89,17 @@ class DibRepositoryImplTest {
     @Transactional
     void findByDibId() {
         // Given
-        UUID userId = UUID.fromString("b7172110-7e18-11ef-8da5-467268b55380");
-        String movieId = "K-1234";
 
-        dibRepo.saveNewDib(userId, movieId);
-        Long dibId = dibRepo.findByUserIdAndMovieId(userId, movieId).get().getDibId();
+        dibRepo.saveNewDib(user1.getUserId(), movie.getMovieId());
+        Long dibId = dibRepo.findByUserIdAndMovieId(user1.getUserId(), movie.getMovieId()).get().getDibId();
 
         // When
-        Optional<DibEntity> find = dibRepo.findByDibId(dibId);
+        DibEntity find = dibRepo.findByDibId(dibId).orElseThrow();
 
         // Then
-        assertThat(find.isPresent());
-        assertThat(find.get().getDibId().equals(dibId));
-        assertThat(find.get().getUserId() == userId);
-        assertThat(find.get().getMovieId().equals(movieId));
+        assertThat(find.getDibId()).isEqualTo(dibId);
+        assertThat(find.getUser().getUserId()).isEqualTo(user1.getUserId());
+        assertThat(find.getMovie().getMovieId()).isEqualTo(movie.getMovieId());
     }
 
     @Test
@@ -65,18 +107,14 @@ class DibRepositoryImplTest {
     @Transactional
     void countMovie() {
         // Given
-        String movieId = "K-1111";
-        UUID userId1 = UUID.fromString("9d8ae540-8072-11ef-8da5-467268b55380");
-        UUID userId2 = UUID.fromString("9d8e127e-8072-11ef-8da5-467268b55380");
-
-        dibRepo.saveNewDib(userId1, movieId);
-        dibRepo.saveNewDib(userId2, movieId);
+        dibRepo.saveNewDib(user1.getUserId(), movie.getMovieId());
+        dibRepo.saveNewDib(user2.getUserId(), movie.getMovieId());
 
         // When
-        Long num = dibRepo.countMovie(movieId);
+        Long num = dibRepo.countMovie(movie.getMovieId());
 
         // Then
-        assertThat(num == 2);
+        assertThat(num).isEqualTo(2);
     }
 
     @Test
@@ -84,27 +122,23 @@ class DibRepositoryImplTest {
     @Transactional
     void selectAll() {
         // Given
-        UUID userId1 = UUID.fromString("9d8ae540-8072-11ef-8da5-467268b55380");
-        UUID userId2 = UUID.fromString("9d8e127e-8072-11ef-8da5-467268b55380");
-        String movieId = "K-1234";
+        dibRepo.saveNewDib(user1.getUserId(), movie.getMovieId());
+        dibRepo.saveNewDib(user2.getUserId(), movie.getMovieId());
 
-        dibRepo.saveNewDib(userId1, movieId);
-        dibRepo.saveNewDib(userId2, movieId);
-
-        Long dibId1 = dibRepo.findByUserIdAndMovieId(userId1, movieId).get().getDibId();
-        Long dibId2 = dibRepo.findByUserIdAndMovieId(userId2, movieId).get().getDibId();
+        Long dibId1 = dibRepo.findByUserIdAndMovieId(user1.getUserId(), movie.getMovieId()).get().getDibId();
+        Long dibId2 = dibRepo.findByUserIdAndMovieId(user2.getUserId(), movie.getMovieId()).get().getDibId();
 
         // When
         List<DibEntity> dibs = dibRepo.selectAll();
 
         // Then
         assertThat(dibs.get(0).getDibId().equals(dibId1));
-        assertThat(dibs.get(0).getUserId() == userId1);
-        assertThat(dibs.get(0).getMovieId().equals(movieId));
+        assertThat(dibs.get(0).getUser().getUserId() == user1.getUserId());
+        assertThat(dibs.get(0).getMovie().getMovieId().equals(movie.getMovieId()));
 
         assertThat(dibs.get(1).getDibId().equals(dibId2));
-        assertThat(dibs.get(1).getUserId() == userId2);
-        assertThat(dibs.get(1).getMovieId().equals(movieId));
+        assertThat(dibs.get(1).getUser().getUserId() == user2.getUserId());
+        assertThat(dibs.get(1).getMovie().getMovieId().equals(movie.getMovieId()));
     }
 
     @Test
@@ -112,12 +146,10 @@ class DibRepositoryImplTest {
     @Transactional
     void deleteDibByDibId() {
         // Given
-        UUID userId = UUID.fromString("9d8ae540-8072-11ef-8da5-467268b55380");
-        String movieId = "K-1111";
-        dibRepo.saveNewDib(userId, movieId);
+        dibRepo.saveNewDib(user1.getUserId(), movie.getMovieId());
 
         // When
-        Long dibId = dibRepo.findByUserIdAndMovieId(userId, movieId).get().getDibId();
+        Long dibId = dibRepo.findByUserIdAndMovieId(user1.getUserId(), movie.getMovieId()).get().getDibId();
         dibRepo.deleteDib(dibId);
 
         // Then
@@ -129,15 +161,13 @@ class DibRepositoryImplTest {
     @Transactional
     void DeleteDibByUserId() {
         // Given
-        UUID userId = UUID.fromString("9d8ae540-8072-11ef-8da5-467268b55380");
-        String movieId = "K-1111";
-        dibRepo.saveNewDib(userId, movieId);
+        dibRepo.saveNewDib(user1.getUserId(), movie.getMovieId());
 
         // When
-        dibRepo.deleteDib(userId);
+        dibRepo.deleteDib(user1.getUserId());
 
         // Then
-        assertThat(!dibRepo.findByUserIdAndMovieId(userId, movieId).isPresent());
+        assertThat(!dibRepo.findByUserIdAndMovieId(user1.getUserId(), movie.getMovieId()).isPresent());
     }
 
     @Test
@@ -145,14 +175,12 @@ class DibRepositoryImplTest {
     @Transactional
     void DeleteDibByUserIdAndMovieId() {
         // Given
-        UUID userId = UUID.fromString("9d8ae540-8072-11ef-8da5-467268b55380");
-        String movieId = "K-1111";
-        dibRepo.saveNewDib(userId, movieId);
+        dibRepo.saveNewDib(user1.getUserId(), movie.getMovieId());
 
         // When
-        dibRepo.deleteDib(userId, movieId);
+        dibRepo.deleteDib(user1.getUserId(), movie.getMovieId());
 
         // Then
-        assertThat(!dibRepo.findByUserIdAndMovieId(userId, movieId).isPresent());
+        assertThat(!dibRepo.findByUserIdAndMovieId(user1.getUserId(), movie.getMovieId()).isPresent());
     }
 }

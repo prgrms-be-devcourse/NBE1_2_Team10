@@ -82,7 +82,7 @@ public interface UserRepository {
      * @param replacement 변경할 정보
      * @return {@link UserEntity} 변경된 정보
      */
-    int editUserInfo(UserEntity replacement);
+    UserEntity editUserInfo(UserEntity replacement);
 
 
     // DELETE

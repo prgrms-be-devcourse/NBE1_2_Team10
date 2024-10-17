@@ -18,9 +18,8 @@ public interface DibRepository {
      *
      * @param userId 찜 목록을 소유할 유저 ID
      * @param movieId 찜 목록에 들어갈 영화 ID
-     * @return @return {@link DibEntity} 등록된 찜 정보
      */
-    DibEntity saveNewDib(DibEntity dib);
+    void saveNewDib(UUID userId, String movieId);
 
 
     //<editor-fold desc="READ">

@@ -87,17 +87,11 @@ public class UserServiceImpl implements UserService {
 
         UserEntity originUserEntity = userRepository.findByUserEmail(userRequestDTO.getUserEmail()).get();
 
-        // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
-        UserEntity updatedUserEntity = UserEntity.builder()
-                .userId(originUserEntity.getUserId()) // 기존 userId 유지
-                .userPw(userRequestDTO.getUserPw() != null ? userRequestDTO.getUserPw() : originUserEntity.getUserPw()) // userPw 업데이트
-                .role(userRequestDTO.getRole() != null ? userRequestDTO.getRole() : originUserEntity.getRole()) // role 업데이트
-                .alias(userRequestDTO.getAlias() != null ? userRequestDTO.getAlias() : originUserEntity.getAlias()) // alias 업데이트
-                .phoneNum(userRequestDTO.getPhoneNum() != null ? userRequestDTO.getPhoneNum() : originUserEntity.getPhoneNum()) // phoneNum 업데이트
-                .userName(userRequestDTO.getUserName() != null ? userRequestDTO.getUserName() : originUserEntity.getUserName()) // userName 업데이트
-                .build();
+        originUserEntity.editInfo(userRequestDTO);
+        UserEntity editedUser = userRepository.editUserInfo(originUserEntity);
 
-        if (userRepository.editUserInfo(userRequestDTO.toEntity()) == 1) {
+
+        if (originUserEntity.equals(editedUser)) {
             return new MessageResponseDTO(originUserEntity.getUserId(), "update success");
         }
         return null;

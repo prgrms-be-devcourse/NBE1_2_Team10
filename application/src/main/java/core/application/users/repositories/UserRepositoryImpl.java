@@ -70,8 +70,9 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public int editUserInfo(UserEntity replacement) {
-        return mapper.editUserInfo(replacement);
+    public UserEntity editUserInfo(UserEntity replacement) {
+//        return mapper.editUserInfo(replacement);
+        return jpaRepository.save(replacement);
     }
 
     @Override

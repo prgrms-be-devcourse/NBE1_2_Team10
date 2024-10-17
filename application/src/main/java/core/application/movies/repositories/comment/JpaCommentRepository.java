@@ -22,8 +22,8 @@ public interface JpaCommentRepository extends JpaRepository<CommentEntity, Long>
 			"CASE WHEN l.commentLikeId IS NOT NULL THEN true ELSE false END, " +
 			"CASE WHEN d.commentDislikeId IS NOT NULL THEN true ELSE false END) " +
 			"FROM CommentEntity c " +
-			"LEFT JOIN CommentLike l ON c.commentId = l.comment.commentId AND l.userId = :userId " +
-			"LEFT JOIN CommentDislike d ON c.commentId = d.comment.commentId AND d.userId = :userId " +
+			"LEFT JOIN CommentLike l ON c.commentId = l.comment.commentId AND l.user.userId = :userId " +
+			"LEFT JOIN CommentDislike d ON c.commentId = d.comment.commentId AND d.user.userId = :userId " +
 			"WHERE c.movie.movieId = :movieId")
 	Page<CommentRespDTO> findByMovieId(String movieId, UUID userId, Pageable pageable);
 
@@ -31,8 +31,8 @@ public interface JpaCommentRepository extends JpaRepository<CommentEntity, Long>
 			"CASE WHEN l.commentLikeId IS NOT NULL THEN true ELSE false END, " +
 			"CASE WHEN d.commentDislikeId IS NOT NULL THEN true ELSE false END) " +
 			"FROM CommentEntity c " +
-			"LEFT JOIN CommentLike l ON c.commentId = l.comment.commentId AND l.userId = :userId " +
-			"LEFT JOIN CommentDislike d ON c.commentId = d.comment.commentId AND d.userId = :userId " +
+			"LEFT JOIN CommentLike l ON c.commentId = l.comment.commentId AND l.user.userId = :userId " +
+			"LEFT JOIN CommentDislike d ON c.commentId = d.comment.commentId AND d.user.userId = :userId " +
 			"WHERE c.movie.movieId = :movieId "
 			+ "ORDER BY c.createdAt DESC")
 	Page<CommentRespDTO> findByMovieIdOrderByCreatedAt(String movieId, UUID userId, Pageable pageable);
@@ -41,8 +41,8 @@ public interface JpaCommentRepository extends JpaRepository<CommentEntity, Long>
 			"CASE WHEN l.commentLikeId IS NOT NULL THEN true ELSE false END, " +
 			"CASE WHEN d.commentDislikeId IS NOT NULL THEN true ELSE false END) " +
 			"FROM CommentEntity c " +
-			"LEFT JOIN CommentLike l ON c.commentId = l.comment.commentId AND l.userId = :userId " +
-			"LEFT JOIN CommentDislike d ON c.commentId = d.comment.commentId AND d.userId = :userId " +
+			"LEFT JOIN CommentLike l ON c.commentId = l.comment.commentId AND l.user.userId = :userId " +
+			"LEFT JOIN CommentDislike d ON c.commentId = d.comment.commentId AND d.user.userId = :userId " +
 			"WHERE c.movie.movieId = :movieId "
 			+ "ORDER BY c.like DESC")
 	Page<CommentRespDTO> findByMovieIdOrderByLikeDesc(String movieId, UUID userId, Pageable pageable);
@@ -51,8 +51,8 @@ public interface JpaCommentRepository extends JpaRepository<CommentEntity, Long>
 			"CASE WHEN l.commentLikeId IS NOT NULL THEN true ELSE false END, " +
 			"CASE WHEN d.commentDislikeId IS NOT NULL THEN true ELSE false END) " +
 			"FROM CommentEntity c " +
-			"LEFT JOIN CommentLike l ON c.commentId = l.comment.commentId AND l.userId = :userId " +
-			"LEFT JOIN CommentDislike d ON c.commentId = d.comment.commentId AND d.userId = :userId " +
+			"LEFT JOIN CommentLike l ON c.commentId = l.comment.commentId AND l.user.userId = :userId " +
+			"LEFT JOIN CommentDislike d ON c.commentId = d.comment.commentId AND d.user.userId = :userId " +
 			"WHERE c.movie.movieId = :movieId "
 			+ "ORDER BY c.dislike DESC")
 	Page<CommentRespDTO> findByMovieIdOrderByDislikeDesc(String movieId, UUID userId, Pageable pageable);

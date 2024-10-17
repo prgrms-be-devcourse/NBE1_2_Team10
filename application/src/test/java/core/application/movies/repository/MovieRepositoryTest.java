@@ -105,11 +105,11 @@ public class MovieRepositoryTest {
 
 		// THEN
 		assertThat(rating).hasSize(5);
-		assertThat(rating.get(0).getSumOfRating()).isEqualTo(10);
-		assertThat(rating.get(1).getSumOfRating()).isEqualTo(9);
-		assertThat(rating.get(2).getSumOfRating()).isEqualTo(8);
-		assertThat(rating.get(3).getSumOfRating()).isEqualTo(7);
-		assertThat(rating.get(4).getSumOfRating()).isEqualTo(6);
+		assertThat(rating.get(0).getSumOfRating() / rating.get(0).getCommentCount()).isEqualTo(10);
+		assertThat(rating.get(1).getSumOfRating() / rating.get(1).getCommentCount()).isEqualTo(9);
+		assertThat(rating.get(2).getSumOfRating() / rating.get(2).getCommentCount()).isEqualTo(8);
+		assertThat(rating.get(3).getSumOfRating() / rating.get(3).getCommentCount()).isEqualTo(7);
+		assertThat(rating.get(4).getSumOfRating() / rating.get(4).getCommentCount()).isEqualTo(6);
 
 		assertThat(dib).hasSize(5);
 		assertThat(dib.get(0).getDibCount()).isEqualTo(9);

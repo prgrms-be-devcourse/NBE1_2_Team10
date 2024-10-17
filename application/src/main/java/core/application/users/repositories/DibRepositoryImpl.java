@@ -12,16 +12,16 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-public class DibRepositoryImpl implements DibRepository{
+public class DibRepositoryImpl implements DibRepository {
 
     private final DibMapper mapper;
     private final JpaDibRepository jpaRepository;
 
     @Override
-    public DibEntity saveNewDib(DibEntity dib) {
+    public void saveNewDib(UUID userId, String movieId) {
 //        mapper.saveNewDib(userId, movieId);
 //        return mapper.findByUserIdAndMovieId(userId, movieId);
-        return jpaRepository.save(dib);
+        jpaRepository.saveDib(userId, movieId);
     }
 
     @Override

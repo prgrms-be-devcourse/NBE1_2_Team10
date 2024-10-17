@@ -36,12 +36,10 @@ class MyPageServiceImplTest {
 	private static UserEntity testUser;
 	private static DibEntity testDib;
 	private static CachedMovieEntity testMovie;
-	private static final UUID userId = UUID.fromString("991c95d6-808a-11ef-8da5-467268b55380");
 	private static final String movieId = "K-1111";
 
 	@BeforeAll
 	static void init() {
-
 		testUser = UserEntity.builder()
 			.userEmail("test@test.com")
 			.userPw("test")
@@ -49,12 +47,11 @@ class MyPageServiceImplTest {
 			.alias("소은")
 			.phoneNum("010-0000-0000")
 			.userName("정소은")
-			.userId(userId)
 			.build();
 
 		testDib = DibEntity.builder()
-			.userId(userId)
-			.movieId(movieId)
+			.user(testUser)
+			.movie(testMovie)
 			.build();
 
 		testMovie = CachedMovieEntity.builder()
@@ -78,12 +75,12 @@ class MyPageServiceImplTest {
 	@DisplayName("마이페이지 조회하기")
 	void getMyPage() {
 		// Given
-		userRepo.saveNewUser(testUser);
+		UserEntity user = userRepo.saveNewUser(testUser);
 		movieRepo.saveNewMovie(testMovie);
-		dibRepo.saveNewDib(userId, testDib.getMovieId());
+		dibRepo.saveNewDib(user.getUserId(), testMovie.getMovieId());
 
 		// When
-		MyPageRespDTO myPageRespDTO = myPageService.getMyPage(userId);
+		MyPageRespDTO myPageRespDTO = myPageService.getMyPage(user.getUserId());
 
 		// Then
 		assertThat(myPageRespDTO.getUserEmail().equals(testUser.getUserEmail()));

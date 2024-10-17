@@ -25,33 +25,33 @@ public class DibServiceImpl implements DibService {
 
     @Override
     @Transactional
-    public DibRespDTO dibProcess(UserEntity user, String movieId) {
+    public DibRespDTO dibProcess(UUID userId, String movieId) {
         String dibMovieId = movieService.getMovieDetailInfo(movieId).getMovieId();
         CachedMovieEntity movie = movieRepo.findByMovieId(dibMovieId).orElseThrow();
 
         // dib_table에 이미 존재하는 객체 -> 찜 취소하기
-        if(dibRepo.findByUserIdAndMovieId(user.getUserId(), dibMovieId).isPresent()) {
+        if(dibRepo.findByUserIdAndMovieId(userId, dibMovieId).isPresent()) {
             // 찜 레코드 삭제
-            dibRepo.deleteDib(user.getUserId(), dibMovieId);
+            dibRepo.deleteDib(userId, dibMovieId);
 
             // dib_count 1 감소하는 로직 추가
             movie.decrementDibCount();
-            movieRepo.editMovie(dibMovieId, movie.get());
+            movieRepo.editMovie(dibMovieId, movie);
 
             DibRespDTO dibDTO = DibRespDTO.builder()
                     .message("찜 취소 완료되습니다.")
-                    .userId(user.getUserId())
+                    .userId(userId)
                     .movieId(dibMovieId)
                     .build();
             return dibDTO;
 
         } else {
 
-            dibRepo.saveNewDib(DibEntity.of(user, movie));
+            dibRepo.saveNewDib(userId, movieId);
 
             // dib_count 1 증가하는 로직 추가
             movie.incrementDibCount();
-            movieRepo.editMovie(dibMovieId, movie.get());
+            movieRepo.editMovie(dibMovieId, movie);
 
             DibRespDTO dibDTO = DibRespDTO.builder()
                     .message("찜 완료되었습니다.")

@@ -2,9 +2,11 @@ package core.application.users.repositories;
 
 import static org.assertj.core.api.Assertions.*;
 
+import core.application.users.models.dto.UserRequestDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
-import org.junit.jupiter.api.BeforeAll;
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,8 @@ class UserRepositoryImplTest {
 
     @Autowired
     private UserRepositoryImpl userRepo;
+    @Autowired
+    private EntityManager em;
 
     private static UserEntity testUser; // USER
     private static UserEntity testUser2; // ADMIN
@@ -28,9 +32,8 @@ class UserRepositoryImplTest {
     private static final UUID userId2 = UUID.fromString("991c95d6-808a-11ef-8da5-467268b55381");
 
 
-    @BeforeAll
-    static void init() {
-
+    @BeforeEach
+    void init() {
         testUser = UserEntity.builder()
                 .userEmail("test@test.com")
                 .userPw("test")
@@ -38,7 +41,6 @@ class UserRepositoryImplTest {
                 .alias("소은")
                 .phoneNum("010-0000-0000")
                 .userName("정소은")
-                .userId(userId)
                 .build();
 
         testUser2  = UserEntity.builder()
@@ -48,7 +50,6 @@ class UserRepositoryImplTest {
                 .alias("소은")
                 .phoneNum("010-0000-0000")
                 .userName("정소은")
-                .userId(userId2)
                 .build();
 
     }
@@ -58,13 +59,22 @@ class UserRepositoryImplTest {
     @DisplayName("회원가입 / 새로운 유저 저장")
     void saveNewUser() {
         // Given
+        UserEntity user = UserEntity.builder()
+                .userEmail("test@test.com")
+                .userPw("test")
+                .role(UserRole.USER)
+                .alias("소은")
+                .phoneNum("010-0000-0000")
+                .userName("정소은")
+                .build();
 
         // When
-        userRepo.saveNewUser(testUser);
+        userRepo.saveNewUser(user);
+        em.flush();
 
         // Then
-        Optional<UserEntity> find = userRepo.findByUserId(testUser.getUserId());
-        checkEqualUser(find, testUser);
+        Optional<UserEntity> find = userRepo.findByUserId(user.getUserId());
+        checkEqualUser(find, user);
     }
 
     @Test
@@ -72,11 +82,19 @@ class UserRepositoryImplTest {
     @DisplayName("유저 ID로 유저 찾기")
     void findByUserId() {
         // Given
-        userRepo.saveNewUser(testUser);
+        UserEntity user = UserEntity.builder()
+                .userEmail("test@test.com")
+                .userPw("test")
+                .role(UserRole.USER)
+                .alias("소은")
+                .phoneNum("010-0000-0000")
+                .userName("정소은")
+                .build();
+        userRepo.saveNewUser(user);
 
         // When
-        Optional<UserEntity> find = userRepo.findByUserId(testUser.getUserId());
-        checkEqualUser(find, testUser);
+        Optional<UserEntity> find = userRepo.findByUserId(user.getUserId());
+        checkEqualUser(find, user);
     }
 
     @Test
@@ -147,23 +165,31 @@ class UserRepositoryImplTest {
     @DisplayName("유저 정보 수정하기")
     void editUserInfo() {
         // Given
-        userRepo.saveNewUser(testUser);
+        UserEntity user = UserEntity.builder()
+                .userEmail("test@test.com")
+                .userPw("test")
+                .role(UserRole.USER)
+                .alias("소은")
+                .phoneNum("010-0000-0000")
+                .userName("정소은")
+                .build();
+        userRepo.saveNewUser(user);
 
-        UserEntity editUser = UserEntity.builder()
-                .userEmail(testUser.getUserEmail())
+        // When
+        UserEntity willBeEditedUser = userRepo.findByUserId(user.getUserId()).orElseThrow();
+        willBeEditedUser.editInfo(UserRequestDTO.builder()
+                .userEmail(user.getUserEmail())
                 .userPw("editPw")
                 .role(UserRole.USER)
                 .alias("소소은")
                 .phoneNum("010-1111-1111")
                 .userName("정소은")
-                .build();
-
-        // When
-        userRepo.editUserInfo(editUser);
+                .build());
+        userRepo.editUserInfo(willBeEditedUser);
 
         // Then
-        Optional<UserEntity> find = userRepo.findByUserId(testUser.getUserId());
-        checkEqualUser(find, editUser);
+        Optional<UserEntity> edited = userRepo.findByUserId(willBeEditedUser.getUserId());
+        checkEqualUser(edited, willBeEditedUser);
     }
 
     @Test

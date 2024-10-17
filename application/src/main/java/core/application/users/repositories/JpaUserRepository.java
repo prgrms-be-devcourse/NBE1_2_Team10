@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.w3c.dom.stylesheets.LinkStyle;
+import org.springframework.data.jpa.repository.Query;
 
 public interface JpaUserRepository extends JpaRepository<UserEntity, UUID> {
     Boolean existsByUserEmail(String email);

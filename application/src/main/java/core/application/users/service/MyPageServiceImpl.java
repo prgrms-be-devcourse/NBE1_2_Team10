@@ -35,9 +35,9 @@ public class MyPageServiceImpl implements MyPageService{
         List<DibEntity> myDibs = dibRepo.findByUserId(userId);
         List<DibDetailRespDTO> myDibDTOs = new ArrayList<>();
         for(DibEntity myDib : myDibs ){
-            Optional<CachedMovieEntity> movie = movieRepo.findByMovieId(myDib.getMovieId());
+            Optional<CachedMovieEntity> movie = movieRepo.findByMovieId(myDib.getMovie().getMovieId());
             DibDetailRespDTO dibDetail = DibDetailRespDTO.builder()
-                    .movieId(myDib.getMovieId())
+                    .movieId(myDib.getMovie().getMovieId())
                     .movieTitle(movie.get().getTitle())
                     .moviePost(movie.get().getPosterUrl())
                     .build();
