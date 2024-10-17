@@ -1,8 +1,10 @@
 package core.application.movies.controller;
 
-import java.util.List;
+import core.application.api.exception.CommonForbiddenException;
+import core.application.users.models.entities.UserEntity;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -40,13 +42,13 @@ public class CommentController {
 
 	@Operation(summary = "한줄평 조회")
 	@Parameters({
-		@Parameter(name = "page", description = "페이지", example = "0"),
+		@Parameter(name = "page", description = "페이지", example = "1"),
 		@Parameter(name = "sortType", description = "정렬 타입", example = "LIKE")
 	})
 	@GetMapping("/{movieId}/comments")
-	public ApiResponse<List<CommentRespDTO>> getComments(@PathVariable String movieId,
-		@RequestParam int page, @RequestParam String sortType, @AuthenticationPrincipal CustomUserDetails userDetails) {
-		List<CommentRespDTO> comments;
+	public ApiResponse<Page<CommentRespDTO>> getComments(@PathVariable String movieId,
+														 @RequestParam int page, @RequestParam String sortType, @AuthenticationPrincipal CustomUserDetails userDetails) {
+		Page<CommentRespDTO> comments;
 		UUID userId;
 		if (userDetails == null) {
 			userId = null;
@@ -72,8 +74,8 @@ public class CommentController {
 			log.info("검증 오류 발생 : {}", bindingResult);
 			throw new InvalidWriteCommentException(bindingResult.getAllErrors().get(0).getDefaultMessage());
 		}
-		UUID userId = userDetails.getUserId();
-		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, userId, movieId);
+		UserEntity user = userDetails.getUserEntity().orElseThrow(() -> new CommonForbiddenException("잘못된 사용자입니다."));
+		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, user, movieId);
 		return ApiResponse.onCreateSuccess(commentRespDTO);
 	}
 
@@ -90,8 +92,8 @@ public class CommentController {
 	@PostMapping("/{movieId}/comments/{commentId}/like")
 	public ApiResponse<Message> incrementCommentLike(@PathVariable Long commentId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		UUID userId = userDetails.getUserId();
-		commentService.incrementCommentLike(commentId, userId);
+		UserEntity user = userDetails.getUserEntity().orElseThrow();
+		commentService.incrementCommentLike(commentId, user);
 		return ApiResponse.onCreateSuccess(Message.createMessage("한줄평 좋아요 성공"));
 	}
 
@@ -107,8 +109,8 @@ public class CommentController {
 	@PostMapping("/{movieId}/comments/{commentId}/dislike")
 	public ApiResponse<Message> incrementCommentDislike(@PathVariable Long commentId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
-		UUID userId = userDetails.getUserId();
-		commentService.incrementCommentDislike(commentId, userId);
+		UserEntity user = userDetails.getUserEntity().orElseThrow();
+		commentService.incrementCommentDislike(commentId, user);
 		return ApiResponse.onCreateSuccess(Message.createMessage("한줄평 싫어요 성공"));
 	}
 
