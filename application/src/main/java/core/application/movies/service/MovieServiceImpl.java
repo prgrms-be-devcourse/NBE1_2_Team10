@@ -1,5 +1,6 @@
 package core.application.movies.service;
 
+import core.application.movies.repositories.movie.mybatis.MybatisCachedMovieRepositoryImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,7 +65,7 @@ public class MovieServiceImpl implements MovieService {
 	}
 
 	@Override
-	public List<MovieSearchRespDTO> searchMovies(Integer page, MovieSearch sort, String query) {
+	public Page<MovieSearchRespDTO> searchMovies(Integer page, MovieSearch sort, String query) {
 		Map<KmdbParameter, String> params = new HashMap<>();
 		params.put(KmdbParameter.START_COUNT, String.valueOf(page * 10));
 		params.put(KmdbParameter.SORT, sort.SORT);
@@ -69,31 +74,38 @@ public class MovieServiceImpl implements MovieService {
 		JSONObject jsonResponse = kmdbRepository.getResponse(params);
 		List<MovieSearchRespDTO> searchResult = new ArrayList<>();
 		try {
+			Pageable pageable = PageRequest.of(page, 10);
+			int totalMovie = jsonResponse.optInt("TotalCount");
 			parseMoviesFromMovieArray(
 				parseMovieArrayFromJsonResponse(jsonResponse),
 				searchResult);
+			return new PageImpl<>(searchResult, pageable, totalMovie);
 		} catch (JSONException e) {
 			log.info("[MovieService.searchMovies] '{}'에 해당하는 검색 결과가 존재하지 않음.", query);
 			throw new NoSearchResultException("'" + query + "'에 해당하는 영화가 없습니다.");
 		}
-		return searchResult;
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<MovieSearchRespDTO> getMoviesWithGenreRatingOrder(Integer page, Genre genre) {
+	public Page<MovieSearchRespDTO> getMoviesWithGenreRatingOrder(Integer page, Genre genre) {
 		log.info("[MovieService.getMoviesWithGenreRatingOrder] {} 영화 평점순 제공", genre.PARAMETER);
-		List<MovieSearchRespDTO> result = new ArrayList<>();
 		// 평점 순은 자체 영화 테이블 중 평가된 적이 있는 영화중에서 제공한다.
-		List<CachedMovieEntity> findResult = movieRepository.findMoviesOnRatingDescendWithGenre(
-			page * 10, genre.PARAMETER);
-		for (CachedMovieEntity movie : findResult) {
-			result.add(MovieSearchRespDTO.from(movie));
+		if (movieRepository.getClass() == MybatisCachedMovieRepositoryImpl.class) {
+			Pageable pageable = PageRequest.of(page, 10);
+			List<MovieSearchRespDTO> searchResult = movieRepository.findMoviesOnRatingDescendWithGenre(page * 10,
+							genre.PARAMETER)
+					.stream()
+					.map(MovieSearchRespDTO::from)
+					.toList();
+			int total = movieRepository.countGenreMovie(genre.PARAMETER);
+			return new PageImpl<>(searchResult, pageable, total);
 		}
-		return result;
+		return movieRepository.findMoviesLikeGenreOrderByAvgRating(page, genre.PARAMETER)
+				.map(MovieSearchRespDTO::from);
 	}
 
-	public List<MovieSearchRespDTO> getMoviesWithGenreLatestOrder(Integer page, Genre genre) {
+	public Page<MovieSearchRespDTO> getMoviesWithGenreLatestOrder(Integer page, Genre genre) {
 		log.info("[MovieService.getMoviesWithGenreRatingOrder] {} 영화 최신순 제공", genre.PARAMETER);
 		List<MovieSearchRespDTO> result = new ArrayList<>();
 
@@ -104,14 +116,16 @@ public class MovieServiceImpl implements MovieService {
 
 		JSONObject jsonResponse = kmdbRepository.getResponse(params);
 		try {
+			Pageable pageable = PageRequest.of(page, 10);
+			int totalMovie = jsonResponse.optInt("TotalCount");
 			parseMoviesFromMovieArray(
-				parseMovieArrayFromJsonResponse(jsonResponse),
-				result);
+					parseMovieArrayFromJsonResponse(jsonResponse),
+					result);
+			return new PageImpl<>(result, pageable, totalMovie);
 		} catch (JSONException e) {
 			log.info("[MovieService.getMoviesWithGenreLatestOrder] {} 장르 영화 검색 결과가 존재하지 않음", genre.PARAMETER);
 			throw new NoSearchResultException(genre.PARAMETER + " 장르에 더 이상 제공되는 영화가 없습니다.");
 		}
-		return result;
 	}
 
 	@Transactional

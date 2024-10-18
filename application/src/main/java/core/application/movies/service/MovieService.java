@@ -7,6 +7,7 @@ import core.application.movies.constant.MovieSearch;
 import core.application.movies.models.dto.response.MainPageMoviesRespDTO;
 import core.application.movies.models.dto.response.MovieDetailRespDTO;
 import core.application.movies.models.dto.response.MovieSearchRespDTO;
+import org.springframework.data.domain.Page;
 
 public interface MovieService {
 
@@ -24,11 +25,11 @@ public interface MovieService {
 	 * @param query 검색어
 	 * @return 검색한 영화 정보
 	 */
-	public List<MovieSearchRespDTO> searchMovies(Integer page, MovieSearch sort, String query);
+	public Page<MovieSearchRespDTO> searchMovies(Integer page, MovieSearch sort, String query);
 
-	public List<MovieSearchRespDTO> getMoviesWithGenreRatingOrder(Integer page, Genre genre);
+	public Page<MovieSearchRespDTO> getMoviesWithGenreRatingOrder(Integer page, Genre genre);
 
-	public List<MovieSearchRespDTO> getMoviesWithGenreLatestOrder(Integer page, Genre genre);
+	public Page<MovieSearchRespDTO> getMoviesWithGenreLatestOrder(Integer page, Genre genre);
 
 	/**
 	 * 사용자가 영화 상세 페이지에서 필요로 하는 정보를 보내준다.

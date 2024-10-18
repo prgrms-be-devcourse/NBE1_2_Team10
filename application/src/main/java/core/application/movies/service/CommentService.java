@@ -1,8 +1,17 @@
 package core.application.movies.service;
 
+import core.application.movies.repositories.comment.CommentDislikeRepository;
+import core.application.movies.repositories.comment.CommentLikeRepository;
+import core.application.movies.repositories.comment.mybatis.MybatisCommentRepository;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,8 +26,6 @@ import core.application.movies.models.dto.request.CommentWriteReqDTO;
 import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.models.entities.CommentEntity;
-import core.application.movies.repositories.comment.CommentDislikeRepository;
-import core.application.movies.repositories.comment.CommentLikeRepository;
 import core.application.movies.repositories.comment.CommentRepository;
 import core.application.movies.repositories.movie.CachedMovieRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,14 +41,36 @@ public class CommentService {
 	private final CommentDislikeRepository dislikeRepository;
 
 	@Transactional(readOnly = true)
-	public List<CommentRespDTO> getComments(String movieId, int page, CommentSort sort, UUID userId) {
+	public Page<CommentRespDTO> getComments(String movieId, int page, CommentSort sort, UUID userId) {
+		// 마이바티스 리포지토리 로직
+		if (commentRepository.getClass() == MybatisCommentRepository.class) {
+			Pageable pageable = PageRequest.of(page, 10);
+			long total = commentRepository.countByMovieId(movieId);
+			List<CommentRespDTO> searchResult;
+			if (sort.equals(CommentSort.LIKE)) {
+				searchResult = commentRepository.findByMovieIdOnLikeDescend(movieId,
+						userId, page * 10);
+			}
+			if (sort.equals(CommentSort.LATEST)) {
+				searchResult = commentRepository.findByMovieIdOnDateDescend(movieId,
+						userId, page * 10);
+			} else {
+				searchResult = commentRepository.findByMovieIdOnDislikeDescend(movieId,
+						userId, page * 10);
+			}
+			return new PageImpl<>(searchResult, pageable, total);
+		}
+		// JPA 리포지토리 로직
 		if (sort.equals(CommentSort.LIKE)) {
-			return commentRepository.findByMovieIdOnLikeDescend(movieId, userId, page * 10);
+			return commentRepository.findByMovieIdOrderBy(movieId, userId,
+					PageRequest.of(page, 10, Sort.by(Direction.DESC, "like")));
 		}
 		if (sort.equals(CommentSort.LATEST)) {
-			return commentRepository.findByMovieIdOnDateDescend(movieId, userId, page * 10);
+			return commentRepository.findByMovieIdOrderBy(movieId, userId,
+					PageRequest.of(page, 10, Sort.by(Direction.DESC, "created_at")));
 		}
-		return commentRepository.findByMovieIdOnDislikeDescend(movieId, userId, page * 10);
+		return commentRepository.findByMovieIdOrderBy(movieId, userId,
+				PageRequest.of(page, 10, Sort.by(Direction.DESC, "dislike")));
 	}
 
 	@Transactional
