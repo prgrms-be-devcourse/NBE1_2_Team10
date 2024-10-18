@@ -1,8 +1,8 @@
 package core.application.movies.controller;
 
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -44,9 +44,9 @@ public class CommentController {
 		@Parameter(name = "sortType", description = "정렬 타입", example = "LIKE")
 	})
 	@GetMapping("/{movieId}/comments")
-	public ApiResponse<List<CommentRespDTO>> getComments(@PathVariable String movieId,
+	public ApiResponse<Page<CommentRespDTO>> getComments(@PathVariable String movieId,
 		@RequestParam int page, @RequestParam String sortType, @AuthenticationPrincipal CustomUserDetails userDetails) {
-		List<CommentRespDTO> comments;
+		Page<CommentRespDTO> comments;
 		UUID userId;
 		if (userDetails == null) {
 			userId = null;
