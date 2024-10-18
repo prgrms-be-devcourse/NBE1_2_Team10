@@ -1,24 +1,15 @@
-package core.application.reviews.repositories.mybatis;
+package core.application.reviews.repositories.mybatis.mappers;
 
-import core.application.reviews.models.entities.ReviewCommentEntity;
-import core.application.reviews.repositories.ReviewCommentRepository;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import org.apache.ibatis.annotations.InsertProvider;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Results;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.UpdateProvider;
+import core.application.reviews.models.entities.*;
+import core.application.reviews.repositories.*;
+import core.application.reviews.repositories.mybatis.provider.*;
+import java.time.*;
+import java.time.temporal.*;
+import java.util.*;
+import org.apache.ibatis.annotations.*;
 
 @Mapper
-public interface MyBatisReviewCommentRepository extends ReviewCommentRepository {
+public interface ReviewCommentMapper extends ReviewCommentRepository {
 
     //<editor-fold desc="CREATE">
 

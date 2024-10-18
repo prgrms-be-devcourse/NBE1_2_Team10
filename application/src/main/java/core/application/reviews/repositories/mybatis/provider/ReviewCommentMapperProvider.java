@@ -1,6 +1,7 @@
-package core.application.reviews.repositories.mybatis;
+package core.application.reviews.repositories.mybatis.provider;
 
-import org.apache.ibatis.jdbc.SQL;
+import core.application.reviews.repositories.mybatis.mappers.*;
+import org.apache.ibatis.jdbc.*;
 
 /**
  * {@code REVIEW_COMMENT_TABLE} 와 관련된 {@code MyBatis} 쿼리 제공 클래스
@@ -10,7 +11,7 @@ public class ReviewCommentMapperProvider {
     /**
      * {@code insertReviewComment} 메서드 {@code MyBatis} 쿼리 생성용 메서드
      *
-     * @see MyBatisReviewCommentRepository#insertReviewComment
+     * @see ReviewCommentMapper#insertReviewComment
      */
     public String insertReviewComment() {
         // reviewCommentId, isUpdated 빼고 전부 set
@@ -30,7 +31,7 @@ public class ReviewCommentMapperProvider {
     /**
      * {@code updateReviewCommentEntity} 메서드 {@code MyBatis} 쿼리 생성용 메서드
      *
-     * @see MyBatisReviewCommentRepository#updateReviewCommentEntity
+     * @see ReviewCommentMapper#updateReviewCommentEntity
      */
     public String editReviewComment() {
         SQL query = new SQL()
@@ -46,7 +47,7 @@ public class ReviewCommentMapperProvider {
     /**
      * {@code updateCommentLikes} 메서드 {@code MyBatis} 쿼리 생성용 메서드
      *
-     * @see MyBatisReviewCommentRepository#updateCommentLikes
+     * @see ReviewCommentMapper#updateCommentLikes
      */
     public String updateCommentLikes() {
         SQL query = new SQL()

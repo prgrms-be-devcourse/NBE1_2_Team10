@@ -1,11 +1,8 @@
-package core.application.reviews.repositories.mapper;
+package core.application.reviews.repositories.mybatis.mappers;
 
-import core.application.reviews.models.entities.ReviewEntity;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
+import core.application.reviews.models.entities.*;
+import java.util.*;
+import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface ReviewMapper {
