@@ -1,9 +1,20 @@
 package core.application.movies.models.entities;
 
+import core.application.users.models.entities.UserEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.UUID;
 
 import core.application.movies.models.dto.request.CommentWriteReqDTO;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,9 +27,14 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @ToString
+@Entity
+@Table(name = "comment_table")
 public class CommentEntity {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long commentId;
 	private String content;
+	@Column(name = "`like`")
 	private int like;
 	private int dislike;
 	private int rating;
