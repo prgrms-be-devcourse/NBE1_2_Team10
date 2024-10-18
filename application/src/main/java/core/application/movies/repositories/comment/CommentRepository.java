@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.models.entities.CommentEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * {@code COMMENT_TABLE} 과 관련된 {@code Repository}
@@ -71,6 +73,8 @@ public interface CommentRepository {
 	 */
 	List<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, int offset);
 
+	Page<CommentRespDTO> findByMovieIdOrderBy(String movieId,  UUID userId, Pageable pageable);
+
 	/**
 	 * DB 의 모든 한줄평 댓글을 검색
 	 *
@@ -78,6 +82,8 @@ public interface CommentRepository {
 	 */
 	List<CommentEntity> selectAll();
 	//</editor-fold>
+
+	long countByMovieId(String movieId);
 
 	// UPDATE
 

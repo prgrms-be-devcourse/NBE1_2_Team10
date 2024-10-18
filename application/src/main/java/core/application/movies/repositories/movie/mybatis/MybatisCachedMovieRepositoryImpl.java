@@ -1,17 +1,21 @@
-package core.application.movies.repositories.movie;
+package core.application.movies.repositories.movie.mybatis;
 
+import core.application.movies.repositories.movie.CachedMovieRepository;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
 
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.mapper.CachedMovieMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class CachedMovieRepositoryImpl implements CachedMovieRepository {
+@Profile("mybatis")
+public class MybatisCachedMovieRepositoryImpl implements CachedMovieRepository {
 
 	private final CachedMovieMapper mapper;
 
@@ -54,6 +58,16 @@ public class CachedMovieRepositoryImpl implements CachedMovieRepository {
 	@Override
 	public List<CachedMovieEntity> findMoviesOnRatingDescendWithGenre(int offset, String genre) {
 		return mapper.findMoviesOnRatingDescendWithGenre(offset, genre);
+	}
+
+	@Override
+	public Page<CachedMovieEntity> findMoviesLikeGenreOrderByAvgRating(int page, String genre) {
+		return null;
+	}
+
+	@Override
+	public int countGenreMovie(String genre) {
+		return mapper.selectGenreMovieCount(genre);
 	}
 
 	@Override

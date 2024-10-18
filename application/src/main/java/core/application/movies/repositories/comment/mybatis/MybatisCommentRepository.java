@@ -1,9 +1,13 @@
-package core.application.movies.repositories.comment;
+package core.application.movies.repositories.comment.mybatis;
 
+import core.application.movies.repositories.comment.CommentRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import core.application.movies.models.dto.response.CommentRespDTO;
@@ -13,7 +17,8 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class CommentRepositoryImpl implements CommentRepository {
+@Profile("mybatis")
+public class MybatisCommentRepository implements CommentRepository {
 
 	private final CommentMapper commentMapper;
 
@@ -54,8 +59,18 @@ public class CommentRepositoryImpl implements CommentRepository {
 	}
 
 	@Override
+	public Page<CommentRespDTO> findByMovieIdOrderBy(String movieId, UUID userId, Pageable pageable) {
+		return null;
+	}
+
+	@Override
 	public List<CommentEntity> selectAll() {
 		return commentMapper.selectAll();
+	}
+
+	@Override
+	public long countByMovieId(String movieId) {
+		return commentMapper.countByMovieId(movieId);
 	}
 
 	@Override

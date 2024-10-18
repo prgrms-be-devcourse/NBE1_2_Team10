@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import core.application.movies.models.entities.CachedMovieEntity;
+import org.springframework.data.domain.Page;
 
 /**
  * {@code CACHED_MOVIE_TABLE} 과 관련된 {@code Repository}
@@ -77,6 +78,10 @@ public interface CachedMovieRepository {
 	 * @return 해당 카테고리 영화의 평점순
 	 */
 	List<CachedMovieEntity> findMoviesOnRatingDescendWithGenre(int offset, String genre);
+
+	Page<CachedMovieEntity> findMoviesLikeGenreOrderByAvgRating(int page, String genre);
+
+	int countGenreMovie(String genre);
 
 	// UPDATE
 

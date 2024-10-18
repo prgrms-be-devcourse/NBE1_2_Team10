@@ -65,6 +65,12 @@
         offset #{offset}
     </select>
 
+    <select id="selectGenreMovieCount">
+        select count(*)
+        from cached_movie_table
+        where genre like %#{genre}%
+    </select>
+
     <update id="update">
         update cached_movie_table
         set title=#{replacement.title},

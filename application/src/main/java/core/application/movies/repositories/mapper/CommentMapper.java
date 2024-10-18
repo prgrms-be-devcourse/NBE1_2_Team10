@@ -27,6 +27,8 @@ public interface CommentMapper {
 
 	List<CommentEntity> selectAll();
 
+	long countByMovieId(String movieId);
+
 	void update(CommentEntity comment);
 
 	void delete(Long commentId);
