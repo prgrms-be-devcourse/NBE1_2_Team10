@@ -5,7 +5,7 @@ import core.application.movies.repositories.movie.CachedMovieRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
+@Profile("!mybatis")
 public class JpaCachedMovieRepositoryImpl implements CachedMovieRepository {
 
     private final JpaCachedMovieRepository jpaCachedMovieRepository;
