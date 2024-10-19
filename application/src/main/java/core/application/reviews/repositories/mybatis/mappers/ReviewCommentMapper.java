@@ -1,206 +1,127 @@
 package core.application.reviews.repositories.mybatis.mappers;
 
 import core.application.reviews.models.entities.*;
-import core.application.reviews.repositories.*;
-import core.application.reviews.repositories.mybatis.provider.*;
-import java.time.*;
-import java.time.temporal.*;
 import java.util.*;
 import org.apache.ibatis.annotations.*;
 
+/**
+ * {@code ReviewCommentRepository} 에 사용될 {@code MyBatis mapper}
+ *
+ * @see core.application.reviews.repositories.mybatis.MyBatisReviewCommentRepository
+ * @see core.application.reviews.repositories.ReviewCommentRepository
+ */
 @Mapper
-public interface ReviewCommentMapper extends ReviewCommentRepository {
-
-    //<editor-fold desc="CREATE">
+public interface ReviewCommentMapper {
 
     /**
      * 실질적으로 DB 에 {@code insert} 하는 {@code MyBatis Query} 용 메서드
      *
      * @param data 삽입 데이터
      * @return {@code insert} 결과
-     * @see ReviewCommentMapperProvider#insertReviewComment
      */
-    @InsertProvider(type = ReviewCommentMapperProvider.class, method = "insertReviewComment")
-    @Options(useGeneratedKeys = true, keyColumn = "review_comment_id", keyProperty = "reviewCommentId")
     int insertReviewComment(
             ReviewCommentEntity data
     );
 
-
     /**
-     * {@inheritDoc}
-     * <p>
-     * 이 때 {@code reviewCommentId} 를 제외한 모든 내용을 그대로 DB 에 저장
-     * <p>
-     * 내부적으로 {@link #insertReviewComment} 를 이용
+     * 포스팅 댓글 ID 로 검색
      *
-     * @see #insertReviewComment
+     * @param reviewCommentId 포스팅 댓글 ID
+     * @return {@link Optional}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    @Override
-    default ReviewCommentEntity saveNewReviewComment(ReviewCommentEntity reviewComment) {
-        int result = this.insertReviewComment(reviewComment);
-        return reviewComment;
-    }
-
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * 내부적으로 {@link #saveNewReviewComment} 를 이용
-     *
-     * @see #saveNewReviewComment
-     * @see #insertReviewComment
-     */
-    @Override
-    default ReviewCommentEntity saveNewParentReviewComment(
-            Long reviewId, UUID userId, ReviewCommentEntity reviewComment
-    ) {
-        // 보무 댓글은 groupId null
-        ReviewCommentEntity data = ReviewCommentEntity
-                .builder()
-                .reviewId(reviewId)         // 포스팅 ID
-                .userId(userId)             // 유저 ID
-                .content(reviewComment.getContent())
-                .groupId(null)
-                .commentRef(reviewComment.getCommentRef())  // TODO 부모 댓글 멘션 기능 허용?
-                .like(0)
-                .createdAt(Instant.now()
-                        .truncatedTo(ChronoUnit.SECONDS))   // 댓글 생성 시간
-                .build();
-
-        return this.saveNewReviewComment(data);
-    }
-
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * 내부적으로 {@link #saveNewReviewComment} 를 이용
-     *
-     * @see #saveNewReviewComment
-     * @see #insertReviewComment
-     */
-    @Override
-    default ReviewCommentEntity saveNewChildReviewComment(
-            Long groupId, UUID userId, ReviewCommentEntity reviewComment
-    ) {
-        ReviewCommentEntity data = ReviewCommentEntity
-                .builder()
-                .reviewId(reviewComment.getReviewId())
-                .userId(userId)         // 유저 ID
-                .content(reviewComment.getContent())
-                .groupId(groupId)       // 부모 ID
-                .commentRef(reviewComment.getCommentRef())
-                .like(0)
-                .createdAt(Instant.now()
-                        .truncatedTo(ChronoUnit.SECONDS))   // 댓글 생성 시간
-                .build();
-
-        return this.saveNewReviewComment(data);
-    }
-
-    //</editor-fold>
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Select("SELECT * FROM REVIEW_COMMENT_TABLE WHERE REVIEW_COMMENT_ID = #{reviewCommentId}")
-    @Results(id = "ReviewCommentResultMap", value = {
-            @Result(property = "reviewCommentId", column = "review_comment_id"),
-            @Result(property = "reviewId", column = "review_id"),
-            @Result(property = "userId", column = "user_id"),
-            @Result(property = "content", column = "content"),
-            @Result(property = "groupId", column = "group_id"),
-            @Result(property = "commentRef", column = "comment_ref"),
-            @Result(property = "like", column = "like"),
-            @Result(property = "createdAt", column = "created_at"),
-            @Result(property = "isUpdated", column = "is_updated"),
-    })
     Optional<ReviewCommentEntity> findByReviewCommentId(Long reviewCommentId);
 
-    final String selectParentCommentOnReviewId = " SELECT * FROM REVIEW_COMMENT_TABLE" +
-            " WHERE REVIEW_ID = #{reviewId}" + " AND GROUP_ID IS NULL ";
-    final String orderByDate = " ORDER BY CREATED_AT DESC, REVIEW_COMMENT_ID DESC ";
-    final String orderByLikes = " ORDER BY `like` DESC, REVIEW_COMMENT_ID DESC ";
-    final String pagingOffset = " LIMIT #{num} OFFSET #{offset} ";
-
     /**
-     * {@inheritDoc}
+     * 특정 포스팅에 달린 모든 부모 댓글을 검색 (페이징)
+     * <p>
+     * 즉, {@code groupId == null} 인 댓글만 검색.
+     *
+     * @param reviewId 검색할 포스팅 ID
+     * @param offset   댓글 offset
+     * @param num      가져올 댓글 수
+     * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    @Override
-    @Select(selectParentCommentOnReviewId + orderByDate + pagingOffset)
-    @ResultMap("ReviewCommentResultMap")
     List<ReviewCommentEntity> findParentCommentByReviewId(
             @Param("reviewId") Long reviewId,
             @Param("offset") int offset,
             @Param("num") int num);
 
     /**
-     * {@inheritDoc}
+     * 특정 포스팅에 달린 모든 부모 댓글을 최신순으로 검색 (페이징)
+     * <p>
+     * 즉, {@code groupId == null} 인 댓글만 검색.
+     *
+     * @param reviewId 검색할 포스팅 ID
+     * @param offset   오프셋
+     * @param num      가져올 개수
+     * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    @Override
-    @Select(selectParentCommentOnReviewId + orderByDate + pagingOffset)
-    @ResultMap("ReviewCommentResultMap")
     List<ReviewCommentEntity> findParentCommentByReviewIdOnDateDescend(
             @Param("reviewId") Long reviewId,
             @Param("offset") int offset,
             @Param("num") int num);
 
     /**
-     * {@inheritDoc}
+     * 특정 포스팅에 달린 모든 부모 댓글을 좋아요 순으로 검색 (페이징)
+     * <p>
+     * 즉, {@code groupId == null} 인 댓글만 검색.
+     *
+     * @param reviewId 검색할 포스팅 ID
+     * @param offset   오프셋
+     * @param num      가져올 개수
+     * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    @Override
-    @Select(selectParentCommentOnReviewId + orderByLikes + pagingOffset)
-    @ResultMap("ReviewCommentResultMap")
     List<ReviewCommentEntity> findParentCommentByReviewIdOnLikeDescend(
             @Param("reviewId") Long reviewId,
             @Param("offset") int offset,
             @Param("num") int num);
 
-
     /**
-     * {@inheritDoc}
+     * 특정 포스팅에 달린 모든 부모 댓글의 개수를 확인
+     *
+     * @param reviewId 검색할 포스팅 ID
+     * @return 부모 댓글의 개수
      */
-    @Override
-    @Select(" SELECT COUNT(*) FROM REVIEW_COMMENT_TABLE WHERE review_id = #{reviewId} AND group_id IS NULL ")
     long countParentCommentByReviewId(Long reviewId);
 
     /**
-     * {@inheritDoc}
+     * 특정 부모 댓글에 달린 자식 댓글들을 최신순으로 검색 (페이징)
+     * <p>
+     * 자식 댓글은 {@code groupId != null} 인 댓글들.
+     *
+     * @param groupId 부모 댓글의 ID
+     * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    @Override
-    @Select(" SELECT * FROM REVIEW_COMMENT_TABLE WHERE group_id = #{groupId} " + orderByDate
-            + pagingOffset)
     List<ReviewCommentEntity> findChildCommentsByGroupId(
             @Param("groupId") Long groupId,
             @Param("offset") int offset,
             @Param("num") int num);
 
     /**
-     * {@inheritDoc}
+     * 특정 부모 댓글 아래 자식 댓글의 개수를 확인
+     *
+     * @param groupId 부모 댓글 ID
+     * @return 자식 댓글의 개수
      */
-    @Override
-    @Select(" SELECT COUNT(*) FROM REVIEW_COMMENT_TABLE WHERE group_id = #{groupId} ")
     long countChildCommentByGroupId(Long groupId);
 
     /**
-     * {@inheritDoc}
+     * DB 에 저장된 모든 부모 포스팅 댓글을 검색
+     * <p>
+     * 즉, {@code groupId == null} 인 댓글만 검색.
+     *
+     * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    @Override
-    @Select(" SELECT * FROM REVIEW_COMMENT_TABLE WHERE GROUP_ID IS NULL ")
-    @ResultMap("ReviewCommentResultMap")
     List<ReviewCommentEntity> selectAllParentComments();
 
     /**
-     * {@inheritDoc}
+     * DB 에 저장된 모든 포스팅 댓글을 검색
+     * <p>
+     * 자식 댓글은 {@code groupId != null} 인 댓글들.
+     *
+     * @return {@link List}{@code <}{@link ReviewCommentEntity}{@code >}
      */
-    @Override
-    @Select(" SELECT * FROM REVIEW_COMMENT_TABLE ")
-    @ResultMap("ReviewCommentResultMap")
     List<ReviewCommentEntity> selectAll();
-
 
     /**
      * 실질적으로 DB 에 {@code update} 하는 {@code MyBatis Query} 용 메서드
@@ -209,9 +130,7 @@ public interface ReviewCommentMapper extends ReviewCommentRepository {
      * @param replacement     변경할 정보
      * @param update          {@code is_updated} 에 설정할 정보
      * @return {@code update} 결과
-     * @see ReviewCommentMapperProvider#insertReviewComment
      */
-    @UpdateProvider(type = ReviewCommentMapperProvider.class, method = "editReviewComment")
     int updateReviewCommentEntity(
             @Param("reviewCommentId") Long reviewCommentId,
             @Param("replacement") ReviewCommentEntity replacement,
@@ -219,45 +138,12 @@ public interface ReviewCommentMapper extends ReviewCommentRepository {
     );
 
     /**
-     * {@inheritDoc}
-     *
-     * @deprecated use instead {@link #editReviewCommentInfo(Long, ReviewCommentEntity, boolean)}
-     */
-    @Override
-    @Deprecated
-    default ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId,
-            ReviewCommentEntity replacement) {
-        return editReviewCommentInfo(reviewCommentId, replacement, true);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    default ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId,
-            ReviewCommentEntity replacement, boolean update) {
-        int result = updateReviewCommentEntity(reviewCommentId, replacement, update);
-        return findByReviewCommentId(reviewCommentId).orElseThrow();
-    }
-
-    /**
      * 실질적으로 DB 에 리뷰 좋아요 {@code update} 하는 {@code MyBatis Query} 용 메서드
      *
      * @param reviewCommentId 댓글 ID
      * @param likes           변경될 좋아요 수
      * @return {@code update} 결과
-     * @see ReviewCommentMapperProvider#updateCommentLikes
      */
-    @UpdateProvider(type = ReviewCommentMapperProvider.class, method = "updateCommentLikes")
     int updateCommentLikes(@Param("reviewCommentId") Long reviewCommentId,
             @Param("likes") int likes);
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    default ReviewCommentEntity updateReviewCommentLikes(Long reviewCommentId, int likes) {
-        int result = updateCommentLikes(reviewCommentId, likes);
-        return findByReviewCommentId(reviewCommentId).orElseThrow();
-    }
 }

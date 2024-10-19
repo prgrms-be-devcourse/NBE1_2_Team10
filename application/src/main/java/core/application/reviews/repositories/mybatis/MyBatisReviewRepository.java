@@ -7,13 +7,14 @@ import java.time.*;
 import java.util.*;
 import lombok.*;
 import lombok.extern.slf4j.*;
+import org.springframework.context.annotation.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
 
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class ReviewRepositoryImpl implements
+public class MyBatisReviewRepository implements
         ReviewRepository {
 
     private final ReviewMapper mapper;
