@@ -2,6 +2,8 @@ package core.application.movies.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
+import core.application.movies.repositories.comment.CommentLikeRepository;
+import core.application.movies.repositories.comment.mybatis.MybatisCommentRepository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -12,13 +14,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.transaction.annotation.Transactional;
 
 import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.models.entities.CommentEntity;
 import core.application.movies.repositories.movie.CachedMovieRepository;
-import core.application.movies.repositories.comment.CommentLikeRepository;
 import core.application.movies.repositories.comment.CommentRepository;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
@@ -114,7 +118,14 @@ public class CommentRepositoryTest {
 			comment2);
 
 		// WHEN
-		List<CommentRespDTO> finds = commentRepository.findByMovieId(comment.getMovieId(), null, 0);
+		List<CommentRespDTO> finds;
+		if (commentRepository.getClass() == MybatisCommentRepository.class) {
+			finds = commentRepository.findByMovieId(comment.getMovieId(), null, 0);
+		}
+		else {
+			finds = commentRepository.findByMovieIdOrderBy(comment.getMovieId(), null, PageRequest.of(0, 10))
+					.getContent();
+		}
 
 		// THEN
 		assertThat(finds.size()).isEqualTo(2);
@@ -133,7 +144,14 @@ public class CommentRepositoryTest {
 		commentLikeRepository.saveCommentLike(comment.getCommentId(), userId);
 
 		// WHEN
-		List<CommentRespDTO> finds = commentRepository.findByMovieId(comment.getMovieId(), userId, 0);
+		List<CommentRespDTO> finds;
+		if (commentRepository.getClass() == MybatisCommentRepository.class) {
+			finds = commentRepository.findByMovieId(comment.getMovieId(), userId, 0);
+		}
+		else {
+			finds = commentRepository.findByMovieIdOrderBy(comment.getMovieId(), userId, PageRequest.of(0, 10))
+					.getContent();
+		}
 
 		// THEN
 		assertThat(finds.size()).isEqualTo(1);
@@ -157,7 +175,15 @@ public class CommentRepositoryTest {
 		commentRepository.saveNewComment(comment2.getMovieId(), comment2.getUserId(), comment2);
 
 		// WHEN
-		List<CommentRespDTO> finds = commentRepository.findByMovieIdOnDateDescend("test", userId, 0);
+		List<CommentRespDTO> finds;
+		if (commentRepository.getClass() == MybatisCommentRepository.class) {
+			finds = commentRepository.findByMovieIdOnDateDescend(comment.getMovieId(), userId, 0);
+		}
+		else {
+			finds = commentRepository.findByMovieIdOrderBy(comment.getMovieId(), userId, PageRequest.of(0, 10, Sort.by(
+							Direction.DESC, "createdAt")))
+					.getContent();
+		}
 
 		// THEN
 		Instant later = finds.get(0).getCreatedAt();
@@ -183,7 +209,15 @@ public class CommentRepositoryTest {
 		commentRepository.saveNewComment(comment2.getMovieId(), comment2.getUserId(), comment2);
 
 		// WHEN
-		List<CommentRespDTO> finds = commentRepository.findByMovieIdOnLikeDescend("test", userId, 0);
+		List<CommentRespDTO> finds;
+		if (commentRepository.getClass() == MybatisCommentRepository.class) {
+			finds = commentRepository.findByMovieIdOnLikeDescend(comment.getMovieId(), userId, 0);
+		}
+		else {
+			finds = commentRepository.findByMovieIdOrderBy(comment.getMovieId(), userId, PageRequest.of(0, 10, Sort.by(
+							Direction.DESC, "like")))
+					.getContent();
+		}
 
 		// THEN
 		int more = finds.get(0).getLike();
@@ -209,7 +243,15 @@ public class CommentRepositoryTest {
 		commentRepository.saveNewComment(comment2.getMovieId(), comment2.getUserId(), comment2);
 
 		// WHEN
-		List<CommentRespDTO> finds = commentRepository.findByMovieIdOnDislikeDescend("test", userId, 0);
+		List<CommentRespDTO> finds;
+		if (commentRepository.getClass() == MybatisCommentRepository.class) {
+			finds = commentRepository.findByMovieIdOnDislikeDescend(comment.getMovieId(), userId, 0);
+		}
+		else {
+			finds = commentRepository.findByMovieIdOrderBy(comment.getMovieId(), userId, PageRequest.of(0, 10, Sort.by(
+							Direction.DESC, "dislike")))
+					.getContent();
+		}
 
 		// THEN
 		int more = finds.get(0).getDislike();
