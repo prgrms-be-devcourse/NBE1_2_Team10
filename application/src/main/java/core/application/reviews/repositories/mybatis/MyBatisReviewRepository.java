@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.*;
 
 @Slf4j
 @Repository
+@Profile("mybatis")
 @RequiredArgsConstructor
 public class MyBatisReviewRepository implements
         ReviewRepository {

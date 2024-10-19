@@ -8,10 +8,12 @@ import java.time.temporal.*;
 import java.util.*;
 import lombok.*;
 import lombok.extern.slf4j.*;
+import org.springframework.context.annotation.*;
 import org.springframework.stereotype.*;
 
 @Slf4j
 @Repository
+@Profile("mybatis")
 @RequiredArgsConstructor
 public class MyBatisReviewCommentRepository implements ReviewCommentRepository {
 
