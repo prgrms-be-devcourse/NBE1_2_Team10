@@ -21,6 +21,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
 @Builder
@@ -40,6 +41,7 @@ public class CommentEntity {
 	private int rating;
 	private String movieId;     // 영화 API 에 따라 달라질 수 있음.
 	private UUID userId;
+	@CreationTimestamp
 	private Instant createdAt;
 
 	public static CommentEntity of(CommentWriteReqDTO comment, String movieId, UUID userId) {
