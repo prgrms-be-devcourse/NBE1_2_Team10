@@ -35,7 +35,7 @@ public class CachedMovieRepositoryJPAImpl implements CachedMovieRepository {
 
     @Override
     public List<CachedMovieEntity> selectOnDibOrderDescend(int num) {
-        return jpaCachedMovieRepository.findTopXOrderBy(PageRequest.of(0, num, Sort.by(Sort.Direction.DESC, "dibCount")));
+        return jpaCachedMovieRepository.findOrderBy(PageRequest.of(0, num, Sort.by(Sort.Direction.DESC, "dibCount")));
     }
 
     @Override
@@ -50,7 +50,7 @@ public class CachedMovieRepositoryJPAImpl implements CachedMovieRepository {
 
     @Override
     public List<CachedMovieEntity> selectOnReviewCountDescend(int num) {
-        return jpaCachedMovieRepository.findTopXOrderBy(PageRequest.of(0, num, Sort.by(Sort.Direction.DESC, "reviewCount")));
+        return jpaCachedMovieRepository.findOrderBy(PageRequest.of(0, num, Sort.by(Sort.Direction.DESC, "reviewCount")));
     }
 
     @Override
