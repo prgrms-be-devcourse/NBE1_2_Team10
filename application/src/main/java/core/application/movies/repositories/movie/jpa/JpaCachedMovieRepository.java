@@ -12,7 +12,7 @@ public interface JpaCachedMovieRepository extends JpaRepository<CachedMovieEntit
 
     List<CachedMovieEntity> findAllOrderBy(Sort sort);
 
-    List<CachedMovieEntity> findTopXOrderBy(Pageable pageable);
+    List<CachedMovieEntity> findOrderBy(Pageable pageable);
 
     @Query("select m from CachedMovieEntity m order by (m.sumOfRating / m.commentCount) desc")
     List<CachedMovieEntity> findAllOrderByAvgRating();
