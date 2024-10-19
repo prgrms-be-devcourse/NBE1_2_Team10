@@ -90,11 +90,11 @@ create table comment_like_table
 );
 
 -- 한줄평 싫어요 로그 테이블
-create table comment_like_table
+create table comment_dislike_table
 (
-    comment_like_id bigint auto_increment primary key,
-    comment_id      bigint not null,
-    user_id         binary(16),
+    comment_dislike_id bigint auto_increment primary key,
+    comment_id         bigint not null,
+    user_id            binary(16),
     constraint foreign key (comment_id) references comment_table (comment_id),
     constraint foreign key (user_id) references user_table (user_id)
 );
