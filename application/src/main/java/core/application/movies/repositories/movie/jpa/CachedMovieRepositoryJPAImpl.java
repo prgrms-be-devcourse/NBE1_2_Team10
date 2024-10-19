@@ -11,10 +11,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
-@Repository
 @RequiredArgsConstructor
-@Profile("!mybatis")
-public class JpaCachedMovieRepositoryImpl implements CachedMovieRepository {
+@Repository
+@Profile("jpa")
+public class CachedMovieRepositoryJPAImpl implements CachedMovieRepository {
 
     private final JpaCachedMovieRepository jpaCachedMovieRepository;
 
@@ -30,12 +30,12 @@ public class JpaCachedMovieRepositoryImpl implements CachedMovieRepository {
 
     @Override
     public List<CachedMovieEntity> selectOnDibOrderDescend() {
-        return jpaCachedMovieRepository.findAllOrderBy(Sort.by(Sort.Direction.DESC, "dib_count"));
+        return jpaCachedMovieRepository.findAllOrderBy(Sort.by(Sort.Direction.DESC, "dibCount"));
     }
 
     @Override
     public List<CachedMovieEntity> selectOnDibOrderDescend(int num) {
-        return jpaCachedMovieRepository.findTopXOrderBy(PageRequest.of(0, num, Sort.by(Sort.Direction.DESC, "dib_count")));
+        return jpaCachedMovieRepository.findTopXOrderBy(PageRequest.of(0, num, Sort.by(Sort.Direction.DESC, "dibCount")));
     }
 
     @Override
@@ -50,7 +50,7 @@ public class JpaCachedMovieRepositoryImpl implements CachedMovieRepository {
 
     @Override
     public List<CachedMovieEntity> selectOnReviewCountDescend(int num) {
-        return jpaCachedMovieRepository.findTopXOrderBy(PageRequest.of(0, num, Sort.by(Sort.Direction.DESC, "review_count")));
+        return jpaCachedMovieRepository.findTopXOrderBy(PageRequest.of(0, num, Sort.by(Sort.Direction.DESC, "reviewCount")));
     }
 
     @Override

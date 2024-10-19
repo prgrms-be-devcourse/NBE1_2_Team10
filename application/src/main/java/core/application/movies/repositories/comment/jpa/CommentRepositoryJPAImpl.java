@@ -14,8 +14,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-@Profile("!mybatis")
-public class JpaCommentRepositoryImpl implements CommentRepository {
+@Profile("jpa")
+public class CommentRepositoryJPAImpl implements CommentRepository {
 
     private final JpaCommentRepository jpaRepository;
 
