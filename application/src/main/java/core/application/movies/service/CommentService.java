@@ -67,7 +67,7 @@ public class CommentService {
 		}
 		if (sort.equals(CommentSort.LATEST)) {
 			return commentRepository.findByMovieIdOrderBy(movieId, userId,
-					PageRequest.of(page, 10, Sort.by(Direction.DESC, "created_at")));
+					PageRequest.of(page, 10, Sort.by(Direction.DESC, "createdAt")));
 		}
 		return commentRepository.findByMovieIdOrderBy(movieId, userId,
 				PageRequest.of(page, 10, Sort.by(Direction.DESC, "dislike")));
