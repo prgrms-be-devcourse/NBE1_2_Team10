@@ -97,7 +97,7 @@ public class MovieRepositoryTest {
 		// WHEN
 		List<CachedMovieEntity> rating = repository.selectOnAVGRatingDescend(5);
 		List<CachedMovieEntity> dib = repository.selectOnDibOrderDescend(5);
-		List<CachedMovieEntity> review = repository.selectOnDibOrderDescend(5);
+		List<CachedMovieEntity> review = repository.selectOnReviewCountDescend(5);
 
 		// THEN
 		assertThat(rating).hasSize(5);
