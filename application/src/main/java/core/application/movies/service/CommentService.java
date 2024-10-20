@@ -3,6 +3,12 @@ package core.application.movies.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +26,7 @@ import core.application.movies.models.entities.CommentEntity;
 import core.application.movies.repositories.comment.CommentDislikeRepository;
 import core.application.movies.repositories.comment.CommentLikeRepository;
 import core.application.movies.repositories.comment.CommentRepository;
+import core.application.movies.repositories.comment.mybatis.MybatisCommentRepository;
 import core.application.movies.repositories.movie.CachedMovieRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,14 +41,27 @@ public class CommentService {
 	private final CommentDislikeRepository dislikeRepository;
 
 	@Transactional(readOnly = true)
-	public List<CommentRespDTO> getComments(String movieId, int page, CommentSort sort, UUID userId) {
-		if (sort.equals(CommentSort.LIKE)) {
-			return commentRepository.findByMovieIdOnLikeDescend(movieId, userId, page * 10);
+	public Page<CommentRespDTO> getComments(String movieId, int page, CommentSort sort, UUID userId) {
+		// 마이바티스 리포지토리 로직
+		if (commentRepository instanceof MybatisCommentRepository) {
+			Pageable pageable = PageRequest.of(page, 10);
+			long total = commentRepository.countByMovieId(movieId);
+			List<CommentRespDTO> searchResult = switch (sort) {
+				case LIKE -> searchResult = commentRepository.findByMovieIdOnLikeDescend(movieId, userId, page * 10);
+				case LATEST -> searchResult = commentRepository.findByMovieIdOnDateDescend(movieId, userId, page * 10);
+				default -> searchResult = commentRepository.findByMovieIdOnDislikeDescend(movieId, userId, page * 10);
+			};
+			return new PageImpl<>(searchResult, pageable, total);
 		}
-		if (sort.equals(CommentSort.LATEST)) {
-			return commentRepository.findByMovieIdOnDateDescend(movieId, userId, page * 10);
-		}
-		return commentRepository.findByMovieIdOnDislikeDescend(movieId, userId, page * 10);
+
+		// JPA 리포지토리 로직
+		log.info("JPA Repository");
+		PageRequest pageRequest = switch (sort) {
+			case LIKE -> PageRequest.of(page, 10, Sort.by(Direction.DESC, "like"));
+			case LATEST -> PageRequest.of(page, 10, Sort.by(Direction.DESC, "createdAt"));
+			default -> PageRequest.of(page, 10, Sort.by(Direction.DESC, "dislike"));
+		};
+		return commentRepository.findByMovieIdOrderBy(movieId, userId, pageRequest);
 	}
 
 	@Transactional
@@ -71,13 +91,16 @@ public class CommentService {
 		if (!comment.getMovieId().equals(movieId)) {
 			throw new NotMatchMovieCommentException("해당 영화의 한줄평이 아닙니다.");
 		}
+
 		commentRepository.deleteComment(commentId);
 		CachedMovieEntity movie = movieRepository.findByMovieId(movieId)
 			.orElseThrow(() -> new NoMovieException("존재하는 영화가 아닙니다."));
 		log.info("[MovieService.deleteCommentOnMovie] 영화 정보 수정");
-		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(), movie.getCommentCount());
+		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(),
+			movie.getCommentCount());
 		movie.deleteComment(comment.getRating());
-		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(), movie.getCommentCount());
+		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(),
+			movie.getCommentCount());
 		movieRepository.editMovie(movieId, movie);
 	}
 
