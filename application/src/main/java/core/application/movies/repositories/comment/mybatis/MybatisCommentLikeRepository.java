@@ -2,14 +2,17 @@ package core.application.movies.repositories.comment.mybatis;
 
 import java.util.UUID;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import core.application.movies.repositories.comment.CommentLikeRepository;
 import core.application.movies.repositories.mapper.CommentLikeMapper;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class MybatisCommentLikeRepository {
+@Profile("mybatis")
+public class MybatisCommentLikeRepository implements CommentLikeRepository {
 	private final CommentLikeMapper commentLikeMapper;
 
 	public void saveCommentLike(Long commentId, UUID userId) {

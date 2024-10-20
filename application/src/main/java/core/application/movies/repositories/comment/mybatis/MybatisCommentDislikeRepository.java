@@ -2,14 +2,17 @@ package core.application.movies.repositories.comment.mybatis;
 
 import java.util.UUID;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import core.application.movies.repositories.comment.CommentDislikeRepository;
 import core.application.movies.repositories.mapper.CommentDislikeMapper;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class MybatisCommentDislikeRepository {
+@Profile("mybatis")
+public class MybatisCommentDislikeRepository implements CommentDislikeRepository {
 	private final CommentDislikeMapper commentDislikeMapper;
 
 	public void saveCommentDislike(Long commentId, UUID userId) {
