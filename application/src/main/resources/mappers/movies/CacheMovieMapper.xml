@@ -68,7 +68,7 @@
     <select id="selectGenreMovieCount">
         select count(*)
         from cached_movie_table
-        where genre like %#{genre}%
+        where genre like concat('%', #{genre}, '%')
     </select>
 
     <update id="update">
