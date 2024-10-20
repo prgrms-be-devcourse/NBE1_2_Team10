@@ -1,20 +1,21 @@
-package core.application.reviews.repositories;
+package core.application.reviews.repositories.mybatis;
 
-import core.application.reviews.models.entities.ReviewEntity;
-import core.application.reviews.repositories.mapper.ReviewMapper;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import core.application.reviews.models.entities.*;
+import core.application.reviews.repositories.*;
+import core.application.reviews.repositories.mybatis.mappers.*;
+import java.time.*;
+import java.util.*;
+import lombok.*;
+import lombok.extern.slf4j.*;
+import org.springframework.context.annotation.*;
+import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
 
 @Slf4j
 @Repository
+@Profile("mybatis")
 @RequiredArgsConstructor
-public class ReviewRepositoryImpl implements
+public class MyBatisReviewRepository implements
         ReviewRepository {
 
     private final ReviewMapper mapper;
