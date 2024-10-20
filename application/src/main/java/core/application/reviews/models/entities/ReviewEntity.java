@@ -1,21 +1,19 @@
 package core.application.reviews.models.entities;
 
-import java.time.Instant;
-import java.util.Objects;
-import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import java.time.*;
+import java.util.*;
+import lombok.*;
+import org.hibernate.annotations.*;
 
 /**
  * {@code  ReviewRepository} 와 관련된 엔티티
  *
  * @see core.application.reviews.repositories.ReviewRepository
  */
+@Entity
+@Table(name = "review_table")
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,17 +21,32 @@ import lombok.ToString;
 @ToString
 public class ReviewEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewId;
+
+    @Column(length = 50, nullable = false)
     private String title;
+
+    @Column(columnDefinition = "LONGTEXT", nullable = false)
     private String content;
+
+    @Column(length = 16, nullable = false)
     private UUID userId;
+
+    @Column(length = 50, nullable = false)
     private String movieId;
+
+    @Column(nullable = false)
     private int like;
 
     @Setter
+    @CreationTimestamp
+    @Column(nullable = false)
     private Instant createdAt;
 
     @Setter
+    @CreationTimestamp
     private Instant updatedAt;
 
 
