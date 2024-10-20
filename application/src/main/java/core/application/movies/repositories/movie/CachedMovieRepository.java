@@ -72,26 +72,28 @@ public interface CachedMovieRepository {
 	List<CachedMovieEntity> selectOnReviewCountDescend(int num);
 
 	/**
-	 * 카테고리 검색 중 평점순 조회
-	 *
+	 * Mybatis 구현체 사용 메서드.
+	 * JPA 구현체는 {@link #findMoviesOnRatingDescendWithGenre} 메서드 사용.
 	 * @param offset 오프셋
 	 * @param genre 장르
-	 * @return 해당 카테고리 영화의 평점순
+	 * @return 평점순 해당 장르의 영화 중 offset부터 10개의 영화 데이터
 	 */
 	List<CachedMovieEntity> findMoviesOnRatingDescendWithGenre(int offset, String genre);
 
 	/**
-	 * JPA 페이징을 이용한 평점순 장르 검색
+	 * JPA 구현체 사용 메서드.<br>
+	 * JPA를 이용해 페이징 관련 처리를 한다.
 	 * @param page 페이지
 	 * @param genre 장르
-	 * @return 해당 장르 영화의 평점순
+	 * @return 해당 페이지의 평점순 장르 영화
 	 */
 	Page<CachedMovieEntity> findMoviesLikeGenreOrderByAvgRating(int page, String genre);
 
 	/**
-	 * 해당 장르의 영화 수 조회
+	 * Mybatis 구현체 사용 메서드.<br>
+	 * Mybatis 구현체가 {@link Page<>}를 반환하기 위해 전체 개수가 필요하다.
 	 * @param genre 장르
-	 * @return 해당 장르의 영화 개수
+	 * @return
 	 */
 	int countGenreMovie(String genre);
 
