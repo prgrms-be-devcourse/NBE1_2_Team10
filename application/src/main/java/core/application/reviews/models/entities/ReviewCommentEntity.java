@@ -1,22 +1,20 @@
 package core.application.reviews.models.entities;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.Instant;
-import java.util.Objects;
-import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import io.swagger.v3.oas.annotations.media.*;
+import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import java.time.*;
+import java.util.*;
+import lombok.*;
+import org.hibernate.annotations.*;
 
 /**
  * {@code ReviewCommentRepository} 와 관련된 엔티티
  *
  * @see core.application.reviews.repositories.ReviewCommentRepository
  */
+@Entity
+@Table(name = "review_comment_table")
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -27,6 +25,8 @@ public class ReviewCommentEntity {
     /**
      * 포스팅 리뷰 댓글 ID
      */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "댓글 고유 ID", example = "10015")
     private Long reviewCommentId;
 
@@ -34,12 +34,15 @@ public class ReviewCommentEntity {
      * 댓글이 달린 포스팅 ID
      */
     @Schema(description = "댓글이 달린 포스팅 고유 ID", example = "20")
+    @Column(nullable = false)
     private Long reviewId;
 
     @Schema(description = "사용자 고유 ID")
+    @Column(length = 16, nullable = false)
     private UUID userId;
 
     @Schema(description = "댓글 내용", example = "댓글 내용")
+    @Column(length = 100, nullable = false)
     private String content;
 
     /**
@@ -59,14 +62,19 @@ public class ReviewCommentEntity {
     private Long commentRef;
 
     @Schema(description = "댓글의 좋아요 수", example = "10")
+    @Column(nullable = false)
     private int like;
 
     @Setter
     @Schema(description = "댓글의 생성 날자")
+    @CreationTimestamp
+    @Column(nullable = false)
     private Instant createdAt;
 
     @Setter
     @Schema(description = "댓글 수정 여부", example = "false")
+    @CreationTimestamp
+    @Column(nullable = false)
     private boolean isUpdated;
 
     /**
