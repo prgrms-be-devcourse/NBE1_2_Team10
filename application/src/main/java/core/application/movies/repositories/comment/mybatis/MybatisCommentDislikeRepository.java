@@ -1,4 +1,4 @@
-package core.application.movies.repositories.comment;
+package core.application.movies.repositories.comment.mybatis;
 
 import java.util.UUID;
 
@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class CommentDislikeRepository {
+public class MybatisCommentDislikeRepository {
 	private final CommentDislikeMapper commentDislikeMapper;
 
 	public void saveCommentDislike(Long commentId, UUID userId) {

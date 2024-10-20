@@ -1,5 +1,6 @@
-package core.application.movies.repositories.comment;
+package core.application.movies.repositories.comment.mybatis;
 
+import core.application.movies.repositories.comment.CommentRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class CommentRepositoryImpl implements CommentRepository {
+public class MybatisCommentRepository implements CommentRepository {
 
 	private final CommentMapper commentMapper;
 
