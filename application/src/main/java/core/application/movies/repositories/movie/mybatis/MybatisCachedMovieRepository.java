@@ -1,4 +1,4 @@
-package core.application.movies.repositories.movie;
+package core.application.movies.repositories.movie.mybatis;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,11 +7,12 @@ import org.springframework.stereotype.Repository;
 
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.mapper.CachedMovieMapper;
+import core.application.movies.repositories.movie.CachedMovieRepository;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class CachedMovieRepositoryImpl implements CachedMovieRepository {
+public class MybatisCachedMovieRepository implements CachedMovieRepository {
 
 	private final CachedMovieMapper mapper;
 
