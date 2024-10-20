@@ -108,7 +108,7 @@ create table review_table
         primary key,
     title      varchar(50)                        not null comment '포스팅 제목',
     movie_id   varchar(50)                        not null comment '영화 API 에 따라 달라질 수 있음',
-    content    varchar(1000)                      not null comment '포스팅 리뷰',
+    content longtext not null comment '포스팅 리뷰',
     user_id    binary(16)                         not null comment '리뷰 작성자 ID',
     `like`     int      default 0                 not null comment '좋아요 수',
     created_at datetime default CURRENT_TIMESTAMP not null comment '작성 시간',
