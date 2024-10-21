@@ -53,42 +53,31 @@ public interface CommentRepository {
 	 * @see #findByMovieIdOnLikeDescend(String, UUID, int)
 	 * @see #findByMovieIdOnDislikeDescend(String, UUID, int)
 	 */
-	List<CommentRespDTO> findByMovieId(String movieId, UUID userId, int offset);
+	Page<CommentRespDTO> findByMovieId(String movieId, UUID userId, int page);
 
 	/**
-	 * Mybatis 리포지토리 구현체가 특정 영화에 달린 한줄평 댓글을 최신순으로 검색
+	 * 특정 영화에 달린 한줄평 댓글을 최신순으로 검색
 	 *
 	 * @param movieId 검색할 영화 ID
 	 * @return {@link List}{@code <}{@link CommentEntity}{@code >}
 	 */
-	List<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, int offset);
+	Page<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, int page);
 
 	/**
-	 * Mybatis 리포지토리 구현체가 특정 영화에 달린 한줄평 댓글을 좋아요 순으로 검색
+	 * 특정 영화에 달린 한줄평 댓글을 좋아요 순으로 검색
 	 *
 	 * @param movieId 검색할 영화 ID
 	 * @return {@link List}{@code <}{@link CommentEntity}{@code >}
 	 */
-	List<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, int offset);
+	Page<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, int page);
 
 	/**
-	 * Mybatis 리포지토리 구현체가 특정 영화에 달린 한줄평 댓글을 싫어요 순으로 검색
+	 * 특정 영화에 달린 한줄평 댓글을 싫어요 순으로 검색
 	 *
 	 * @param movieId 검색할 영화 ID
 	 * @return {@link List}{@code <}{@link CommentEntity}{@code >}
 	 */
-	List<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, int offset);
-
-
-	/**
-	 * JPA 리포지토리 구현체가 영화에 대한 한줄평 검색
-	 *
-	 * @param movieId 영화 ID
-	 * @param userId 유저 ID
-	 * @param pageable 페이지, 정렬 조건
-	 * @return 정렬된 해당 페이지의 한줄평
-	 */
-	Page<CommentRespDTO> findByMovieIdOrderBy(String movieId,  UUID userId, Pageable pageable);
+	Page<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, int page);
 
 	/**
 	 * DB 의 모든 한줄평 댓글을 검색
@@ -97,13 +86,6 @@ public interface CommentRepository {
 	 */
 	List<CommentEntity> selectAll();
 	//</editor-fold>
-
-	/**
-	 * 해당 영화의 한줄평 개수 반환
-	 * @param movieId 영화 ID
-	 * @return 해당 영화의 한줄평 총 개수
-	 */
-	long countByMovieId(String movieId);
 
 	// UPDATE
 
