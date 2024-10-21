@@ -118,13 +118,7 @@ public class CommentRepositoryTest {
 			comment2);
 
 		// WHEN
-		List<CommentRespDTO> finds;
-		if (commentRepository instanceof MybatisCommentRepository) {
-			finds = commentRepository.findByMovieId(comment.getMovieId(), null, 0);
-		} else {
-			finds = commentRepository.findByMovieIdOrderBy(comment.getMovieId(), null, PageRequest.of(0, 10))
-				.getContent();
-		}
+		List<CommentRespDTO> finds = commentRepository.findByMovieId(comment.getMovieId(), null, 0).getContent();
 
 		// THEN
 		assertThat(finds.size()).isEqualTo(2);
@@ -143,13 +137,7 @@ public class CommentRepositoryTest {
 		commentLikeRepository.saveCommentLike(comment.getCommentId(), userId);
 
 		// WHEN
-		List<CommentRespDTO> finds;
-		if (commentRepository instanceof MybatisCommentRepository) {
-			finds = commentRepository.findByMovieId(comment.getMovieId(), userId, 0);
-		} else {
-			finds = commentRepository.findByMovieIdOrderBy(comment.getMovieId(), userId, PageRequest.of(0, 10))
-				.getContent();
-		}
+		List<CommentRespDTO> finds = commentRepository.findByMovieId(comment.getMovieId(), userId, 0).getContent();
 
 		// THEN
 		assertThat(finds.size()).isEqualTo(1);
@@ -159,7 +147,7 @@ public class CommentRepositoryTest {
 
 	@Test
 	@DisplayName("특정 영화의 한줄평을 시간순으로 조회한다.")
-	public void findByMovieIdOnDateDescend() {
+	public void findByMovieIdOnDateDescend() throws InterruptedException {
 		// GIVEN
 		CommentEntity comment2 = CommentEntity.builder()
 			.content("내용2")
@@ -170,22 +158,17 @@ public class CommentRepositoryTest {
 			.userId(userRepository.findByUserEmail("testEmail").get().getUserId())
 			.build();
 		commentRepository.saveNewComment(comment.getMovieId(), comment.getUserId(), comment);
+		Thread.sleep(1000);
 		commentRepository.saveNewComment(comment2.getMovieId(), comment2.getUserId(), comment2);
 
 		// WHEN
-		List<CommentRespDTO> finds;
-		if (commentRepository instanceof MybatisCommentRepository) {
-			finds = commentRepository.findByMovieIdOnDateDescend(comment.getMovieId(), userId, 0);
-		} else {
-			finds = commentRepository.findByMovieIdOrderBy(comment.getMovieId(), userId, PageRequest.of(0, 10, Sort.by(
-					Direction.DESC, "createdAt")))
-				.getContent();
-		}
+		List<CommentRespDTO> finds = commentRepository.findByMovieIdOnDateDescend(comment.getMovieId(), userId, 0)
+			.getContent();
 
 		// THEN
 		Instant later = finds.get(0).getCreatedAt();
 		for (CommentRespDTO find : finds) {
-			assertThat(later).isBeforeOrEqualTo(find.getCreatedAt());
+			assertThat(later).isAfterOrEqualTo(find.getCreatedAt());
 			later = find.getCreatedAt();
 		}
 	}
@@ -206,14 +189,7 @@ public class CommentRepositoryTest {
 		commentRepository.saveNewComment(comment2.getMovieId(), comment2.getUserId(), comment2);
 
 		// WHEN
-		List<CommentRespDTO> finds;
-		if (commentRepository instanceof MybatisCommentRepository) {
-			finds = commentRepository.findByMovieIdOnLikeDescend(comment.getMovieId(), userId, 0);
-		} else {
-			finds = commentRepository.findByMovieIdOrderBy(comment.getMovieId(), userId, PageRequest.of(0, 10, Sort.by(
-					Direction.DESC, "like")))
-				.getContent();
-		}
+		List<CommentRespDTO> finds = commentRepository.findByMovieIdOnLikeDescend(comment.getMovieId(), userId, 0).getContent();
 
 		// THEN
 		int more = finds.get(0).getLike();
@@ -239,14 +215,7 @@ public class CommentRepositoryTest {
 		commentRepository.saveNewComment(comment2.getMovieId(), comment2.getUserId(), comment2);
 
 		// WHEN
-		List<CommentRespDTO> finds;
-		if (commentRepository instanceof MybatisCommentRepository) {
-			finds = commentRepository.findByMovieIdOnDislikeDescend(comment.getMovieId(), userId, 0);
-		} else {
-			finds = commentRepository.findByMovieIdOrderBy(comment.getMovieId(), userId, PageRequest.of(0, 10, Sort.by(
-					Direction.DESC, "dislike")))
-				.getContent();
-		}
+		List<CommentRespDTO> finds = commentRepository.findByMovieIdOnDislikeDescend(comment.getMovieId(), userId, 0).getContent();
 
 		// THEN
 		int more = finds.get(0).getDislike();
