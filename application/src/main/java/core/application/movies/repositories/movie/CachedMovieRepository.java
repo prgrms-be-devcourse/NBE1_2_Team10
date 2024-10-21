@@ -3,6 +3,8 @@ package core.application.movies.repositories.movie;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+
 import core.application.movies.models.entities.CachedMovieEntity;
 
 /**
@@ -70,13 +72,13 @@ public interface CachedMovieRepository {
 	List<CachedMovieEntity> selectOnReviewCountDescend(int num);
 
 	/**
-	 * 카테고리 검색 중 평점순 조회
-	 *
-	 * @param offset 오프셋
+	 * JPA 구현체 사용 메서드.<br>
+	 * JPA를 이용해 페이징 관련 처리를 한다.
+	 * @param page 페이지
 	 * @param genre 장르
-	 * @return 해당 카테고리 영화의 평점순
+	 * @return 해당 페이지의 평점순 장르 영화
 	 */
-	List<CachedMovieEntity> findMoviesOnRatingDescendWithGenre(int offset, String genre);
+	Page<CachedMovieEntity> findMoviesLikeGenreOrderByAvgRating(int page, String genre);
 
 	// UPDATE
 
