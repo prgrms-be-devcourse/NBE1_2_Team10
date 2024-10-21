@@ -56,21 +56,8 @@ public class CachedMovieRepositoryJPAImpl implements CachedMovieRepository {
     }
 
     @Override
-    public List<CachedMovieEntity> findMoviesOnRatingDescendWithGenre(int offset, String genre) {
-        return List.of();
-    }
-
-    @Override
     public Page<CachedMovieEntity> findMoviesLikeGenreOrderByAvgRating(int page, String genre) {
         return jpaCachedMovieRepository.findByGenreOrderByAvgRating(genre, PageRequest.of(page, 10));
-    }
-
-    /**
-     * Mybatis 구현체 사용 메서드이므로 JPA 구현체의 경우 구현 X
-     */
-    @Override
-    public int countGenreMovie(String genre) {
-        return 0;
     }
 
     @Override

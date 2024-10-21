@@ -90,16 +90,6 @@ public class MovieServiceImpl implements MovieService {
 	@Transactional(readOnly = true)
 	public Page<MovieSearchRespDTO> getMoviesWithGenreRatingOrder(Integer page, Genre genre) {
 		log.info("[MovieService.getMoviesWithGenreRatingOrder] {} 영화 평점순 제공", genre.PARAMETER);
-		if (movieRepository instanceof MybatisCachedMovieRepository) {
-			Pageable pageable = PageRequest.of(page, 10);
-			List<MovieSearchRespDTO> searchResult = movieRepository.findMoviesOnRatingDescendWithGenre(page * 10,
-					genre.PARAMETER)
-				.stream()
-				.map(MovieSearchRespDTO::from)
-				.toList();
-			int total = movieRepository.countGenreMovie(genre.PARAMETER);
-			return new PageImpl<>(searchResult, pageable, total);
-		}
 		return movieRepository.findMoviesLikeGenreOrderByAvgRating(page, genre.PARAMETER)
 			.map(MovieSearchRespDTO::from);
 	}
