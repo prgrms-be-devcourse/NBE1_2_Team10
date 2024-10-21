@@ -10,6 +10,10 @@ import org.springframework.data.domain.Page;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.repositories.mapper.CachedMovieMapper;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -56,18 +60,12 @@ public class MybatisCachedMovieRepository implements CachedMovieRepository {
 	}
 
 	@Override
-	public List<CachedMovieEntity> findMoviesOnRatingDescendWithGenre(int offset, String genre) {
-		return mapper.findMoviesOnRatingDescendWithGenre(offset, genre);
-	}
-
-	@Override
 	public Page<CachedMovieEntity> findMoviesLikeGenreOrderByAvgRating(int page, String genre) {
-		return null;
-	}
-
-	@Override
-	public int countGenreMovie(String genre) {
-		return mapper.selectGenreMovieCount(genre);
+		Pageable pageable = PageRequest.of(page, 10);
+		int total = mapper.selectGenreMovieCount(genre);
+		List<CachedMovieEntity> find = mapper.findMoviesOnRatingDescendWithGenre(page * 10,
+			genre);
+		return new PageImpl<>(find, pageable, total);
 	}
 
 	@Override
