@@ -17,12 +17,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import core.application.movies.constant.CommentSort;
-import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.models.dto.request.CommentWriteReqDTO;
+import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.models.entities.CachedMovieEntity;
 import core.application.movies.models.entities.CommentEntity;
-import core.application.movies.repositories.movie.CachedMovieRepository;
 import core.application.movies.repositories.comment.CommentRepository;
+import core.application.movies.repositories.movie.CachedMovieRepository;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
 import core.application.users.repositories.UserRepository;
@@ -101,7 +101,7 @@ public class CommentServiceTest {
 		}
 
 		// WHEN
-		List<CommentRespDTO> comments = commentService.getComments(movieId, 0, CommentSort.LATEST, null);
+		List<CommentRespDTO> comments = commentService.getComments(movieId, 0, CommentSort.LATEST, null).getContent();
 
 		// THEN
 		assertThat(comments.size()).isEqualTo(10);
@@ -127,7 +127,7 @@ public class CommentServiceTest {
 		}
 
 		// WHEN
-		List<CommentRespDTO> comments = commentService.getComments(movieId, 0, CommentSort.LIKE, null);
+		List<CommentRespDTO> comments = commentService.getComments(movieId, 0, CommentSort.LIKE, null).getContent();
 
 		// THEN
 		int like = comments.get(0).getLike();
@@ -152,7 +152,7 @@ public class CommentServiceTest {
 		}
 
 		// WHEN
-		List<CommentRespDTO> comments = commentService.getComments(movieId, 0, CommentSort.DISLIKE, null);
+		List<CommentRespDTO> comments = commentService.getComments(movieId, 0, CommentSort.DISLIKE, null).getContent();
 
 		// THEN
 		int dislike = comments.get(0).getDislike();
@@ -250,7 +250,8 @@ public class CommentServiceTest {
 		}
 
 		// WHEN
-		List<CommentRespDTO> comments = commentService.getComments(movieId, 0, CommentSort.LIKE, user.getUserId());
+		List<CommentRespDTO> comments = commentService.getComments(movieId, 0, CommentSort.LIKE, user.getUserId())
+			.getContent();
 
 		// THEN
 		for (CommentRespDTO comment : comments) {

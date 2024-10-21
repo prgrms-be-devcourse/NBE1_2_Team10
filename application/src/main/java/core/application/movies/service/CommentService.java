@@ -1,8 +1,8 @@
 package core.application.movies.service;
 
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,14 +34,12 @@ public class CommentService {
 	private final CommentDislikeRepository dislikeRepository;
 
 	@Transactional(readOnly = true)
-	public List<CommentRespDTO> getComments(String movieId, int page, CommentSort sort, UUID userId) {
-		if (sort.equals(CommentSort.LIKE)) {
-			return commentRepository.findByMovieIdOnLikeDescend(movieId, userId, page * 10);
-		}
-		if (sort.equals(CommentSort.LATEST)) {
-			return commentRepository.findByMovieIdOnDateDescend(movieId, userId, page * 10);
-		}
-		return commentRepository.findByMovieIdOnDislikeDescend(movieId, userId, page * 10);
+	public Page<CommentRespDTO> getComments(String movieId, int page, CommentSort sort, UUID userId) {
+		return switch (sort) {
+			case LIKE -> commentRepository.findByMovieIdOnLikeDescend(movieId, userId, page);
+			case LATEST -> commentRepository.findByMovieIdOnDateDescend(movieId, userId, page);
+			default -> commentRepository.findByMovieIdOnDislikeDescend(movieId, userId, page);
+		};
 	}
 
 	@Transactional
@@ -71,13 +69,16 @@ public class CommentService {
 		if (!comment.getMovieId().equals(movieId)) {
 			throw new NotMatchMovieCommentException("해당 영화의 한줄평이 아닙니다.");
 		}
+
 		commentRepository.deleteComment(commentId);
 		CachedMovieEntity movie = movieRepository.findByMovieId(movieId)
 			.orElseThrow(() -> new NoMovieException("존재하는 영화가 아닙니다."));
 		log.info("[MovieService.deleteCommentOnMovie] 영화 정보 수정");
-		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(), movie.getCommentCount());
+		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(),
+			movie.getCommentCount());
 		movie.deleteComment(comment.getRating());
-		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(), movie.getCommentCount());
+		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(),
+			movie.getCommentCount());
 		movieRepository.editMovie(movieId, movie);
 	}
 
