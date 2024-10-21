@@ -9,7 +9,9 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -35,38 +37,31 @@ public class CommentRepositoryJPAImpl implements CommentRepository {
     }
 
     @Override
-    public List<CommentRespDTO> findByMovieId(String movieId, UUID userId, int page) {
-        return List.of();
+    public Page<CommentRespDTO> findByMovieId(String movieId, UUID userId, int page) {
+        return jpaRepository.findByMovieId(movieId, userId, PageRequest.of(page, 10));
     }
 
     @Override
-    public List<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, int page) {
-        return List.of();
+    public Page<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, int page) {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return jpaRepository.findByMovieIdOrderBy(movieId, userId, pageable);
     }
 
     @Override
-    public List<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, int offset) {
-        return List.of();
+    public Page<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, int page) {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "like"));
+        return jpaRepository.findByMovieIdOrderBy(movieId, userId, pageable);
     }
 
     @Override
-    public List<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, int offset) {
-        return List.of();
-    }
-
-    @Override
-    public Page<CommentRespDTO> findByMovieIdOrderBy(String movieId, UUID userId, Pageable pageable) {
+    public Page<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, int page) {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "dislike"));
         return jpaRepository.findByMovieIdOrderBy(movieId, userId, pageable);
     }
 
     @Override
     public List<CommentEntity> selectAll() {
         return jpaRepository.findAll();
-    }
-
-    @Override
-    public long countByMovieId(String movieId) {
-        return 0;
     }
 
     @Override
