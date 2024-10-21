@@ -1,14 +1,8 @@
 package core.application.movies.service;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +20,6 @@ import core.application.movies.models.entities.CommentEntity;
 import core.application.movies.repositories.comment.CommentDislikeRepository;
 import core.application.movies.repositories.comment.CommentLikeRepository;
 import core.application.movies.repositories.comment.CommentRepository;
-import core.application.movies.repositories.comment.mybatis.MybatisCommentRepository;
 import core.application.movies.repositories.movie.CachedMovieRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,26 +35,11 @@ public class CommentService {
 
 	@Transactional(readOnly = true)
 	public Page<CommentRespDTO> getComments(String movieId, int page, CommentSort sort, UUID userId) {
-		// 마이바티스 리포지토리 로직
-		if (commentRepository instanceof MybatisCommentRepository) {
-			Pageable pageable = PageRequest.of(page, 10);
-			long total = commentRepository.countByMovieId(movieId);
-			List<CommentRespDTO> searchResult = switch (sort) {
-				case LIKE -> searchResult = commentRepository.findByMovieIdOnLikeDescend(movieId, userId, page * 10);
-				case LATEST -> searchResult = commentRepository.findByMovieIdOnDateDescend(movieId, userId, page * 10);
-				default -> searchResult = commentRepository.findByMovieIdOnDislikeDescend(movieId, userId, page * 10);
-			};
-			return new PageImpl<>(searchResult, pageable, total);
-		}
-
-		// JPA 리포지토리 로직
-		log.info("JPA Repository");
-		PageRequest pageRequest = switch (sort) {
-			case LIKE -> PageRequest.of(page, 10, Sort.by(Direction.DESC, "like"));
-			case LATEST -> PageRequest.of(page, 10, Sort.by(Direction.DESC, "createdAt"));
-			default -> PageRequest.of(page, 10, Sort.by(Direction.DESC, "dislike"));
+		return switch (sort) {
+			case LIKE -> commentRepository.findByMovieIdOnLikeDescend(movieId, userId, page);
+			case LATEST -> commentRepository.findByMovieIdOnDateDescend(movieId, userId, page);
+			default -> commentRepository.findByMovieIdOnDislikeDescend(movieId, userId, page);
 		};
-		return commentRepository.findByMovieIdOrderBy(movieId, userId, pageRequest);
 	}
 
 	@Transactional
