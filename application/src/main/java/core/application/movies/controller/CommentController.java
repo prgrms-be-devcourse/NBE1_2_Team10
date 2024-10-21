@@ -44,8 +44,8 @@ public class CommentController {
 		@Parameter(name = "sortType", description = "정렬 타입", example = "LIKE")
 	})
 	@GetMapping("/{movieId}/comments")
-	public ApiResponse<Page<CommentRespDTO>> getComments(@PathVariable String movieId,
-		@RequestParam int page, @RequestParam String sortType, @AuthenticationPrincipal CustomUserDetails userDetails) {
+	public ApiResponse<Page<CommentRespDTO>> getComments(@PathVariable("movieId") String movieId,
+		@RequestParam("page") int page, @RequestParam("sortType") String sortType, @AuthenticationPrincipal CustomUserDetails userDetails) {
 		Page<CommentRespDTO> comments;
 		UUID userId;
 		if (userDetails == null) {
