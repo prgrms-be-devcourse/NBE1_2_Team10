@@ -189,4 +189,49 @@ public class MovieRepositoryTest {
 			assertThat(movies.get(i).getCommentCount()).isEqualTo(0);
 		}
 	}
+
+	@Test
+	@DisplayName("특정 장르의 영화를 평점순으로 제공한다.")
+	public void genreAvgRatingTest() {
+	    // GIVEN
+		for (int i = 0; i < 8; i++) {
+			CachedMovieEntity movieEntity = new CachedMovieEntity(
+				"test" + i,
+				"testTitle",
+				"posterUrl",
+				"액션",
+				"2024-09-30",
+				"줄거리",
+				"122",
+				"마동석, 김무열",
+				"봉준호",
+				(long)i, (long)(i), 10L, (long)(100 - 10 * i)
+			);
+			repository.saveNewMovie(movieEntity);
+		}
+		for (int i = 8; i < 10; i++) {
+			CachedMovieEntity movieEntity = new CachedMovieEntity(
+				"test" + i,
+				"testTitle",
+				"posterUrl",
+				"스릴러",
+				"2024-09-30",
+				"줄거리",
+				"122",
+				"마동석, 김무열",
+				"봉준호",
+				(long)i, (long)(i), 10L, (long)(100 - 10 * i)
+			);
+			repository.saveNewMovie(movieEntity);
+		}
+
+	    // WHEN
+		List<CachedMovieEntity> find = repository.findMoviesLikeGenreOrderByAvgRating(0, "액션").getContent();
+
+		// THEN
+		for (int i = 0; i < find.size(); i++) {
+			assertThat(find.get(i).getGenre()).isEqualTo("액션");
+			assertThat(find.get(i).getSumOfRating()).isEqualTo(100 - 10 * i);
+		}
+	}
 }
