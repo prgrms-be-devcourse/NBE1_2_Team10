@@ -1,10 +1,8 @@
 package core.application.reviews.repositories;
 
 
-import core.application.reviews.models.entities.ReviewCommentEntity;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import core.application.reviews.models.entities.*;
+import java.util.*;
 
 /**
  * {@code REVIEW_COMMENT_TABLE} 과 관련된 {@code Repository}
@@ -168,7 +166,7 @@ public interface ReviewCommentRepository {
      * 특정 포스팅 댓글의 정보를 {@code replacement} 정보로 변경
      * <p>
      * 이 때 {@code content}, {@code commentRef} 만 {@code replacement} 의 것으로 변경. {@code isUpdated} 는
-     * 자동으로 변경.
+     * 주어진 대로 변경.
      *
      * @param reviewCommentId 정보 변경할 포스팅 댓글의 ID
      * @param replacement     변경할 정보
