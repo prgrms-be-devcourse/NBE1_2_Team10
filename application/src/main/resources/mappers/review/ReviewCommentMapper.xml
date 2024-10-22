@@ -46,7 +46,7 @@
   <select id="countParentCommentByReviewId" resultType="java.lang.Long">
     SELECT COUNT(*)
     FROM review_comment_table
-    WHERE review_comment_id = #{reviewId}
+    WHERE review_id = #{reviewId}
       AND group_id IS NULL
   </select>
 
