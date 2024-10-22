@@ -62,7 +62,7 @@ public class ReviewCommentEntity {
     private Long commentRef;
 
     @Schema(description = "댓글의 좋아요 수", example = "10")
-    @Column(nullable = false)
+    @Column(nullable = false, name = "`like`")
     private int like;
 
     @Setter
@@ -73,10 +73,20 @@ public class ReviewCommentEntity {
 
     @Setter
     @Schema(description = "댓글 수정 여부", example = "false")
-    @CreationTimestamp
     @Column(nullable = false)
     private boolean isUpdated;
 
+    public void changeContent(String content) {
+        this.content = content;
+    }
+
+    public void changeLikes(int givenLikes) {
+        this.like = givenLikes;
+    }
+
+    public void changeCommentRef(Long ref) {
+        this.commentRef = ref;
+    }
     /**
      * 어느 댓글을 멘션하는 기능
      * <p>
