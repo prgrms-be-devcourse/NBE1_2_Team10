@@ -1,45 +1,25 @@
 package core.application.reviews.controllers;
 
-import core.application.api.response.ApiResponse;
-import core.application.api.response.code.Message;
-import core.application.reviews.exceptions.InvalidCommentContentException;
-import core.application.reviews.exceptions.InvalidPageException;
-import core.application.reviews.exceptions.NotCommentOwnerException;
-import core.application.reviews.models.dto.request.CreateCommentReqDTO;
-import core.application.reviews.models.dto.response.CreateCommentRespDTO;
-import core.application.reviews.models.dto.response.EditCommentRespDTO;
-import core.application.reviews.models.dto.response.ShowCommentsRespDTO;
-import core.application.reviews.models.entities.ReviewCommentEntity;
-import core.application.reviews.services.ReviewCommentService;
-import core.application.reviews.services.ReviewCommentSortOrder;
-import core.application.security.service.CustomUserDetails;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import core.application.api.response.*;
+import core.application.api.response.code.*;
+import core.application.reviews.exceptions.*;
+import core.application.reviews.models.dto.request.*;
+import core.application.reviews.models.dto.response.*;
+import core.application.reviews.models.entities.*;
+import core.application.reviews.services.*;
+import core.application.security.service.*;
+import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.tags.*;
+import jakarta.servlet.http.*;
+import java.util.*;
+import java.util.function.*;
+import lombok.*;
+import lombok.extern.slf4j.*;
+import org.springframework.data.domain.*;
+import org.springframework.security.core.annotation.*;
+import org.springframework.validation.*;
+import org.springframework.validation.annotation.*;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -67,9 +47,9 @@ public class ReviewCommentController {
 		@Parameter(name = "reviewId", description = "댓글을 조회할 게시글 ID", example = "20"),
 		@Parameter(name = "page", description = "0 보다 큰 페이징 넘버", example = "1")
 	})
-	public ApiResponse<ShowCommentsRespDTO> showParentReviewComments(
+	public ApiResponse<Page<ReviewCommentEntity>> showParentReviewComments(
 		@PathVariable("reviewId") Long reviewId,
-			@RequestParam(value = "page", defaultValue = "0") int page) {
+			@RequestParam(name = "page", defaultValue = "0") int page) {
 
 		if (page < 0) {
 			throw new InvalidPageException("잘못된 댓글 페이지입니다.");
@@ -80,8 +60,15 @@ public class ReviewCommentController {
 		List<ReviewCommentEntity> parentReviewComments = reviewCommentService.getParentReviewComments(
 			reviewId, ReviewCommentSortOrder.LIKE, offset, COMMENTS_PER_PAGE);
 
-		ShowCommentsRespDTO showCommentsRespDTO = new ShowCommentsRespDTO().addComments(parentReviewComments);
-		return ApiResponse.onSuccess(showCommentsRespDTO);
+		long total = reviewCommentService.getNumberOfParentComment(reviewId);
+
+		Page<ReviewCommentEntity> paged = new PageImpl<>(
+				parentReviewComments,
+				PageRequest.of(page, COMMENTS_PER_PAGE),
+				total
+		);
+
+		return ApiResponse.onSuccess(paged);
 	}
 
 	/**
@@ -99,10 +86,10 @@ public class ReviewCommentController {
 		@Parameter(name = "groupId", description = "부모 댓글의 ID", example = "10010"),
 		@Parameter(name = "page", description = "0 보다 큰 페이징 넘버", example = "1")
 	})
-	public ApiResponse<ShowCommentsRespDTO> showChildComments(
+	public ApiResponse<Page<ReviewCommentEntity>> showChildComments(
 		@PathVariable("reviewId") Long reviewId,
 		@PathVariable("groupId") Long groupId,
-			@RequestParam(value = "page", defaultValue = "0") int page
+			@RequestParam(name = "page", defaultValue = "0") int page
 	) {
 
 		if (page < 0) {
@@ -114,8 +101,15 @@ public class ReviewCommentController {
 		List<ReviewCommentEntity> childReviewComments = reviewCommentService.getChildReviewCommentsOnParent(
 			reviewId, groupId, offset, COMMENTS_PER_PAGE);
 
-		ShowCommentsRespDTO showCommentsRespDTO = new ShowCommentsRespDTO().addComments(childReviewComments);
-		return ApiResponse.onSuccess(showCommentsRespDTO);
+		long total = reviewCommentService.getNumberOfChildComment(groupId);
+
+		Page<ReviewCommentEntity> paged = new PageImpl<>(
+				childReviewComments,
+				PageRequest.of(page, COMMENTS_PER_PAGE),
+				total
+		);
+
+		return ApiResponse.onSuccess(paged);
 	}
 
 	/**
