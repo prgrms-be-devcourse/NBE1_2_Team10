@@ -37,6 +37,8 @@ class ReviewCommentRepositoryTest {
     @Autowired
     private CachedMovieRepository movieRepo;
 
+    private static final Random random = new Random();
+
     // 테스팅 용 user, movie, review
     private static final String TESTING = "TESTING TESTING";
     private static UserEntity testUser = UserEntity.builder()
@@ -61,6 +63,7 @@ class ReviewCommentRepositoryTest {
             .sumOfRating(0L)
             .build();
     private static ReviewEntity testReview = ReviewEntity.builder()
+            .reviewId(random.nextLong(Long.MAX_VALUE))
             .title(TESTING)
             .content(TESTING)
             .like(0)
@@ -166,14 +169,17 @@ class ReviewCommentRepositoryTest {
     void saveNewChildReviewComment() {
         log.info("<- saveNewChildReviewComment");
 
-        Long randomGroup = new Random().nextLong();
+        long parentCommentId = reviewCommentRepo.saveNewParentReviewComment(
+                testReview.getReviewId(), testUser.getUserId(),
+                genComment(null, null, random.nextLong(), null, 0)
+        ).getReviewCommentId();
 
         // insert 할 엔티티 생성
         ReviewCommentEntity testComment = genComment(null, testReview.getReviewId(),
                 null, null, 100);
 
         // DB 저장
-        ReviewCommentEntity result = reviewCommentRepo.saveNewChildReviewComment(randomGroup,
+        ReviewCommentEntity result = reviewCommentRepo.saveNewChildReviewComment(parentCommentId,
                 testUser.getUserId(), testComment);
 
         // 확인
@@ -183,7 +189,7 @@ class ReviewCommentRepositoryTest {
                 r -> assertThat(r.getReviewId()).isEqualTo(testReview.getReviewId()).isNotNull(),
                 r -> assertThat(r.getUserId()).isEqualTo(testUser.getUserId()).isNotNull(),
                 r -> assertThat(r.getContent()).isEqualTo(TESTING),
-                r -> assertThat(r.getGroupId()).isEqualTo(randomGroup).isNotNull(),
+                r -> assertThat(r.getGroupId()).isEqualTo(parentCommentId).isNotNull(),
                 r -> assertThat(r.getCommentRef()).isNull(),
                 r -> assertThat(r.getCreatedAt()).isNotNull(),
                 r -> assertThat(r.isUpdated()).isFalse()
