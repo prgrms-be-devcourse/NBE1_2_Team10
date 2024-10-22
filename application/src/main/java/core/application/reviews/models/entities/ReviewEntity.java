@@ -37,7 +37,7 @@ public class ReviewEntity {
     @Column(length = 50, nullable = false)
     private String movieId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "`like`")
     private int like;
 
     @Setter
@@ -49,6 +49,30 @@ public class ReviewEntity {
     @CreationTimestamp
     private Instant updatedAt;
 
+    public void changeTitle(String title) {
+        this.title = title;
+    }
+
+    public void changeContent(String content) {
+        this.content = content;
+    }
+
+    public void changeLikes(int givenLikes) {
+        this.like = givenLikes;
+    }
+
+    public static ReviewEntity copyOf(ReviewEntity entity) {
+        return ReviewEntity.builder()
+                .reviewId(entity.getReviewId())
+                .title(entity.getTitle())
+                .content(entity.getContent())
+                .userId(entity.getUserId())
+                .movieId(entity.getMovieId())
+                .like(entity.getLike())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .build();
+    }
 
     @Override
     public boolean equals(Object o) {
