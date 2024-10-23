@@ -15,7 +15,7 @@ public interface UserMapper {
     int saveNewUser(@Param("newUser")UserEntity newUser);
     Optional<UserEntity> findByUserId(UUID userId);
     Optional<UserEntity> findByUserEmail(String email);
-    Optional<UserEntity> findByUserEmailAndPassword(String email, String password);
+    Optional<UserEntity> findByUserEmailAndPassword(String userEmail, String userPw);
     List<UserEntity> findByUserRole(UserRole role);
     List<UserEntity> findAll();
     int editUserInfo(@Param("replacement") UserEntity replacement);
