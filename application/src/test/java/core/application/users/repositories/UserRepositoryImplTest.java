@@ -2,34 +2,33 @@ package core.application.users.repositories;
 
 import static org.assertj.core.api.Assertions.*;
 
-import core.application.users.models.entities.UserEntity;
-import core.application.users.models.entities.UserRole;
-import org.junit.jupiter.api.BeforeAll;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import core.application.users.models.entities.UserEntity;
+import core.application.users.models.entities.UserRole;
 
 @SpringBootTest
 @Transactional
 class UserRepositoryImplTest {
 
     @Autowired
-    private UserRepositoryImpl userRepo;
+    private UserRepository userRepo;
 
     private static UserEntity testUser; // USER
     private static UserEntity testUser2; // ADMIN
-    private static final UUID userId = UUID.fromString("991c95d6-808a-11ef-8da5-467268b55380");
-    private static final UUID userId2 = UUID.fromString("991c95d6-808a-11ef-8da5-467268b55381");
 
 
-    @BeforeAll
-    static void init() {
+    @BeforeEach
+    void init() {
 
         testUser = UserEntity.builder()
                 .userEmail("test@test.com")
@@ -38,7 +37,6 @@ class UserRepositoryImplTest {
                 .alias("소은")
                 .phoneNum("010-0000-0000")
                 .userName("정소은")
-                .userId(userId)
                 .build();
 
         testUser2  = UserEntity.builder()
@@ -48,7 +46,6 @@ class UserRepositoryImplTest {
                 .alias("소은")
                 .phoneNum("010-0000-0000")
                 .userName("정소은")
-                .userId(userId2)
                 .build();
 
     }
@@ -150,6 +147,7 @@ class UserRepositoryImplTest {
         userRepo.saveNewUser(testUser);
 
         UserEntity editUser = UserEntity.builder()
+                .userId(testUser.getUserId())
                 .userEmail(testUser.getUserEmail())
                 .userPw("editPw")
                 .role(UserRole.USER)
