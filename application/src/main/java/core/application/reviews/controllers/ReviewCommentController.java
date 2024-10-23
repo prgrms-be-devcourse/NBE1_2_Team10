@@ -4,7 +4,7 @@ import core.application.api.response.*;
 import core.application.api.response.code.*;
 import core.application.reviews.exceptions.*;
 import core.application.reviews.models.dto.request.*;
-import core.application.reviews.models.dto.response.*;
+import core.application.reviews.models.dto.response.comments.*;
 import core.application.reviews.models.entities.*;
 import core.application.reviews.services.*;
 import core.application.security.service.*;

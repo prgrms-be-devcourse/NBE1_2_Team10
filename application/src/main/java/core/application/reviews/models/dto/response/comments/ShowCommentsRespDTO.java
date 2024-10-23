@@ -1,11 +1,9 @@
-package core.application.reviews.models.dto.response;
+package core.application.reviews.models.dto.response.comments;
 
-import core.application.reviews.models.entities.ReviewCommentEntity;
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.ArrayList;
-import java.util.List;
-import lombok.Getter;
-import lombok.ToString;
+import core.application.reviews.models.entities.*;
+import io.swagger.v3.oas.annotations.media.*;
+import java.util.*;
+import lombok.*;
 
 @Getter
 @ToString
