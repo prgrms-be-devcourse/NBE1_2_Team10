@@ -19,9 +19,8 @@ public class UserRepositoryJpaImpl implements UserRepository {
 	private final JpaUserRepository jpaRepository;
 
 	@Override
-	public int saveNewUser(UserEntity newUser) {
-		jpaRepository.save(newUser);
-		return jpaRepository.findById(newUser.getUserId()).isPresent() ? 1 : 0;
+	public UserEntity saveNewUser(UserEntity newUser) {
+		return jpaRepository.save(newUser);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package core.application.users.repositories.mybatis;
 
+import core.application.users.exception.UserNotFoundException;
 import core.application.users.mapper.UserMapper;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
@@ -28,8 +29,10 @@ public class MybatisUserRepository implements UserRepository{
 
 
     @Override
-    public int saveNewUser(UserEntity newUser) {
-        return mapper.saveNewUser(newUser);
+    public UserEntity saveNewUser(UserEntity newUser) {
+        mapper.saveNewUser(newUser);
+        return mapper.findByUserEmail(newUser.getUserEmail())
+            .orElseThrow(() -> new UserNotFoundException("저장에 실패했습니다."));
     }
 
     @Override
