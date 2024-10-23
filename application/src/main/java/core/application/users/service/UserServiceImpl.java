@@ -54,6 +54,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(userRequestDTO.getUserEmail())) {
             throw new DuplicateEmailException("중복된 이메일입니다.");
         }
+        userRequestDTO.encodePassword(passwordEncoder);
         UserEntity user = userRequestDTO.toEntity();
         userRepository.saveNewUser(user);
         Optional<UserEntity> userEntity = userRepository.findByUserEmail(userRequestDTO.getUserEmail());
@@ -87,6 +88,7 @@ public class UserServiceImpl implements UserService {
 
         // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
         UserDTO updatedUserDTO = UserDTO.builder()
+            .userEmail(userEmail)
                 .userId(originUserEntity.get().getUserId()) // 기존 userId 유지
                 .userPw(userUpdateRequestDTO.getUserPw() != null ? userUpdateRequestDTO.getUserPw() : originUserEntity.get().getUserPw()) // userPw 업데이트
                 .role(originUserEntity.get().getRole()) // 기존 role 유지
