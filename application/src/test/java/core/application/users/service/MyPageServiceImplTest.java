@@ -18,7 +18,7 @@ import core.application.users.models.entities.DibEntity;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
 import core.application.users.repositories.DibRepositoryImpl;
-import core.application.users.repositories.UserRepositoryImpl;
+import core.application.users.repositories.UserRepository;
 
 @SpringBootTest
 @Transactional
@@ -27,7 +27,7 @@ class MyPageServiceImplTest {
 	@Autowired
 	private MyPageServiceImpl myPageService;
 	@Autowired
-	private UserRepositoryImpl userRepo;
+	private UserRepository userRepo;
 	@Autowired
 	private CachedMovieRepository movieRepo;
 	@Autowired
