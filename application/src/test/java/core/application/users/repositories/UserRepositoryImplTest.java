@@ -58,9 +58,10 @@ class UserRepositoryImplTest {
 
         // When
         userRepo.saveNewUser(testUser);
+        UserEntity user = userRepo.findByUserEmail(testUser.getUserEmail()).orElseThrow();
 
         // Then
-        Optional<UserEntity> find = userRepo.findByUserId(testUser.getUserId());
+        Optional<UserEntity> find = userRepo.findByUserId(user.getUserId());
         checkEqualUser(find, testUser);
     }
 
@@ -69,11 +70,11 @@ class UserRepositoryImplTest {
     @DisplayName("유저 ID로 유저 찾기")
     void findByUserId() {
         // Given
-        userRepo.saveNewUser(testUser);
+        UserEntity save = userRepo.saveNewUser(testUser);
 
         // When
-        Optional<UserEntity> find = userRepo.findByUserId(testUser.getUserId());
-        checkEqualUser(find, testUser);
+        Optional<UserEntity> find = userRepo.findByUserId(save.getUserId());
+        checkEqualUser(find, save);
     }
 
     @Test
@@ -93,7 +94,7 @@ class UserRepositoryImplTest {
     @DisplayName("유저 이메일과 비밀번호로 유저 찾기 / 로그인")
     void findByUserEmailAndPassword() {
         // Given
-        userRepo.saveNewUser(testUser);
+        UserEntity save = userRepo.saveNewUser(testUser);
 
         // When
         Optional<UserEntity> find = userRepo.findByUserEmailAndPassword(testUser.getUserEmail(), testUser.getUserPw());
@@ -144,10 +145,10 @@ class UserRepositoryImplTest {
     @DisplayName("유저 정보 수정하기")
     void editUserInfo() {
         // Given
-        userRepo.saveNewUser(testUser);
+        UserEntity save = userRepo.saveNewUser(testUser);
 
         UserEntity editUser = UserEntity.builder()
-                .userId(testUser.getUserId())
+                .userId(save.getUserId())
                 .userEmail(testUser.getUserEmail())
                 .userPw("editPw")
                 .role(UserRole.USER)
@@ -160,7 +161,7 @@ class UserRepositoryImplTest {
         userRepo.editUserInfo(editUser);
 
         // Then
-        Optional<UserEntity> find = userRepo.findByUserId(testUser.getUserId());
+        Optional<UserEntity> find = userRepo.findByUserId(save.getUserId());
         checkEqualUser(find, editUser);
     }
 
