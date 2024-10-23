@@ -2,9 +2,7 @@ package core.application.users.models.entities;
 
 import java.util.UUID;
 
-import core.application.config.jpa.UUIDConverter;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,7 +24,6 @@ import lombok.ToString;
 @Entity(name = "user_table")
 public class UserEntity {
     @Id
-    @Convert(converter = UUIDConverter.class)
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "binary(16)")
     private UUID     userId;
