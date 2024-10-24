@@ -11,7 +11,6 @@
         UPDATE user_table
         SET user_pw = #{replacement.userPw},
             user_name = #{replacement.userName},
-            role = #{replacement.role},
             alias = #{replacement.alias},
             phone_num = #{replacement.phoneNum}
         WHERE user_id = #{replacement.userId}
