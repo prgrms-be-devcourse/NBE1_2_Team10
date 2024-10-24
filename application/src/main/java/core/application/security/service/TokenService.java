@@ -165,9 +165,10 @@ public class TokenService {
      * @param request HTTP 요청 객체
      */
     public void inactiveRefreshToken(HttpServletRequest request) {
-        String refreshToken = getRefreshToken(request);
-        if (isRefreshTokenValid(refreshToken)) {
-            redisService.deleteValue(jwtUtil.getUserEmail(refreshToken));
+        String accessToken = request.getHeader("accessToken");
+        String email = jwtUtil.getUserEmail(accessToken);
+        if (isAccessTokenValid(accessToken)) {
+            redisService.deleteValue(jwtUtil.getUserEmail(email));
         }
     }
 }
