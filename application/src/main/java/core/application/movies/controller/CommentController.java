@@ -1,8 +1,8 @@
 package core.application.movies.controller;
 
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -44,9 +44,9 @@ public class CommentController {
 		@Parameter(name = "sortType", description = "정렬 타입", example = "LIKE")
 	})
 	@GetMapping("/{movieId}/comments")
-	public ApiResponse<List<CommentRespDTO>> getComments(@PathVariable String movieId,
-		@RequestParam int page, @RequestParam String sortType, @AuthenticationPrincipal CustomUserDetails userDetails) {
-		List<CommentRespDTO> comments;
+	public ApiResponse<Page<CommentRespDTO>> getComments(@PathVariable("movieId") String movieId,
+		@RequestParam("page") int page, @RequestParam("sortType") String sortType, @AuthenticationPrincipal CustomUserDetails userDetails) {
+		Page<CommentRespDTO> comments;
 		UUID userId;
 		if (userDetails == null) {
 			userId = null;
@@ -65,7 +65,7 @@ public class CommentController {
 
 	@Operation(summary = "한줄평 작성")
 	@PostMapping("/{movieId}/comments")
-	public ApiResponse<CommentRespDTO> writeComment(@PathVariable String movieId,
+	public ApiResponse<CommentRespDTO> writeComment(@PathVariable("movieId") String movieId,
 		@RequestBody @Validated CommentWriteReqDTO writeReqDTO, BindingResult bindingResult,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		if (bindingResult.hasErrors()) {
@@ -79,7 +79,8 @@ public class CommentController {
 
 	@Operation(summary = "한줄평 삭제")
 	@DeleteMapping("/{movieId}/comments/{commentId}")
-	public ApiResponse<Message> deleteComment(@PathVariable String movieId, @PathVariable String commentId,
+	public ApiResponse<Message> deleteComment(@PathVariable("movieId") String movieId,
+		@PathVariable("commentId") String commentId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		UUID userId = userDetails.getUserId();
 		commentService.deleteCommentOnMovie(movieId, userId, Long.parseLong(commentId));
@@ -88,7 +89,7 @@ public class CommentController {
 
 	@Operation(summary = "한줄평 좋아요")
 	@PostMapping("/{movieId}/comments/{commentId}/like")
-	public ApiResponse<Message> incrementCommentLike(@PathVariable Long commentId,
+	public ApiResponse<Message> incrementCommentLike(@PathVariable("commentId") Long commentId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		UUID userId = userDetails.getUserId();
 		commentService.incrementCommentLike(commentId, userId);
@@ -97,7 +98,8 @@ public class CommentController {
 
 	@Operation(summary = "한줄평 좋아요 취소")
 	@DeleteMapping("/{movieId}/comments/{commentId}/like")
-	public ApiResponse<Message> decrementCommentLike(@PathVariable Long commentId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+	public ApiResponse<Message> decrementCommentLike(@PathVariable("commentId") Long commentId,
+		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		UUID userId = userDetails.getUserId();
 		commentService.decrementCommentLike(commentId, userId);
 		return ApiResponse.onDeleteSuccess(Message.createMessage("한줄평 좋아요 취소 성공"));
@@ -105,7 +107,7 @@ public class CommentController {
 
 	@Operation(summary = "한줄평 싫어요")
 	@PostMapping("/{movieId}/comments/{commentId}/dislike")
-	public ApiResponse<Message> incrementCommentDislike(@PathVariable Long commentId,
+	public ApiResponse<Message> incrementCommentDislike(@PathVariable("commentId") Long commentId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		UUID userId = userDetails.getUserId();
 		commentService.incrementCommentDislike(commentId, userId);
@@ -114,7 +116,7 @@ public class CommentController {
 
 	@Operation(summary = "한줄평 싫어요 취소")
 	@DeleteMapping("/{movieId}/comments/{commentId}/dislike")
-	public ApiResponse<Message> decrementCommentDislike(@PathVariable Long commentId,
+	public ApiResponse<Message> decrementCommentDislike(@PathVariable("commentId") Long commentId,
 		@AuthenticationPrincipal CustomUserDetails userDetails) {
 		UUID userId = userDetails.getUserId();
 		commentService.decrementCommentDislike(commentId, userId);
