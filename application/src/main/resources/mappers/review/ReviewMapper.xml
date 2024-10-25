@@ -66,6 +66,13 @@
         LIMIT #{num} OFFSET #{offset}
     </select>
 
+    <select id="countByMovieId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM review_table
+        WHERE movie_id = #{movieId}
+    </select>
+
+
     <select id="findByUserId" resultMap="ReviewResultMap">
         SELECT * FROM REVIEW_TABLE WHERE user_id = #{userId}
     </select>

@@ -500,6 +500,11 @@ class ReviewCommentRepositoryTest {
         log.info("-> editReviewCommentInfo");
     }
 
+    private interface TripleConsumer<T1, T2, T3> {
+
+        void accept(T1 t1, T2 t2, T3 t3);
+    }
+
     @Test
     @DisplayName("특정 포스팅 댓글의 좋아요를 수정")
     void updateReviewCommentLikes() {
@@ -546,8 +551,45 @@ class ReviewCommentRepositoryTest {
         log.info("-> updateReviewCommentLikes");
     }
 
-    private interface TripleConsumer<T1, T2, T3> {
+    @Test
+    @DisplayName("댓글의 개수를 파악")
+    void countComments() {
 
-        void accept(T1 t1, T2 t2, T3 t3);
+        // 테스트용 부모 댓글 DB 저장
+        testParent.forEach(t -> reviewCommentRepo.saveNewParentReviewComment(
+                testReview.getReviewId(), testUser.getUserId(), t
+        ));
+
+        // 부모 댓글 수 확인
+        assertThat(reviewCommentRepo
+                .countParentCommentByReviewId(testReview.getReviewId()))
+                .isEqualTo(testParent.size());
+
+        // 테스트용 자식 댓글 DB 저장
+        Long testGroupId = reviewCommentRepo.saveNewParentReviewComment(
+                        testReview.getReviewId(), testUser.getUserId(),
+                        genComment(null, null,
+                                null, null, 0))
+                .getReviewCommentId();
+
+        testChild.forEach(t -> reviewCommentRepo.saveNewChildReviewComment(
+                testGroupId, testUser.getUserId(),
+                genComment(null, testReview.getReviewId(), null, null, 0)
+        ));
+
+        // 자식 댓글 수 확인
+        assertThat(reviewCommentRepo
+                .countChildCommentByGroupId(testGroupId))
+                .isEqualTo(testChild.size());
+
+        // 없을땐 0
+        Random random = new Random();
+        assertThat(reviewCommentRepo
+                .countParentCommentByReviewId(random.nextLong()))
+                .isEqualTo(0);
+
+        assertThat(reviewCommentRepo
+                .countChildCommentByGroupId(random.nextLong()))
+                .isEqualTo(0);
     }
 }

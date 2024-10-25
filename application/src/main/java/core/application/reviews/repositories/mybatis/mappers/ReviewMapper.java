@@ -53,6 +53,8 @@ public interface ReviewMapper {
             @Param("num") int num
     );
 
+    Long countByMovieId(String movieId);
+
     List<ReviewEntity> findByUserId(UUID userId);
 
     List<ReviewEntity> selectAll();
