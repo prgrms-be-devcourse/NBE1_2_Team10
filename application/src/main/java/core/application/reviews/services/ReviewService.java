@@ -1,11 +1,9 @@
 package core.application.reviews.services;
 
-import core.application.movies.exception.NoMovieException;
-import core.application.reviews.exceptions.NoReviewFoundException;
-import core.application.reviews.models.entities.ReviewEntity;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import core.application.movies.exception.*;
+import core.application.reviews.exceptions.*;
+import core.application.reviews.models.entities.*;
+import java.util.*;
 
 /**
  * 영화 후기 포스팅과 관련된 서비스 인터페이스
@@ -25,6 +23,15 @@ public interface ReviewService {
      */
     List<ReviewEntity> getReviewsOnMovieId(String movieId, ReviewSortOrder order,
             boolean withContent, int offset, int num) throws NoMovieException;
+
+    /**
+     * 특정 영화에 달린 리뷰 포스팅의 총 개수를 보여주는 서비스
+     *
+     * @param movieId 검색할 영화 ID
+     * @return 리뷰 포스팅 총 개수
+     * @throws NoMovieException 영화 ID 에 해당하는 영화가 DB 에 존재하지 않을 시
+     */
+    long getNumberOfReviewsOnMovieId(String movieId) throws NoMovieException;
 
     /**
      * 새로운 리뷰 포스팅을 생성하는 서비스

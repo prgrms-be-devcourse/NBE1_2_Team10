@@ -101,6 +101,9 @@ public class MovieRepositoryTest {
 
 		// THEN
 		assertThat(rating).hasSize(5);
+		for (CachedMovieEntity movie : rating) {
+			System.out.println(movie.getSumOfRating());
+		}
 		assertThat(rating.get(0).getSumOfRating()).isEqualTo(100);
 		assertThat(rating.get(1).getSumOfRating()).isEqualTo(90);
 		assertThat(rating.get(2).getSumOfRating()).isEqualTo(80);
@@ -193,7 +196,7 @@ public class MovieRepositoryTest {
 	@Test
 	@DisplayName("특정 장르의 영화를 평점순으로 제공한다.")
 	public void genreAvgRatingTest() {
-	    // GIVEN
+		// GIVEN
 		for (int i = 0; i < 8; i++) {
 			CachedMovieEntity movieEntity = new CachedMovieEntity(
 				"test" + i,
@@ -220,12 +223,12 @@ public class MovieRepositoryTest {
 				"122",
 				"마동석, 김무열",
 				"봉준호",
-				(long)i, (long)(i), 10L, (long)(100 - 10 * i)
+				(long)i, (long)(i), 0L, (long)(1000 - 10 * i)
 			);
 			repository.saveNewMovie(movieEntity);
 		}
 
-	    // WHEN
+	   // WHEN
 		List<CachedMovieEntity> find = repository.findMoviesLikeGenreOrderByAvgRating(0, "액션").getContent();
 
 		// THEN

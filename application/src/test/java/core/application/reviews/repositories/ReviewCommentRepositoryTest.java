@@ -37,6 +37,8 @@ class ReviewCommentRepositoryTest {
     @Autowired
     private CachedMovieRepository movieRepo;
 
+    private static final Random random = new Random();
+
     // 테스팅 용 user, movie, review
     private static final String TESTING = "TESTING TESTING";
     private static UserEntity testUser = UserEntity.builder()
@@ -61,6 +63,7 @@ class ReviewCommentRepositoryTest {
             .sumOfRating(0L)
             .build();
     private static ReviewEntity testReview = ReviewEntity.builder()
+            .reviewId(random.nextLong(Long.MAX_VALUE))
             .title(TESTING)
             .content(TESTING)
             .like(0)
@@ -166,14 +169,17 @@ class ReviewCommentRepositoryTest {
     void saveNewChildReviewComment() {
         log.info("<- saveNewChildReviewComment");
 
-        Long randomGroup = new Random().nextLong();
+        long parentCommentId = reviewCommentRepo.saveNewParentReviewComment(
+                testReview.getReviewId(), testUser.getUserId(),
+                genComment(null, null, random.nextLong(), null, 0)
+        ).getReviewCommentId();
 
         // insert 할 엔티티 생성
         ReviewCommentEntity testComment = genComment(null, testReview.getReviewId(),
                 null, null, 100);
 
         // DB 저장
-        ReviewCommentEntity result = reviewCommentRepo.saveNewChildReviewComment(randomGroup,
+        ReviewCommentEntity result = reviewCommentRepo.saveNewChildReviewComment(parentCommentId,
                 testUser.getUserId(), testComment);
 
         // 확인
@@ -183,7 +189,7 @@ class ReviewCommentRepositoryTest {
                 r -> assertThat(r.getReviewId()).isEqualTo(testReview.getReviewId()).isNotNull(),
                 r -> assertThat(r.getUserId()).isEqualTo(testUser.getUserId()).isNotNull(),
                 r -> assertThat(r.getContent()).isEqualTo(TESTING),
-                r -> assertThat(r.getGroupId()).isEqualTo(randomGroup).isNotNull(),
+                r -> assertThat(r.getGroupId()).isEqualTo(parentCommentId).isNotNull(),
                 r -> assertThat(r.getCommentRef()).isNull(),
                 r -> assertThat(r.getCreatedAt()).isNotNull(),
                 r -> assertThat(r.isUpdated()).isFalse()
@@ -500,6 +506,11 @@ class ReviewCommentRepositoryTest {
         log.info("-> editReviewCommentInfo");
     }
 
+    private interface TripleConsumer<T1, T2, T3> {
+
+        void accept(T1 t1, T2 t2, T3 t3);
+    }
+
     @Test
     @DisplayName("특정 포스팅 댓글의 좋아요를 수정")
     void updateReviewCommentLikes() {
@@ -546,8 +557,45 @@ class ReviewCommentRepositoryTest {
         log.info("-> updateReviewCommentLikes");
     }
 
-    private interface TripleConsumer<T1, T2, T3> {
+    @Test
+    @DisplayName("댓글의 개수를 파악")
+    void countComments() {
 
-        void accept(T1 t1, T2 t2, T3 t3);
+        // 테스트용 부모 댓글 DB 저장
+        testParent.forEach(t -> reviewCommentRepo.saveNewParentReviewComment(
+                testReview.getReviewId(), testUser.getUserId(), t
+        ));
+
+        // 부모 댓글 수 확인
+        assertThat(reviewCommentRepo
+                .countParentCommentByReviewId(testReview.getReviewId()))
+                .isEqualTo(testParent.size());
+
+        // 테스트용 자식 댓글 DB 저장
+        Long testGroupId = reviewCommentRepo.saveNewParentReviewComment(
+                        testReview.getReviewId(), testUser.getUserId(),
+                        genComment(null, null,
+                                null, null, 0))
+                .getReviewCommentId();
+
+        testChild.forEach(t -> reviewCommentRepo.saveNewChildReviewComment(
+                testGroupId, testUser.getUserId(),
+                genComment(null, testReview.getReviewId(), null, null, 0)
+        ));
+
+        // 자식 댓글 수 확인
+        assertThat(reviewCommentRepo
+                .countChildCommentByGroupId(testGroupId))
+                .isEqualTo(testChild.size());
+
+        // 없을땐 0
+        Random random = new Random();
+        assertThat(reviewCommentRepo
+                .countParentCommentByReviewId(random.nextLong()))
+                .isEqualTo(0);
+
+        assertThat(reviewCommentRepo
+                .countChildCommentByGroupId(random.nextLong()))
+                .isEqualTo(0);
     }
 }

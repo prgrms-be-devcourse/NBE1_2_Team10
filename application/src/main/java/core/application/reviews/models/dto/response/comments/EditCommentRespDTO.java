@@ -1,11 +1,11 @@
-package core.application.reviews.models.dto.response;
+package core.application.reviews.models.dto.response.comments;
 
-import core.application.reviews.models.entities.ReviewCommentEntity;
+import core.application.reviews.models.entities.*;
 
-public class CreateCommentRespDTO extends CommonCommentRespDTO {
+public class EditCommentRespDTO extends CommonCommentRespDTO {
 
-    public static CreateCommentRespDTO toDTO(ReviewCommentEntity entity) {
-        return (CreateCommentRespDTO) new CreateCommentRespDTO()
+    public static EditCommentRespDTO toDTO(ReviewCommentEntity entity) {
+        return (EditCommentRespDTO) new EditCommentRespDTO()
                 .setReviewCommentId(entity.getReviewCommentId())
                 .setGroupId(entity.getGroupId())
                 .setCommentRef(entity.getCommentRef())

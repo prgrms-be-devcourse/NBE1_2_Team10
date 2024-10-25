@@ -101,6 +101,14 @@ public class MyBatisReviewRepository implements
      * {@inheritDoc}
      */
     @Override
+    public Long countByMovieId(String movieId) {
+        return mapper.countByMovieId(movieId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<ReviewEntity> findByUserId(UUID userId) {
         return mapper.findByUserId(userId);
     }

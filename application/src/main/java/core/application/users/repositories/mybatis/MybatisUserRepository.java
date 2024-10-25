@@ -1,9 +1,13 @@
-package core.application.users.repositories;
+package core.application.users.repositories.mybatis;
 
+import core.application.users.exception.UserNotFoundException;
 import core.application.users.mapper.UserMapper;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
+import core.application.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,14 +22,17 @@ import java.util.UUID;
  */
 @Repository
 @RequiredArgsConstructor
-public class UserRepositoryImpl implements UserRepository{
+@Profile("mybatis")
+public class MybatisUserRepository implements UserRepository{
 
     private final UserMapper mapper;
 
 
     @Override
-    public int saveNewUser(UserEntity newUser) {
-        return mapper.saveNewUser(newUser);
+    public UserEntity saveNewUser(UserEntity newUser) {
+        mapper.saveNewUser(newUser);
+        return mapper.findByUserEmail(newUser.getUserEmail())
+            .orElseThrow(() -> new UserNotFoundException("저장에 실패했습니다."));
     }
 
     @Override
