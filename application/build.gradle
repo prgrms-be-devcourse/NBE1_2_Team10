@@ -31,8 +31,12 @@ dependencies {
     // Spring boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    // MyBatis
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
     implementation group: 'org.mybatis.dynamic-sql', name: 'mybatis-dynamic-sql', version: '1.5.2'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Spring data jpa
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     // Swagger

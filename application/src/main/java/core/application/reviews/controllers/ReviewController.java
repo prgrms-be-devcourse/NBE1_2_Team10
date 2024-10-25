@@ -47,7 +47,7 @@ public class ReviewController {
      */
     @Operation(summary = "리뷰 목록 조회")
     @GetMapping("/list")
-    public ApiResponse<Page<ReviewEntity>> listReviews(
+    public ApiResponse<Page<ListReviewsRespDTO>> listReviews(
             @PathVariable("movieId") String movieId,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "sort", required = false, defaultValue = "latest") String sort,
@@ -64,12 +64,14 @@ public class ReviewController {
                 .anyMatch(r -> r.name().equalsIgnoreCase(sort)) ?
                 ReviewSortOrder.valueOf(sort.toUpperCase()) : ReviewSortOrder.LATEST;
 
-        List<ReviewEntity> searchResult = reviewService.getReviewsOnMovieId(movieId, order, content,
-                offset, REVIEWS_PER_PAGE);
+        List<ListReviewsRespDTO> searchResult = reviewService.getReviewsOnMovieId(
+                        movieId, order, content, offset, REVIEWS_PER_PAGE)
+                .stream().map(ListReviewsRespDTO::of)
+                .toList();
 
         long total = reviewService.getNumberOfReviewsOnMovieId(movieId);
 
-        Page<ReviewEntity> paged = new PageImpl<>(
+        Page<ListReviewsRespDTO> paged = new PageImpl<>(
                 searchResult,
                 PageRequest.of(page, REVIEWS_PER_PAGE),
                 total
