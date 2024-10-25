@@ -128,6 +128,7 @@ public class TokenService {
         return userEntity.map(entity -> UserEntity.builder()
                 .userEmail(entity.getUserEmail())
                 .userId(entity.getUserId())
+                .alias(entity.getAlias())
                 .userName(entity.getUserName())
                 .role(entity.getRole())
                 .build());
