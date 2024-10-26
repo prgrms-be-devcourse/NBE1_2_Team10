@@ -1,5 +1,6 @@
 package core.application.users.models.entities;
 
+import jakarta.persistence.*;
 import java.util.*;
 import lombok.*;
 
@@ -8,9 +9,18 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @ToString
+@Entity
+@Table(name = "dib_table")
 public class DibEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long   dibId;
+
+    @Column(nullable = false, columnDefinition = "binary(16)", length = 16)
     private UUID   userId;
+
+    @Column(nullable = false, length = 50)
     private String movieId;
 
     @Override
