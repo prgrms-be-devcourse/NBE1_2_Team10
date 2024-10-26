@@ -1,20 +1,8 @@
 package core.application.users.models.entities;
 
-import java.util.UUID;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import jakarta.persistence.*;
+import java.util.*;
+import lombok.*;
 
 @Getter
 @Builder
@@ -34,4 +22,32 @@ public class UserEntity {
     private String   alias;
     private String   phoneNum;
     private String   userName;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        UserEntity that = (UserEntity) o;
+        return Objects.equals(userId, that.userId) && Objects.equals(userEmail,
+                that.userEmail) && Objects.equals(userPw, that.userPw) && role == that.role
+                && Objects.equals(alias, that.alias) && Objects.equals(phoneNum,
+                that.phoneNum) && Objects.equals(userName, that.userName);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(userId);
+        result = 31 * result + Objects.hashCode(userEmail);
+        result = 31 * result + Objects.hashCode(userPw);
+        result = 31 * result + Objects.hashCode(role);
+        result = 31 * result + Objects.hashCode(alias);
+        result = 31 * result + Objects.hashCode(phoneNum);
+        result = 31 * result + Objects.hashCode(userName);
+        return result;
+    }
 }

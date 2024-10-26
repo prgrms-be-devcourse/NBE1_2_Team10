@@ -2,23 +2,17 @@ package core.application.users.service;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.UUID;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-
-import core.application.movies.models.entities.CachedMovieEntity;
-import core.application.movies.repositories.movie.CachedMovieRepository;
-import core.application.users.models.dto.MyPageRespDTO;
-import core.application.users.models.entities.DibEntity;
-import core.application.users.models.entities.UserEntity;
-import core.application.users.models.entities.UserRole;
-import core.application.users.repositories.DibRepositoryImpl;
-import core.application.users.repositories.UserRepository;
+import core.application.movies.models.entities.*;
+import core.application.movies.repositories.movie.*;
+import core.application.users.models.dto.*;
+import core.application.users.models.entities.*;
+import core.application.users.repositories.*;
+import core.application.users.repositories.mybatis.*;
+import java.util.*;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.boot.test.context.*;
+import org.springframework.transaction.annotation.*;
 
 @SpringBootTest
 @Transactional
@@ -31,7 +25,7 @@ class MyPageServiceImplTest {
 	@Autowired
 	private CachedMovieRepository movieRepo;
 	@Autowired
-	private DibRepositoryImpl dibRepo;
+	private MyBatisDibRepository dibRepo;
 
 	private static UserEntity testUser;
 	private static DibEntity testDib;
