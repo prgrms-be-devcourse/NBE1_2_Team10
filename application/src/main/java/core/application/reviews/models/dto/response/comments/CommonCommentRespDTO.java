@@ -1,9 +1,9 @@
-package core.application.reviews.models.dto.response;
+package core.application.reviews.models.dto.response.comments;
 
-import java.time.Instant;
-import java.util.UUID;
-import lombok.Data;
-import lombok.experimental.Accessors;
+import java.time.*;
+import java.util.*;
+import lombok.*;
+import lombok.experimental.*;
 
 @Data
 @Accessors(chain = true)

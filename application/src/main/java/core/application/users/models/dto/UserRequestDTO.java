@@ -1,5 +1,7 @@
 package core.application.users.models.dto;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
 import jakarta.validation.constraints.Email;
@@ -10,7 +12,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Builder
 @Getter
@@ -47,7 +48,7 @@ public class UserRequestDTO {
                 .userEmail(this.userEmail)
                 .userPw(this.userPw)
                 .role(this.role)
-                .alias(this.alias)
+                .alias((this.alias == null) ? this.userEmail.substring(0, this.userEmail.indexOf("@")) : this.alias)
                 .phoneNum(this.phoneNum)
                 .userName(this.userName)
                 .build();

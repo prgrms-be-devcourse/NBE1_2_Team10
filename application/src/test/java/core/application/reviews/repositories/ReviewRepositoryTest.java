@@ -358,4 +358,23 @@ class ReviewRepositoryTest {
 
         log.info("-> deleteReview");
     }
+
+    @Test
+    @DisplayName("특정 영화의 전체 포스팅 개수를 확인한다.")
+    void countByMovieId() {
+        log.info("<- countByMovieId");
+
+        // DB 에 리뷰들 저장
+        testReviews.forEach(t -> reviewRepo.saveNewReview(t.getMovieId(), t.getUserId(), t));
+
+        Long result = reviewRepo.countByMovieId(testMovie.getMovieId());
+
+        // 개수 확인
+        assertThat(result).isEqualTo(TEST_SIZE);
+
+        // 없으면 0
+        assertThat(reviewRepo.countByMovieId("RANDOM RANDOM")).isEqualTo(0);
+
+        log.info("-> countByMovieId");
+    }
 }

@@ -9,7 +9,6 @@ import core.application.users.models.dto.SignupReqDTO;
 import core.application.users.models.dto.UserUpdateReqDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;
-import core.application.users.repositories.UserRepositoryImpl;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,13 +32,13 @@ public class UserServiceImpl implements UserService {
     /**
      * 생성자
      *
-     * @param userRepositoryImpl 사용자 리포지토리 구현체
+     * @param userRepository 사용자 리포지토리
      * @param authenticatedUserInfo 인증된 사용자 서비스
      */
     @Autowired
-    public UserServiceImpl(UserRepositoryImpl userRepositoryImpl, AuthenticatedUserService authenticatedUserInfo,
+    public UserServiceImpl(UserRepository userRepository, AuthenticatedUserService authenticatedUserInfo,
 		BCryptPasswordEncoder passwordEncoder) {
-        this.userRepository = userRepositoryImpl;
+        this.userRepository = userRepository;
         this.authenticatedUserInfo = authenticatedUserInfo;
 		this.passwordEncoder = passwordEncoder;
 	}
@@ -56,21 +55,8 @@ public class UserServiceImpl implements UserService {
             throw new DuplicateEmailException("중복된 이메일입니다.");
         }
         userRequestDTO.encodePassword(passwordEncoder);
-        if (userRequestDTO.getAlias() == null) {
-            String email = userRequestDTO.getUserEmail();
-
-            UserDTO userWithAlias = UserDTO.builder()
-                    .userEmail(userRequestDTO.getUserEmail())
-                    .userPw(userRequestDTO.getUserPw())
-                    .userName(userRequestDTO.getUserName())
-                    .alias(email.substring(0, email.indexOf("@")))
-                    .phoneNum(userRequestDTO.getPhoneNum())
-                    .role(userRequestDTO.getRole())
-                    .build();
-            userRepository.saveNewUser(userWithAlias.toEntity());
-        } else {
-            userRepository.saveNewUser(userRequestDTO.toEntity());
-        }
+        UserEntity user = userRequestDTO.toEntity();
+        userRepository.saveNewUser(user);
         Optional<UserEntity> userEntity = userRepository.findByUserEmail(userRequestDTO.getUserEmail());
 
         if (userEntity.isPresent()) {
@@ -102,6 +88,7 @@ public class UserServiceImpl implements UserService {
 
         // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
         UserDTO updatedUserDTO = UserDTO.builder()
+            .userEmail(userEmail)
                 .userId(originUserEntity.get().getUserId()) // 기존 userId 유지
                 .userPw(userUpdateRequestDTO.getUserPw() != null ? userUpdateRequestDTO.getUserPw() : originUserEntity.get().getUserPw()) // userPw 업데이트
                 .role(originUserEntity.get().getRole()) // 기존 role 유지

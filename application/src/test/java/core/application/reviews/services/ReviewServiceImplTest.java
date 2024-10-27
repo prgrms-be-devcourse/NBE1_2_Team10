@@ -1,44 +1,40 @@
 package core.application.reviews.services;
 
-import static java.util.Comparator.comparing;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.when;
+import static java.util.Comparator.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import core.application.reviews.exceptions.NoReviewFoundException;
-import core.application.reviews.models.entities.ReviewEntity;
-import core.application.reviews.repositories.ReviewRepository;
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.stream.LongStream;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.transaction.annotation.Transactional;
+import core.application.movies.models.entities.*;
+import core.application.movies.repositories.movie.*;
+import core.application.reviews.exceptions.*;
+import core.application.reviews.models.entities.*;
+import core.application.reviews.repositories.*;
+import java.time.*;
+import java.util.*;
+import java.util.stream.*;
+import org.junit.jupiter.api.*;
+import org.slf4j.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.boot.test.context.*;
+import org.springframework.boot.test.mock.mockito.*;
+import org.springframework.transaction.annotation.*;
 
 @SpringBootTest
 @Transactional
 class ReviewServiceImplTest {
 
     private static final Logger log = LoggerFactory.getLogger(ReviewServiceImplTest.class);
-    @MockBean
-    ReviewRepository reviewRepo;
 
     @Autowired
     ReviewService reviewService;
 
-    private static final int TEST_SIZE = 10;
+    @MockBean
+    ReviewRepository reviewRepo;
+
+    @MockBean
+    CachedMovieRepository cachedMovieRepo;
+
+    private static final int TEST_SIZE = 100;
     private static final String movieId = "test-12345";
 
     private static final Comparator<ReviewEntity> latest
@@ -85,6 +81,11 @@ class ReviewServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        when(cachedMovieRepo.findByMovieId(movieId))
+                .thenReturn(Optional.of(
+                        CachedMovieEntity.builder().build()
+                ));
+
         Random random = new Random();
         testReviews = LongStream.range(0, TEST_SIZE)
                 .boxed()
