@@ -1,6 +1,9 @@
 package core.application.filter;
 
 import core.application.api.exception.CommonForbiddenException;
+import core.application.security.service.CustomOAuth2User;
+import core.application.security.service.TokenCategory;
+import core.application.users.models.dto.UserDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.security.service.CustomUserDetails;
 import core.application.security.service.TokenService;
@@ -50,27 +53,58 @@ public class JWTFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        // 로컬 로그인 Access Token
         String accessToken = request.getHeader("accessToken");
+        System.out.println(accessToken);
 
-        // 토큰이 없다면 다음 필터로 넘김
+        // OAuth Access Token
         if (accessToken == null) {
+            accessToken = tokenService.getOAuthAccessToken(request);
+        }
+
+        // OAuth 로그인 시 데이터
+        String naverCode = request.getParameter("code");
+        String googleAuthInfo = request.getParameter("Authorization");
+
+        // Access Token이 없거나 OAuth 로그인이 되어 있지 않다면 다음 필터로 넘김
+        if (accessToken == null && naverCode == null && googleAuthInfo == null) {
             log.info("[Access Token이 없는 사용자의 요청] 접근 URL : {}", request.getRequestURL());
             request.setAttribute("exception", new CommonForbiddenException("Access Token이 존재하지 않습니다."));
             filterChain.doFilter(request, response);
         }
         else {
             try {
+                // Access Token에 담긴 사용자 정보
                 UserEntity userEntity = tokenService.getUserByAccessToken(accessToken).get();
 
-                // UserDetails에 회원 정보 객체 담기
-                CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
+                Authentication authToken = null;
 
-                // 스프링 시큐리티 인증 토큰 생성
-                Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null,
-                    customUserDetails.getAuthorities());
+                // 토큰의 사용자 정보를 추출해 UsernamePasswordAuthenticationToken을 생성하여 인증 객체 설정
+                if (tokenService.checkCategoryFromAccessToken(accessToken, TokenCategory.access.toString())) {
+                    CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
+                    authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null,
+                            customUserDetails.getAuthorities());
+                }
 
+                // 토큰의 사용자 정보를 추출해 UsernamePasswordAuthenticationToken을 생성하여 인증 객체 설정
+                else if (tokenService.checkCategoryFromAccessToken(accessToken, TokenCategory.OAuth.toString())) {
+                    Optional<UserEntity> oAuthUser = tokenService.getUserByAccessToken(accessToken);
+                    if (oAuthUser.isPresent()) {
+                        UserDTO userDTO = UserDTO.builder()
+                                .userPw(oAuthUser.get().getUserPw())
+                                .userName(oAuthUser.get().getUserName())
+                                .userId(oAuthUser.get().getUserId())
+                                .role(oAuthUser.get().getRole())
+                                .alias(oAuthUser.get().getAlias())
+                                .userEmail(oAuthUser.get().getUserEmail())
+                                .build();
+                        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
+                        authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+                    }
+                }
                 // 세션에 사용자 등록
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+
             } catch (ExpiredJwtException e) {
                 log.error(e.getMessage());
                 request.setAttribute("exception", e);

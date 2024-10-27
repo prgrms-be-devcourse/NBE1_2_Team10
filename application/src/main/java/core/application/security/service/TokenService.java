@@ -85,6 +85,23 @@ public class TokenService {
     }
 
     /**
+     * HTTP 요청에서 OAuth 토큰을 가져옴
+     *
+     * @param request HTTP 요청 객체
+     * @return 리프레시 토큰 문자열
+     */
+    public String getOAuthAccessToken(HttpServletRequest request) {
+        String accessToken = null;
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("accessToken")) {
+                accessToken = cookie.getValue();
+            }
+        }
+        return accessToken;
+    }
+
+    /**
      * 주어진 액세스 토큰의 유효성 검증
      *
      * @param accessToken 액세스 토큰 문자열
@@ -103,10 +120,23 @@ public class TokenService {
 
         String category = jwtUtil.getCategory(accessToken);
 
-        if (!category.equals("access")) {
+        if (!category.equals("access") && !category.equals("OAuth")) {
             throw new InvalidTokenCategoryException("잘못된 토큰 유형입니다: Access Token이 아닙니다.");
         }
         return true;
+    }
+
+    /**
+     * Access Token 유형 확인
+     *
+     * @param accessToken, category
+     * @return 카테고리 일치 여부
+     */
+    public Boolean checkCategoryFromAccessToken(String accessToken, String category) {
+        if (!isAccessTokenValid(accessToken)) {
+            throw new InvalidTokenException("유효하지 않은 Access Token 입니다.");
+        }
+        return jwtUtil.getCategory(accessToken).equals(category);
     }
 
     /**
@@ -150,7 +180,7 @@ public class TokenService {
                 UUID userId = userEntity.get().getUserId();
                 String role = userEntity.get().getRole().toString();
 
-                return jwtUtil.creatAccessToken(userEmail, userId, role, "access");
+                return jwtUtil.creatAccessToken(userEmail, userId, role, TokenCategory.access.toString());
             } else {
                 throw new UserNotFoundException("사용자를 찾을 수 없습니다.");
             }
