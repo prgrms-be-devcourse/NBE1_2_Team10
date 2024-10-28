@@ -2,23 +2,17 @@ package core.application.users.repositories;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-
-import core.application.users.models.entities.UserEntity;
-import core.application.users.models.entities.UserRole;
+import core.application.users.models.entities.*;
+import java.util.*;
+import java.util.function.*;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.boot.test.context.*;
+import org.springframework.transaction.annotation.*;
 
 @SpringBootTest
 @Transactional
-class UserRepositoryImplTest {
+class UserRepositoryTest {
 
     @Autowired
     private UserRepository userRepo;
@@ -39,7 +33,7 @@ class UserRepositoryImplTest {
                 .userName("정소은")
                 .build();
 
-        testUser2  = UserEntity.builder()
+        testUser2 = UserEntity.builder()
                 .userEmail("test2@test.com")
                 .userPw("test")
                 .role(UserRole.ADMIN)
@@ -62,7 +56,7 @@ class UserRepositoryImplTest {
 
         // Then
         Optional<UserEntity> find = userRepo.findByUserId(user.getUserId());
-        checkEqualUser(find, testUser);
+        checkEqualUser(find, user);
     }
 
     @Test
@@ -82,11 +76,11 @@ class UserRepositoryImplTest {
     @DisplayName("유저 이메일로 유저 찾기")
     void findByUserEmail() {
         // Given
-        userRepo.saveNewUser(testUser);
+        UserEntity test = userRepo.saveNewUser(testUser);
 
         // When
         Optional<UserEntity> find = userRepo.findByUserEmail(testUser.getUserEmail());
-        checkEqualUser(find, testUser);
+        checkEqualUser(find, test);
     }
 
     @Test
@@ -97,8 +91,10 @@ class UserRepositoryImplTest {
         UserEntity save = userRepo.saveNewUser(testUser);
 
         // When
-        Optional<UserEntity> find = userRepo.findByUserEmailAndPassword(testUser.getUserEmail(), testUser.getUserPw());
-        checkEqualUser(find, testUser);
+        Optional<UserEntity> find = userRepo.findByUserEmailAndPassword(testUser.getUserEmail(),
+                testUser.getUserPw());
+
+        checkEqualUser(find, save);
     }
 
     @Test
@@ -106,22 +102,19 @@ class UserRepositoryImplTest {
     @DisplayName("해당 역할의 유저들 찾기")
     void findByUserRole() {
         // Given
-        userRepo.saveNewUser(testUser);
-        userRepo.saveNewUser(testUser2);
+        UserEntity test1 = userRepo.saveNewUser(testUser);
+        UserEntity test2 = userRepo.saveNewUser(testUser2);
 
         // When
         List<UserEntity> findList1 = userRepo.findByUserRole(UserRole.USER);
         List<UserEntity> findList2 = userRepo.findByUserRole(UserRole.ADMIN);
 
         // Then
-        for (UserEntity find : findList1) {
-            checkEqualUser2(find, testUser);
-        }
+        findList1.forEach(r -> assertThat(r.getRole()).isEqualTo(UserRole.USER));
+        findList2.forEach(r -> assertThat(r.getRole()).isEqualTo(UserRole.ADMIN));
 
-        for (UserEntity find : findList2) {
-            checkEqualUser2(find, testUser2);
-        }
-
+        assertThat(findList1).contains(test1);
+        assertThat(findList2).contains(test2);
     }
 
     @Test
@@ -129,15 +122,14 @@ class UserRepositoryImplTest {
     @DisplayName("전체 유저 목록 조회")
     void findAll() {
         // Given
-        userRepo.saveNewUser(testUser);
-        userRepo.saveNewUser(testUser2);
+        UserEntity test1 = userRepo.saveNewUser(testUser);
+        UserEntity test2 = userRepo.saveNewUser(testUser2);
 
         // When
         List<UserEntity> users = userRepo.findAll();
 
         // Then
-        checkEqualUser2(users.get(0), testUser);
-        checkEqualUser2(users.get(1), testUser2);
+        assertThat(users).contains(test1, test2);
     }
 
     @Test
@@ -177,27 +169,28 @@ class UserRepositoryImplTest {
         userRepo.deleteUser(userId);
 
         // Then
-        assertThat(userRepo.findByUserId(userId).isEmpty());
+        assertThat(userRepo.findByUserId(userId)).isEmpty();
 
+    }
+
+    private interface TripleConsumer<T1, T2, T3> {
+
+        void accept(T1 t1, T2 t2, T3 t3);
     }
 
     private void checkEqualUser(Optional<UserEntity> find, UserEntity user) {
-        assertThat(find.get().getUserId().equals(user.getUserId()));
-        assertThat(find.get().getUserEmail().equals(user.getUserEmail()));
-        assertThat(find.get().getUserPw().equals(user.getUserPw()));
-        assertThat(find.get().getRole().equals(user.getRole()));
-        assertThat(find.get().getAlias().equals(user.getAlias()));
-        assertThat(find.get().getPhoneNum().equals(user.getPhoneNum()));
-        assertThat(find.get().getUserName().equals(user.getUserName()));
-    }
+        UserEntity value = find.orElseThrow();
 
-    private void checkEqualUser2 (UserEntity find, UserEntity user) {
-        assertThat(find.getUserId().equals(user.getUserId()));
-        assertThat(find.getUserEmail().equals(user.getUserEmail()));
-        assertThat(find.getUserPw().equals(user.getUserPw()));
-        assertThat(find.getRole().equals(user.getRole()));
-        assertThat(find.getAlias().equals(user.getAlias()));
-        assertThat(find.getPhoneNum().equals(user.getPhoneNum()));
-        assertThat(find.getUserName().equals(user.getUserName()));
+        TripleConsumer<UserEntity, UserEntity,
+                Function<UserEntity, Object>> checkEquality
+                = (a, b, func) -> assertThat(func.apply(a)).isEqualTo(func.apply(b)).isNotNull();
+
+        checkEquality.accept(value, user, UserEntity::getUserId);
+        checkEquality.accept(value, user, UserEntity::getUserEmail);
+        checkEquality.accept(value, user, UserEntity::getUserPw);
+        checkEquality.accept(value, user, UserEntity::getRole);
+        checkEquality.accept(value, user, UserEntity::getAlias);
+        checkEquality.accept(value, user, UserEntity::getPhoneNum);
+        checkEquality.accept(value, user, UserEntity::getUserName);
     }
 }
