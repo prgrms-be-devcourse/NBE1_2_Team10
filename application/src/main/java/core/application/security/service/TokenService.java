@@ -93,9 +93,12 @@ public class TokenService {
     public String getOAuthAccessToken(HttpServletRequest request) {
         String accessToken = null;
         Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("accessToken")) {
-                accessToken = cookie.getValue();
+        if (cookies != null) { // 쿠키가 null인지 확인
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    accessToken = cookie.getValue();
+                    break;
+                }
             }
         }
         return accessToken;

@@ -102,7 +102,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .build();
 
             updatedUserDTO.encodePassword();
-            userService.updateUserInfo(updatedUserDTO);
+            userService.updateUserInfoFromOAuth(updatedUserDTO, existedUser.get().getUserEmail());
 
             Optional <UserEntity> editedUserEntity = userService.getUserByUserEmail(existedUser.get().getUserEmail());
 
