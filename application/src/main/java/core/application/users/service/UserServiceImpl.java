@@ -9,7 +9,6 @@ import core.application.users.models.dto.SignupReqDTO;
 import core.application.users.models.dto.UserUpdateReqDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;
-import core.application.users.repositories.UserRepositoryImpl;
 import java.util.Optional;
 import java.util.UUID;
 
