@@ -81,7 +81,7 @@ public class CommentServiceTest {
 		UserEntity writer = users.get(0);
 
 		// WHEN
-		CommentRespDTO save = commentService.writeCommentOnMovie(writeReqDTO, writer.getUserId(), movieId);
+		CommentRespDTO save = commentService.writeCommentOnMovie(writeReqDTO, writer, movieId);
 
 		// THEN
 		Optional<CommentEntity> find = commentRepository.findByCommentId(save.getCommentId());
@@ -96,7 +96,7 @@ public class CommentServiceTest {
 		// GIVEN
 		for (int i = 0; i < 10; i++) {
 			CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO(i + "번째 한줄평", 10);
-			CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, users.get(i).getUserId(),
+			CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, users.get(i),
 				movieId);
 		}
 
@@ -118,7 +118,7 @@ public class CommentServiceTest {
 		// GIVEN
 		for (int i = 0; i < 10; i++) {
 			CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO(i + "번째 한줄평", 10);
-			CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, users.get(i).getUserId(),
+			CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, users.get(i),
 				movieId);
 			for (int j = 0; j < i; j++) {
 				UserEntity user = users.get(j);
@@ -143,7 +143,7 @@ public class CommentServiceTest {
 		// GIVEN
 		for (int i = 0; i < 10; i++) {
 			CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO(i + "번째 한줄평", 10);
-			CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, users.get(i).getUserId(),
+			CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, users.get(i),
 				movieId);
 			for (int j = 0; j < i; j++) {
 				UserEntity user = users.get(j);
@@ -168,7 +168,7 @@ public class CommentServiceTest {
 		// GIVEN
 		CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO("한줄평입니다.", 10);
 		UserEntity writer = users.get(0);
-		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, writer.getUserId(), movieId);
+		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, writer, movieId);
 
 		// WHEN
 		commentService.incrementCommentLike(commentRespDTO.getCommentId(), writer.getUserId());
@@ -185,7 +185,7 @@ public class CommentServiceTest {
 		// GIVEN
 		CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO("한줄평입니다.", 10);
 		UserEntity writer = users.get(0);
-		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, writer.getUserId(),
+		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, writer,
 			movieId);
 		commentService.incrementCommentLike(commentRespDTO.getCommentId(), users.get(1).getUserId());
 
@@ -203,7 +203,7 @@ public class CommentServiceTest {
 		// GIVEN
 		CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO("한줄평입니다.", 10);
 		UserEntity writer = users.get(0);
-		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, writer.getUserId(), movieId);
+		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, writer, movieId);
 
 		// WHEN
 		commentService.incrementCommentDislike(commentRespDTO.getCommentId(), writer.getUserId());
@@ -220,7 +220,7 @@ public class CommentServiceTest {
 		// GIVEN
 		CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO("한줄평입니다.", 10);
 		UserEntity writer = users.get(0);
-		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, writer.getUserId(),
+		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, writer,
 			movieId);
 		commentService.incrementCommentDislike(commentRespDTO.getCommentId(), users.get(1).getUserId());
 
@@ -240,7 +240,7 @@ public class CommentServiceTest {
 		UserEntity user = users.get(0);
 		for (int i = 0; i < 10; i++) {
 			CommentWriteReqDTO writeReqDTO = new CommentWriteReqDTO(i + "번째 한줄평", 10);
-			CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, users.get(i).getUserId(),
+			CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, users.get(i),
 				movieId);
 			if (i < 5) {
 				commentService.incrementCommentLike(commentRespDTO.getCommentId(), user.getUserId());

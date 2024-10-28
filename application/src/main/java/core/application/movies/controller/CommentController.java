@@ -23,6 +23,7 @@ import core.application.movies.models.dto.request.CommentWriteReqDTO;
 import core.application.movies.models.dto.response.CommentRespDTO;
 import core.application.movies.service.CommentService;
 import core.application.security.service.CustomUserDetails;
+import core.application.users.models.entities.UserEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -72,8 +73,8 @@ public class CommentController {
 			log.info("검증 오류 발생 : {}", bindingResult);
 			throw new InvalidWriteCommentException(bindingResult.getAllErrors().get(0).getDefaultMessage());
 		}
-		UUID userId = userDetails.getUserId();
-		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, userId, movieId);
+		UserEntity user = userDetails.userEntity();
+		CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, user, movieId);
 		return ApiResponse.onCreateSuccess(commentRespDTO);
 	}
 
