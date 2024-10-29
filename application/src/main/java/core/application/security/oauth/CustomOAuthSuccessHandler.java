@@ -51,9 +51,10 @@ public class CustomOAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String role = auth.getAuthority();
 
         // Access Token 쿠키로 반환
-        // 추후 추
-        String token = jwtUtil.creatAccessToken(customOAuth2User.getUserEmail(), customOAuth2User.getUserId(), role, TokenCategory.OAuth.toString());
-        response.addCookie(createCookie("accessToken", token));
+        String accessToken = jwtUtil.creatAccessToken(customOAuth2User.getUserEmail(), customOAuth2User.getUserId(), role, TokenCategory.OAuth.toString());
+        String refreshToken = jwtUtil.creatRefreshToken(customOAuth2User.getUserEmail(), TokenCategory.OAuth.toString());
+        response.addCookie(createCookie("accessToken", accessToken));
+        response.addCookie(createCookie("refreshToken", refreshToken));
 
         // 인증 성공 후 리다이렉트할 URL (프론트 측 url로 수정 필요)
         response.sendRedirect("http://localhost:8080/profile");
