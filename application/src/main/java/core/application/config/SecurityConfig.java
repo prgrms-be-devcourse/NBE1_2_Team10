@@ -3,8 +3,12 @@ package core.application.config;
 import core.application.filter.CustomLoginFilter;
 import core.application.filter.CustomLogoutFilter;
 import core.application.filter.JWTFilter;
-import core.application.security.service.CustomSuccessHandler;
-import core.application.security.service.*;
+import core.application.security.auth.CustomUserDetailsService;
+import core.application.security.oauth.CustomOAuth2UserService;
+import core.application.security.oauth.CustomOAuthSuccessHandler;
+import core.application.security.service.JwtAuthenticationEntryPoint;
+import core.application.security.token.JwtTokenUtil;
+import core.application.security.token.TokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -31,7 +35,7 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final CustomUserDetailsService userDetailsService;
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final CustomSuccessHandler customSuccessHandler;
+    private final CustomOAuthSuccessHandler customSuccessHandler;
     private final JwtTokenUtil jwtUtil;
     private final JwtAuthenticationEntryPoint entryPoint;
 
@@ -47,7 +51,7 @@ public class SecurityConfig {
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
             CustomUserDetailsService userDetailsService,
             CustomOAuth2UserService customOAuth2UserService, JwtTokenUtil jwtUtil,
-            JwtAuthenticationEntryPoint entryPoint, CustomSuccessHandler customSuccessHandler) {
+            JwtAuthenticationEntryPoint entryPoint, CustomOAuthSuccessHandler customSuccessHandler) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.userDetailsService = userDetailsService;
         this.customOAuth2UserService = customOAuth2UserService;

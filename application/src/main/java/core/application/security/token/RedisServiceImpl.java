@@ -1,4 +1,4 @@
-package core.application.security.service;
+package core.application.security.token;
 
 import core.application.security.exception.ValueNotFoundException;
 import org.springframework.beans.factory.annotation.Value;

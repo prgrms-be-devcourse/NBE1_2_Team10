@@ -1,4 +1,4 @@
-package core.application.security.service;
+package core.application.security.model;
 
 import java.util.Map;
 

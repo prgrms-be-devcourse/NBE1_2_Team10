@@ -1,5 +1,7 @@
-package core.application.security.service;
+package core.application.security.oauth;
 
+import core.application.security.model.TokenCategory;
+import core.application.security.token.JwtTokenUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,14 +19,14 @@ import java.util.Iterator;
  * OAuth 인증 성공 시 호출되는 핸들러
  */
 @Component
-public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class CustomOAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JwtTokenUtil jwtUtil;
 
     /**
      * CustomSuccessHandler 생성자
      * @param jwtUtil JWT 관련 유틸리티
      */
-    public CustomSuccessHandler(JwtTokenUtil jwtUtil) {
+    public CustomOAuthSuccessHandler(JwtTokenUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
@@ -49,6 +51,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String role = auth.getAuthority();
 
         // Access Token 쿠키로 반환
+        // 추후 추
         String token = jwtUtil.creatAccessToken(customOAuth2User.getUserEmail(), customOAuth2User.getUserId(), role, TokenCategory.OAuth.toString());
         response.addCookie(createCookie("accessToken", token));
 

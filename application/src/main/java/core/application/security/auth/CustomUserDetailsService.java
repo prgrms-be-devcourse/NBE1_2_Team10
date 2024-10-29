@@ -1,4 +1,4 @@
-package core.application.security.service;
+package core.application.security.auth;
 
 import core.application.users.models.entities.UserEntity;
 import core.application.users.repositories.UserRepository;

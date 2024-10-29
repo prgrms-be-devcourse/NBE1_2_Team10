@@ -7,7 +7,7 @@ import core.application.reviews.models.dto.request.reviews.*;
 import core.application.reviews.models.dto.response.reviews.*;
 import core.application.reviews.models.entities.*;
 import core.application.reviews.services.*;
-import core.application.security.service.*;
+import core.application.security.auth.CustomUserDetails;
 import core.application.users.service.*;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.*;

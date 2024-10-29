@@ -1,4 +1,4 @@
-package core.application.security.service;
+package core.application.security.oauth;
 
 import core.application.users.models.dto.UserDTO;
 import lombok.ToString;

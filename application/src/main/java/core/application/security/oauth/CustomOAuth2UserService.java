@@ -1,5 +1,8 @@
-package core.application.security.service;
+package core.application.security.oauth;
 
+import core.application.security.model.GoogleResponse;
+import core.application.security.model.NaverResponse;
+import core.application.security.model.OAuth2Response;
 import core.application.users.models.dto.SignupReqDTO;
 import core.application.users.models.dto.UserDTO;
 import core.application.users.models.dto.UserUpdateReqDTO;
@@ -48,7 +51,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // OAuth 사용자 정보 공급자 ID
         String registrationId = oAuth2UserRequest.getClientRegistration().getRegistrationId();
 
-        // 추후 alias 부분 추후 수정
         // 공급자에 따라 적절한 OAuth2Response 객체를 생성
         if (registrationId.equals("naver")) {
             oAuth2Response = new NaverResponse(oAuth2User.getAttributes());

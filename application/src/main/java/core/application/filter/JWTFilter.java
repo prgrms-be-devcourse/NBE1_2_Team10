@@ -1,12 +1,12 @@
 package core.application.filter;
 
 import core.application.api.exception.CommonForbiddenException;
-import core.application.security.service.CustomOAuth2User;
-import core.application.security.service.TokenCategory;
+import core.application.security.oauth.CustomOAuth2User;
+import core.application.security.model.TokenCategory;
 import core.application.users.models.dto.UserDTO;
 import core.application.users.models.entities.UserEntity;
-import core.application.security.service.CustomUserDetails;
-import core.application.security.service.TokenService;
+import core.application.security.auth.CustomUserDetails;
+import core.application.security.token.TokenService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -119,4 +119,10 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }
     }
+
+//    @Override
+//    protected boolean shouldNotFilter(HttpServletRequest request) {
+//        String path = request.getRequestURI();
+//        return path.equals("/home"); // /home 경로는 필터링 제외
+//    }
 }

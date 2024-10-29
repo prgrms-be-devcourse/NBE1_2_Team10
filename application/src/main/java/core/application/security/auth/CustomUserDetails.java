@@ -1,14 +1,11 @@
-package core.application.security.service;
+package core.application.security.auth;
 
 import core.application.users.models.entities.UserEntity;
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.UUID;
 
 /**

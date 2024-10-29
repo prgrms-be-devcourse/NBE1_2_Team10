@@ -3,7 +3,7 @@ package core.application.users.controller;
 import core.application.api.response.ApiResponse;
 import core.application.api.response.code.Message;
 import core.application.users.models.dto.MessageResponseDTO;
-import core.application.security.service.TokenService;
+import core.application.security.token.TokenService;
 import core.application.users.models.dto.SignupReqDTO;
 import core.application.users.models.dto.UserUpdateReqDTO;
 import core.application.users.service.UserService;

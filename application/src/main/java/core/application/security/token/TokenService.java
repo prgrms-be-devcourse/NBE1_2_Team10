@@ -1,7 +1,8 @@
-package core.application.security.service;
+package core.application.security.token;
 
 import core.application.security.exception.InvalidTokenCategoryException;
 import core.application.security.exception.InvalidTokenException;
+import core.application.security.model.TokenCategory;
 import core.application.users.exception.UserNotFoundException;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.service.UserService;

@@ -1,5 +1,7 @@
 package core.application.security.service;
 
+import core.application.security.auth.CustomUserDetails;
+import core.application.security.oauth.CustomOAuth2User;
 import core.application.users.exception.UserNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
