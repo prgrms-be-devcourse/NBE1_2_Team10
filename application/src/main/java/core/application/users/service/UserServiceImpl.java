@@ -90,6 +90,7 @@ public class UserServiceImpl implements UserService {
                 .alias(userUpdateRequestDTO.getAlias() != null ? userUpdateRequestDTO.getAlias() : originUserEntity.get().getAlias()) // alias 업데이트
                 .phoneNum(userUpdateRequestDTO.getPhoneNum() != null ? userUpdateRequestDTO.getPhoneNum() : originUserEntity.get().getPhoneNum()) // phoneNum 업데이트
                 .userName(userUpdateRequestDTO.getUserName() != null ? userUpdateRequestDTO.getUserName() : originUserEntity.get().getUserName()) // userName 업데이트
+                .role(originUserEntity.get().getRole())
                 .build();
         updatedUserDTO.encodePassword();
 
