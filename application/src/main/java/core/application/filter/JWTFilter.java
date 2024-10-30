@@ -1,9 +1,7 @@
 package core.application.filter;
 
 import core.application.api.exception.CommonForbiddenException;
-import core.application.security.oauth.CustomOAuth2User;
 import core.application.security.model.TokenCategory;
-import core.application.users.models.dto.UserDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.security.auth.CustomUserDetails;
 import core.application.security.token.TokenService;
@@ -111,10 +109,4 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }
     }
-
-//    @Override
-//    protected boolean shouldNotFilter(HttpServletRequest request) {
-//        String path = request.getRequestURI();
-//        return path.equals("/home"); // /home 경로는 필터링 제외
-//    }
 }
