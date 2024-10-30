@@ -162,6 +162,7 @@ public class TokenService {
         return userEntity.map(entity -> UserEntity.builder()
                 .userEmail(entity.getUserEmail())
                 .userId(entity.getUserId())
+                .alias(entity.getAlias())
                 .userName(entity.getUserName())
                 .role(entity.getRole())
                 .build());
@@ -199,9 +200,10 @@ public class TokenService {
      * @param request HTTP 요청 객체
      */
     public void inactiveRefreshToken(HttpServletRequest request) {
-        String refreshToken = getRefreshToken(request);
-        if (isRefreshTokenValid(refreshToken)) {
-            redisService.deleteValue(jwtUtil.getUserEmail(refreshToken));
+        String accessToken = request.getHeader("accessToken");
+        String email = jwtUtil.getUserEmail(accessToken);
+        if (isAccessTokenValid(accessToken)) {
+            redisService.deleteValue(jwtUtil.getUserEmail(email));
         }
     }
 }

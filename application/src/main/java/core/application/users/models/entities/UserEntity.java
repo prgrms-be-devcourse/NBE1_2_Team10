@@ -1,5 +1,6 @@
 package core.application.users.models.entities;
 
+
 import jakarta.persistence.*;
 import java.util.*;
 import lombok.*;
@@ -9,7 +10,8 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @ToString
-@Entity(name = "user_table")
+@Entity
+@Table(name = "user_table")
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

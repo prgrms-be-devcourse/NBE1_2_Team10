@@ -87,7 +87,6 @@ public class UserServiceImpl implements UserService {
                 .userEmail(originUserEntity.get().getUserEmail())
                 .userId(originUserEntity.get().getUserId()) // 기존 userId 유지
                 .userPw(userUpdateRequestDTO.getUserPw() != null ? userUpdateRequestDTO.getUserPw() : originUserEntity.get().getUserPw()) // userPw 업데이트
-                .role(originUserEntity.get().getRole()) // 기존 role 유지
                 .alias(userUpdateRequestDTO.getAlias() != null ? userUpdateRequestDTO.getAlias() : originUserEntity.get().getAlias()) // alias 업데이트
                 .phoneNum(userUpdateRequestDTO.getPhoneNum() != null ? userUpdateRequestDTO.getPhoneNum() : originUserEntity.get().getPhoneNum()) // phoneNum 업데이트
                 .userName(userUpdateRequestDTO.getUserName() != null ? userUpdateRequestDTO.getUserName() : originUserEntity.get().getUserName()) // userName 업데이트
