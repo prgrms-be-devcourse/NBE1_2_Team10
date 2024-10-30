@@ -21,6 +21,8 @@ public interface UserService {
 
     public MessageResponseDTO updateUserInfo (UserUpdateReqDTO userUpdateRequestDTO);
 
+    public MessageResponseDTO updateUserInfoFromOAuth (UserUpdateReqDTO userUpdateRequestDTO, String userEmail);
+
     public MessageResponseDTO deleteUser ();
 
     public Optional<UserEntity> getUserByUserId(UUID userId);

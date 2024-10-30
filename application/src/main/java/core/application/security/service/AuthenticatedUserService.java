@@ -1,5 +1,7 @@
 package core.application.security.service;
 
+import core.application.security.auth.CustomUserDetails;
+import core.application.security.oauth.CustomOAuth2User;
 import core.application.users.exception.UserNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +17,7 @@ import java.util.UUID;
  */
 @Service
 public class AuthenticatedUserService {
+
     /**
      * 현재 인증된 사용자의 ID를 반환
      *
@@ -23,8 +26,13 @@ public class AuthenticatedUserService {
     public UUID getAuthenticatedUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
-            return customUserDetails.getUserId();  // UserId 반환
+        if (authentication != null) {
+            if (authentication.getPrincipal() instanceof CustomOAuth2User customOAuth2User) {
+                return customOAuth2User.getUserId(); // UserId 반환
+            }
+            else if (authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
+                return customUserDetails.getUserId(); // UserId 반환
+            }
         }
         throw new UserNotFoundException("인증되지 않은 사용자입니다."); // 인증되지 않은 사용자일 경우
     }
@@ -37,8 +45,13 @@ public class AuthenticatedUserService {
     public String getAuthenticatedUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
-            return customUserDetails.getUserEmail();  // UserEmail 반환
+        if (authentication != null) {
+            if (authentication.getPrincipal() instanceof CustomOAuth2User customOAuth2User) {
+                return customOAuth2User.getUserEmail(); // UserEmail 반환
+            }
+            else if (authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
+                return customUserDetails.getUserEmail(); // UserEmail 반환
+            }
         }
         throw new UserNotFoundException("인증되지 않은 사용자입니다."); // 인증되지 않은 사용자일 경우
     }
@@ -51,8 +64,13 @@ public class AuthenticatedUserService {
     public String getAuthenticatedRole() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
-            return customUserDetails.getUserRole();  // UserRole 반환
+        if (authentication != null) {
+            if (authentication.getPrincipal() instanceof CustomOAuth2User customOAuth2User) {
+                return customOAuth2User.getUserRole(); // UserRole 반환
+            }
+            else if (authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
+                return customUserDetails.getUserRole(); // UserRole 반환
+            }
         }
         throw new UserNotFoundException("인증되지 않은 사용자입니다."); // 인증되지 않은 사용자일 경우
     }

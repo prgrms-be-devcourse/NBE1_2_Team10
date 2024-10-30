@@ -1,4 +1,4 @@
-package core.application.security.service;
+package core.application.security.token;
 
 public interface RedisService {
     void setValueWithTTL(String key, String value);

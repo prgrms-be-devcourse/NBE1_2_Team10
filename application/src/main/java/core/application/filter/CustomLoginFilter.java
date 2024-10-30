@@ -3,8 +3,9 @@ package core.application.filter;
 import core.application.api.exception.InvalidLoginException;
 import core.application.api.response.ApiResponse;
 import core.application.api.response.code.Message;
-import core.application.security.service.JwtTokenUtil;
-import core.application.security.service.CustomUserDetails;
+import core.application.security.token.JwtTokenUtil;
+import core.application.security.auth.CustomUserDetails;
+import core.application.security.model.TokenCategory;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -123,8 +124,8 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         // token 발급
-        String accessToken = jwtUtil.creatAccessToken(userEmail, userId, role, "access");
-        String refreshToken = jwtUtil.creatRefreshToken(userEmail, "refresh");
+        String accessToken = jwtUtil.creatAccessToken(userEmail, userId, role, TokenCategory.access.toString());
+        String refreshToken = jwtUtil.creatRefreshToken(userEmail, TokenCategory.refresh.toString());
 
         response.setHeader("accessToken", accessToken); // 액세스 토큰을 응답 헤더에 추가
         response.addCookie(createCookie(refreshToken)); // 리프레시 토큰을 쿠키에 추가

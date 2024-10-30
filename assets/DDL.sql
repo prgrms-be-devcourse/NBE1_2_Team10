@@ -8,7 +8,6 @@ create table user_table
     user_pw       varchar(200)                                                                     not null comment '유저 비밀번호, 인코딩 후 저장',
     user_name     varchar(30)                                                                      not null comment '유저 실명',
     role          enum ('ADMIN', 'USER') default 'USER'                                            not null comment '유저 권한 (관리자, 일반 유저)',
-    refresh_token varchar(200)                                                                     null comment '해당 유저에 발급된 리프래쉬 토큰',
     alias         varchar(50)            default (`user_email`)                                    null comment '유저 활동 닉네임, 초기 설정은 이메일과 동일',
     phone_num     varchar(50)                                                                      null comment '전화번호',
     constraint USER_TABLE_pk_2
