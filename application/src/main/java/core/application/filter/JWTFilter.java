@@ -90,16 +90,8 @@ public class JWTFilter extends OncePerRequestFilter {
                 else if (tokenService.checkCategoryFromAccessToken(accessToken, TokenCategory.OAuth.toString())) {
                     Optional<UserEntity> oAuthUser = tokenService.getUserByAccessToken(accessToken);
                     if (oAuthUser.isPresent()) {
-                        UserDTO userDTO = UserDTO.builder()
-                                .userPw(oAuthUser.get().getUserPw())
-                                .userName(oAuthUser.get().getUserName())
-                                .userId(oAuthUser.get().getUserId())
-                                .role(oAuthUser.get().getRole())
-                                .alias(oAuthUser.get().getAlias())
-                                .userEmail(oAuthUser.get().getUserEmail())
-                                .build();
-                        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
-                        authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+                        CustomUserDetails customUserDetails = new CustomUserDetails(oAuthUser.get());
+                        authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
                     }
                 }
                 // 세션에 사용자 등록
