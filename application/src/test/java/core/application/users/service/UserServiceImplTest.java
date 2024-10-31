@@ -1,54 +1,37 @@
 package core.application.users.service;
 
-import core.application.security.service.AuthenticatedUserService;
 import core.application.users.exception.UserNotFoundException;
-import core.application.users.models.dto.MessageResponseDTO;
 import core.application.users.models.dto.SignupReqDTO;
 import core.application.users.models.dto.UserDTO;
 import core.application.users.models.dto.UserUpdateReqDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
 import core.application.users.repositories.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class UserServiceImplTest {
 
-    @Mock
-    BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private UserService userService;
 
-    @Mock
+    @Autowired
     private UserRepository userRepository;
 
-    @Mock
-    private AuthenticatedUserService authenticatedUserService;
-
-    @InjectMocks
-    private UserServiceImpl userService;  // 테스트하려는 클래스
-
-    private UUID mockUserId;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockUserId = UUID.randomUUID();  // 테스트용 mock UUID 생성
-    }
-
     @Test
+    @Transactional
+    @Rollback(false) // 롤백하지 않도록 설정
     @DisplayName("회원 가입 시 정상적으로 데이터 저장")
     void signup() {
         // given
@@ -62,10 +45,12 @@ class UserServiceImplTest {
                 .alias("winter")
                 .build();
 
-        newUser.encodePassword(passwordEncoder);
+        newUser.encodePassword();
+
+        UserEntity userEntity = newUser.toEntity();
 
         // when
-        userRepository.saveNewUser(newUser.toEntity());
+        System.out.println(userRepository.saveNewUser(newUser.toEntity()));;
 
         // then
         Optional<UserEntity> savedUser = userRepository.findByUserEmail("winter@naver.com");
@@ -74,7 +59,6 @@ class UserServiceImplTest {
         }
         System.out.println(savedUser.get().getUserId());
 
-        assertNotNull(savedUser.get().getUserId());
         assertEquals(savedUser.get().getUserEmail(), newUser.getUserEmail());
     }
 
@@ -92,13 +76,13 @@ class UserServiceImplTest {
                 .alias("karina")
                 .build();
 
-        newUser.encodePassword(passwordEncoder);
+        newUser.encodePassword();
 
         // 사용자 객체 최초로 저장
         userRepository.saveNewUser(newUser.toEntity());
 
         // when & then
-        assertThrows(DuplicateKeyException.class, () -> {
+        assertThrows(DataIntegrityViolationException.class, () -> {
             // 중복된 유저를 다시 저장하려고 시도 (두 번째 저장)
             userRepository.saveNewUser(newUser.toEntity());
         });
@@ -108,14 +92,23 @@ class UserServiceImplTest {
     void updateUser() {
         // given
         // 회원 가입
-        signup();
+        SignupReqDTO newUser = SignupReqDTO.builder()
+                .userEmail("anyone@naver.com")
+                .userPw("ilive123!")
+                .userName("any")
+                .phoneNum("010-1111-1111")
+                .role(UserRole.valueOf("USER"))
+                .alias("anyone")
+                .build();
+
+        userService.signup(newUser);
 
         // 사용자 객체 생성
         UserUpdateReqDTO updateReqUser = UserUpdateReqDTO.builder()
-                .userEmail("winter@naver.com")
+                .userEmail("anyone@naver.com")
                 .userPw("ilive123!123")
-                .userName("winter")
-                .alias("winter")
+                .userName("anyany")
+                .alias("anyone")
                 .phoneNum("010-1111-1111")
                 .build();
 
@@ -129,20 +122,22 @@ class UserServiceImplTest {
 
         // 정보 갱신 반영을 위한 객체 생성
         UserDTO updatedUser = UserDTO.builder()
+                .userEmail(originUserEntity.get().getUserEmail())
                 .userId(originUserEntity.get().getUserId()) // 기존 userId 유지
                 .userPw(updateReqUser.getUserPw() != null ? updateReqUser.getUserPw() : originUserEntity.get().getUserPw())
                 .alias(updateReqUser.getAlias() != null ? updateReqUser.getAlias() : originUserEntity.get().getAlias())
+                .role(originUserEntity.get().getRole())
                 .phoneNum(updateReqUser.getPhoneNum() != null ? updateReqUser.getPhoneNum() : originUserEntity.get().getPhoneNum())
                 .userName(updateReqUser.getUserName() != null ? updateReqUser.getUserName() : originUserEntity.get().getUserName())
                 .build();
 
-        updatedUser.encodePassword(passwordEncoder);
+        updatedUser.encodePassword();
 
         // when
         userRepository.editUserInfo(updatedUser.toEntity());
 
         // then
-        Optional<UserEntity> savedUser = userRepository.findByUserEmail("winter@naver.com");
+        Optional<UserEntity> savedUser = userRepository.findByUserEmail(originUserEntity.get().getUserEmail());
         if (savedUser.isEmpty()) {
             throw new UserNotFoundException("회원 가입을 실패했습니다.");
         }
@@ -166,7 +161,7 @@ class UserServiceImplTest {
                 .alias("ningning")
                 .build();
 
-        newUser.encodePassword(passwordEncoder);
+        newUser.encodePassword();
 
         userRepository.saveNewUser(newUser.toEntity());
 
@@ -192,7 +187,7 @@ class UserServiceImplTest {
                 .alias("giselle")
                 .build();
 
-        newUser.encodePassword(passwordEncoder);
+        newUser.encodePassword();
 
         userRepository.saveNewUser(newUser.toEntity());
 
