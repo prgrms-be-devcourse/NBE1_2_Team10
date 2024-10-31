@@ -1,46 +1,26 @@
 package core.application.reviews.controllers;
 
-import core.application.api.response.ApiResponse;
-import core.application.api.response.code.Message;
-import core.application.reviews.exceptions.InvalidPageException;
-import core.application.reviews.exceptions.InvalidReviewEditException;
-import core.application.reviews.exceptions.InvalidReviewWriteException;
-import core.application.reviews.exceptions.NotReviewOwnerException;
-import core.application.reviews.models.dto.request.reviews.CreateReviewReqDTO;
-import core.application.reviews.models.dto.request.reviews.EditReviewReqDTO;
-import core.application.reviews.models.dto.response.reviews.AdjustLikeRespDTO;
-import core.application.reviews.models.dto.response.reviews.ListReviewsRespDTO;
-import core.application.reviews.models.dto.response.reviews.ReviewInfoRespDTO;
-import core.application.reviews.models.entities.ReviewEntity;
-import core.application.reviews.services.ReviewService;
-import core.application.reviews.services.ReviewSortOrder;
-import core.application.security.CustomUserDetails;
-import core.application.users.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import core.application.api.response.*;
+import core.application.api.response.code.*;
+import core.application.reviews.exceptions.*;
+import core.application.reviews.models.dto.request.reviews.*;
+import core.application.reviews.models.dto.response.reviews.*;
+import core.application.reviews.models.entities.*;
+import core.application.reviews.services.*;
+import core.application.security.auth.CustomUserDetails;
+import core.application.users.service.*;
+import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.tags.*;
+import jakarta.servlet.http.*;
+import java.util.*;
+import java.util.function.*;
+import lombok.*;
+import lombok.extern.slf4j.*;
+import org.springframework.data.domain.*;
+import org.springframework.security.core.annotation.*;
+import org.springframework.validation.*;
+import org.springframework.validation.annotation.*;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -67,11 +47,11 @@ public class ReviewController {
      */
     @Operation(summary = "리뷰 목록 조회")
     @GetMapping("/list")
-    public ApiResponse<ListReviewsRespDTO> listReviews(
-            @PathVariable String movieId,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "sort", required = false, defaultValue = "latest") String sort,
-            @RequestParam(value = "content", defaultValue = "true") boolean content
+    public ApiResponse<Page<ListReviewsRespDTO>> listReviews(
+            @PathVariable("movieId") String movieId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "sort", required = false, defaultValue = "latest") String sort,
+            @RequestParam(name = "content", defaultValue = "true") boolean content
     ) {
 
         if (page < 0) {
@@ -84,10 +64,20 @@ public class ReviewController {
                 .anyMatch(r -> r.name().equalsIgnoreCase(sort)) ?
                 ReviewSortOrder.valueOf(sort.toUpperCase()) : ReviewSortOrder.LATEST;
 
-        List<ReviewEntity> searchResult = reviewService.getReviewsOnMovieId(movieId, order, content,
-                offset, REVIEWS_PER_PAGE);
+        List<ListReviewsRespDTO> searchResult = reviewService.getReviewsOnMovieId(
+                        movieId, order, content, offset, REVIEWS_PER_PAGE)
+                .stream().map(ListReviewsRespDTO::of)
+                .toList();
 
-        return ApiResponse.onSuccess(ListReviewsRespDTO.of(searchResult));
+        long total = reviewService.getNumberOfReviewsOnMovieId(movieId);
+
+        Page<ListReviewsRespDTO> paged = new PageImpl<>(
+                searchResult,
+                PageRequest.of(page, REVIEWS_PER_PAGE),
+                total
+        );
+
+        return ApiResponse.onSuccess(paged);
     }
 
     /**

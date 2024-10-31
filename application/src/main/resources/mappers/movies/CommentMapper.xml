@@ -20,7 +20,7 @@
     </select>
 
     <select id="findByMovieId" resultType="core.application.movies.models.dto.response.CommentRespDTO">
-        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, c.user_id, c.created_at,
+        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, u.alias, c.created_at,
             case
                 when l.comment_like_id is not null then true
                 else false
@@ -38,13 +38,16 @@
             comment_dislike_table as d
             on c.comment_id=d.comment_id
             and d.user_id=#{userId}
+        left join
+            user_table as u
+            on c.user_id=u.user_id
         where movie_id=#{movieId}
         limit 10
         offset #{offset}
     </select>
 
     <select id="findByMovieIdOnDateDescend" resultType="core.application.movies.models.dto.response.CommentRespDTO">
-        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, c.user_id, c.created_at,
+        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, u.alias, c.created_at,
             case
                 when l.comment_like_id is not null then true
                 else false
@@ -62,14 +65,17 @@
             comment_dislike_table as d
             on c.comment_id=d.comment_id
             and d.user_id=#{userId}
-            where movie_id=#{movieId}
+        left join
+            user_table as u
+            on c.user_id=u.user_id
+        where movie_id=#{movieId}
         order by created_at desc
         limit 10
         offset #{offset}
     </select>
 
     <select id="findByMovieIdOnLikeDescend" resultType="core.application.movies.models.dto.response.CommentRespDTO">
-        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, c.user_id, c.created_at,
+        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, u.alias, c.created_at,
             case
                 when l.comment_like_id is not null then true
                 else false
@@ -87,6 +93,9 @@
             comment_dislike_table as d
             on c.comment_id=d.comment_id
             and d.user_id=#{userId}
+        left join
+            user_table as u
+        on c.user_id=u.user_id
         where movie_id=#{movieId}
         order by `like` desc
         limit 10
@@ -94,7 +103,7 @@
     </select>
 
     <select id="findByMovieIdOnDislikeDescend" resultType="core.application.movies.models.dto.response.CommentRespDTO">
-        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, c.user_id, c.created_at,
+        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, u.alias, c.created_at,
             case
                 when l.comment_like_id is not null then true
                 else false
@@ -111,7 +120,10 @@
         left join
             comment_dislike_table as d
             on c.comment_id=d.comment_id
-        and d.user_id=#{userId}
+            and d.user_id=#{userId}
+        left join
+            user_table as u
+            on c.user_id=u.user_id
         where movie_id=#{movieId}
         order by dislike desc
         limit 10
@@ -122,6 +134,11 @@
     <select id="selectAll" resultType="core.application.movies.models.entities.CommentEntity">
         select comment_id, content, `like`, dislike, rating, movie_id, user_id, created_at
         from comment_table
+    </select>
+
+    <select id="countByMovieId" resultType="int">
+        select count(*) from comment_table
+        where movie_id = #{movieId}
     </select>
 
     <update id="update">

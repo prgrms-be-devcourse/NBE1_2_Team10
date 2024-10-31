@@ -8,7 +8,6 @@ create table user_table
     user_pw       varchar(200)                                                                     not null comment '유저 비밀번호, 인코딩 후 저장',
     user_name     varchar(30)                                                                      not null comment '유저 실명',
     role          enum ('ADMIN', 'USER') default 'USER'                                            not null comment '유저 권한 (관리자, 일반 유저)',
-    refresh_token varchar(200)                                                                     null comment '해당 유저에 발급된 리프래쉬 토큰',
     alias         varchar(50)            default (`user_email`)                                    null comment '유저 활동 닉네임, 초기 설정은 이메일과 동일',
     phone_num     varchar(50)                                                                      null comment '전화번호',
     constraint USER_TABLE_pk_2
@@ -90,11 +89,11 @@ create table comment_like_table
 );
 
 -- 한줄평 싫어요 로그 테이블
-create table comment_like_table
+create table comment_dislike_table
 (
-    comment_like_id bigint auto_increment primary key,
-    comment_id      bigint not null,
-    user_id         binary(16),
+    comment_dislike_id bigint auto_increment primary key,
+    comment_id         bigint not null,
+    user_id            binary(16),
     constraint foreign key (comment_id) references comment_table (comment_id),
     constraint foreign key (user_id) references user_table (user_id)
 );
@@ -108,7 +107,7 @@ create table review_table
         primary key,
     title      varchar(50)                        not null comment '포스팅 제목',
     movie_id   varchar(50)                        not null comment '영화 API 에 따라 달라질 수 있음',
-    content    varchar(1000)                      not null comment '포스팅 리뷰',
+    content longtext not null comment '포스팅 리뷰',
     user_id    binary(16)                         not null comment '리뷰 작성자 ID',
     `like`     int      default 0                 not null comment '좋아요 수',
     created_at datetime default CURRENT_TIMESTAMP not null comment '작성 시간',

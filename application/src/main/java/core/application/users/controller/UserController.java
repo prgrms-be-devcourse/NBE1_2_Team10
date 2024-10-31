@@ -3,9 +3,9 @@ package core.application.users.controller;
 import core.application.api.response.ApiResponse;
 import core.application.api.response.code.Message;
 import core.application.users.models.dto.MessageResponseDTO;
-import core.application.users.models.dto.UserDTO;
-import core.application.security.TokenService;
-import core.application.users.models.dto.UserRequestDTO;
+import core.application.security.token.TokenService;
+import core.application.users.models.dto.SignupReqDTO;
+import core.application.users.models.dto.UserUpdateReqDTO;
 import core.application.users.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -56,9 +56,9 @@ public class UserController {
 
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
-    public ApiResponse<MessageResponseDTO> singUp(@Valid @RequestBody UserRequestDTO userRequestDTO) {
-        MessageResponseDTO msg = userService.signup(userRequestDTO);
-        return ApiResponse.onCreateSuccess(msg);
+    public ApiResponse<MessageResponseDTO> singUp(@Valid @RequestBody SignupReqDTO userRequestDTO) {
+        MessageResponseDTO messageResponseDTO = userService.signup(userRequestDTO);
+        return ApiResponse.onCreateSuccess(messageResponseDTO);
     }
 
     /**
@@ -79,8 +79,8 @@ public class UserController {
 
     @Operation(summary = "유저 정보 업데이트")
     @PatchMapping("/update")
-    public ApiResponse<MessageResponseDTO> updateUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
-        MessageResponseDTO messageResponseDTO = userService.updateUserInfo(userRequestDTO);
+    public ApiResponse<MessageResponseDTO> updateUser(@Valid @RequestBody UserUpdateReqDTO userUpdateRequestDTO) {
+        MessageResponseDTO messageResponseDTO = userService.updateUserInfo(userUpdateRequestDTO);
         return ApiResponse.onSuccess(messageResponseDTO);
     }
 

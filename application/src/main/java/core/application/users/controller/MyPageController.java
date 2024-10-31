@@ -1,7 +1,7 @@
 package core.application.users.controller;
 
 import core.application.api.response.ApiResponse;
-import core.application.security.CustomUserDetails;
+import core.application.security.auth.CustomUserDetails;
 import core.application.users.models.dto.MyPageRespDTO;
 import core.application.users.service.MyPageService;
 import io.swagger.v3.oas.annotations.Operation;

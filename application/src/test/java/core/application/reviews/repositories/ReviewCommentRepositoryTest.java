@@ -1,26 +1,23 @@
 package core.application.reviews.repositories;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.Comparator.*;
+import static org.assertj.core.api.Assertions.*;
 
-import core.application.reviews.models.entities.ReviewCommentEntity;
-import core.application.reviews.models.entities.ReviewEntity;
-import core.application.users.models.entities.UserEntity;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Logger;
-import java.util.stream.IntStream;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
+import core.application.movies.models.entities.*;
+import core.application.movies.repositories.movie.*;
+import core.application.reviews.models.entities.*;
+import core.application.users.models.entities.*;
+import core.application.users.repositories.*;
+import java.time.*;
+import java.time.temporal.*;
+import java.util.*;
+import java.util.function.*;
+import java.util.logging.*;
+import java.util.stream.*;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.boot.test.context.*;
+import org.springframework.transaction.annotation.*;
 
 @SpringBootTest
 @Transactional
@@ -31,164 +28,140 @@ class ReviewCommentRepositoryTest {
     @Autowired
     private ReviewCommentRepository reviewCommentRepo;
 
-    @MockBean
-    private ReviewRepository reviewRepository;
+    @Autowired
+    private ReviewRepository reviewRepo;
 
-    @MockBean
-    private WebClient webClient;
+    @Autowired
+    private UserRepository userRepo;
 
+    @Autowired
+    private CachedMovieRepository movieRepo;
 
-    // DB 에 있는 실제 리뷰 포스팅의 ID
-    private static final Long reviewId = 2L;
+    private static final Random random = new Random();
 
-    // DB 에 있는 실제 유저의 ID
-    private static final UUID userId = UUID.fromString("c2127ac8-7d74-11ef-a420-027a5d64df30");
+    // 테스팅 용 user, movie, review
+    private static final String TESTING = "TESTING TESTING";
+    private static UserEntity testUser = UserEntity.builder()
+            .userEmail(TESTING)
+            .userName(TESTING)
+            .role(UserRole.USER)
+            .userPw(TESTING)
+            .build();
+    private static CachedMovieEntity testMovie = CachedMovieEntity.builder()
+            .movieId(TESTING)
+            .title(TESTING)
+            .posterUrl(TESTING)
+            .genre(TESTING)
+            .releaseDate(TESTING)
+            .plot(TESTING)
+            .runningTime("1234")    // DB 에 길이 제한 있어서 이렇게
+            .actors(TESTING)
+            .director(TESTING)
+            .dibCount(0L)
+            .reviewCount(0L)
+            .commentCount(0L)
+            .sumOfRating(0L)
+            .build();
+    private static ReviewEntity testReview = ReviewEntity.builder()
+            .reviewId(random.nextLong(Long.MAX_VALUE))
+            .title(TESTING)
+            .content(TESTING)
+            .like(0)
+            .build();
 
-    private static final int testSampleNum = 10;
+    /**
+     * 테스팅 용 comment 목록들 (페이징, 정렬 상태 확인용)
+     */
+    private static List<ReviewCommentEntity> testParent;
+    private static List<ReviewCommentEntity> testChild;
+    private static final int TEST_SIZE = 100;
 
-    private static UserEntity testUser;
-    private static ReviewEntity testReview;
-
-    @BeforeAll
-    static void init() {
-        log.info("Initiating required test entities");
-
-        testUser = UserEntity.builder()
-                .userEmail("test@test.com")
-                .userPw("test")
-                .userName("test")
-                .userId(userId)
-                .build();
-
-        testReview = ReviewEntity.builder().reviewId(reviewId).userId(testUser.getUserId()).build();
-    }
-
-    private final String testCommentContent = "this is temp content";
-
-    private ReviewCommentEntity genTestEntity() {
-        return genTestEntity(null, null, 0);
-    }
-
-    private ReviewCommentEntity genTestEntity(Long groupId, Long commentRef, int like) {
+    /**
+     * 손쉽게 엔티티 만들기
+     */
+    private static ReviewCommentEntity genComment(UUID userId, Long reviewId,
+            Long groupId, Long commentRef, int like) {
         return ReviewCommentEntity.builder()
-                .reviewId(testReview.getReviewId())
-                .userId(testUser.getUserId())
-                .content(testCommentContent)
+                .userId(userId)
+                .reviewId(reviewId)
                 .groupId(groupId)
-                .like(like)
                 .commentRef(commentRef)
-                .createdAt(Instant.now()                // Instant 가 DB DATETIME 포맷보다 더 정밀함.
-                        .truncatedTo(
-                                ChronoUnit.SECONDS))   // MySQL DATETIME 은 초 단위까지여서 그 단위만큼 truncate
+                .like(like)
+                .content(TESTING)
+                .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
                 .build();
     }
 
-    // --------------------------------------------------------- //
+    // 검사해야 할 order 들
+    private final Comparator<ReviewCommentEntity> dateDescend
+            = comparing(ReviewCommentEntity::getCreatedAt).reversed()
+            .thenComparing(comparing(ReviewCommentEntity::getReviewCommentId).reversed());
+    private final Comparator<ReviewCommentEntity> likeDescend
+            = comparing(ReviewCommentEntity::getLike).reversed()
+            .thenComparing(comparing(ReviewCommentEntity::getReviewCommentId).reversed());
 
-    private final Long testGroupId = 12345L;
-    private final Long testCommentId = 123456L;
-    private final int testLikes = 333;
+    @BeforeEach
+    void setUp() {
+        // DB 저장된 거 있으면 가져오고 없으면 생성해서 가져옴
+        testUser = userRepo.findByUserEmail(testUser.getUserEmail())
+                .orElseGet(() -> {
+                    userRepo.saveNewUser(testUser);
+                    return userRepo.findByUserEmail(testUser.getUserEmail()).orElseThrow();
+                });
 
-    /**
-     * pk not null 아닌지 확인
-     * <p>
-     * userId, reviewId, 댓글 내용 일치 확인
-     * <p>
-     * 생성 날짜 not null 확인
-     */
-    private void checkNonNullValidation(ReviewCommentEntity result) {
-        log.fine("<- checkNonNullValidation");
+        testMovie = movieRepo.findByMovieId(testMovie.getMovieId())
+                .orElseGet(() -> movieRepo.saveNewMovie(testMovie));
 
-        // 반환 객체 세부 값들 확인
-        assertThat(result).satisfies(
-                t -> assertThat(result).isNotNull(),
-                // pk 가 null 아닌지 확인
-                t -> assertThat(result.getReviewCommentId()).isNotNull(),
+        testReview = reviewRepo.findByReviewId(testReview.getReviewId())
+                .orElseGet(() -> reviewRepo.saveNewReview(
+                        testMovie.getMovieId(),
+                        testUser.getUserId(),
+                        testReview));
 
-                // userId 일치 확인
-                t -> assertThat(result.getUserId()).isNotNull().isEqualTo(userId),
+        // testParent, testChild 정보로 임의 댓글 만듬
+        testParent = IntStream.range(0, TEST_SIZE).parallel()
+                .boxed()
+                .map(i -> genComment(testUser.getUserId(), testReview.getReviewId(),
+                        null, null, TEST_SIZE - i))
+                .toList();
 
-                // reviewId 일치 확인
-                t -> assertThat(result.getReviewId()).isNotNull().isEqualTo(reviewId),
-
-                // 댓글 내용 not null 확인
-                t -> assertThat(result.getContent()).isNotNull(),
-
-                // 생성 날짜 not null 확인
-                t -> assertThat(result.getCreatedAt()).isNotNull());
-
-        // 반환 된 객체 정상
-        log.fine("Result validation passed.");
-        log.fine("Review comment ID : " + result.getReviewCommentId());
-        log.fine("<----->");
-    }
-
-    /**
-     * groupId, commentRef, like 일치 확인
-     */
-    private void checkEquality(ReviewCommentEntity result, Long groupId, Long commentRef,
-            int like) {
-        log.fine("<- checkEquality");
-
-        assertThat(result).satisfies(
-                r -> assertThat(r.getGroupId()).isEqualTo(groupId),
-                r -> assertThat(r.getCommentRef()).isEqualTo(commentRef),
-                r -> assertThat(r.getLike()).isEqualTo(like));
-
-        log.fine("Result equality validation passed.");
-        log.fine("groupId : " + result.getGroupId());
-        log.fine("commentRef : " + result.getCommentRef());
-        log.fine("likes : " + result.getLike());
-        log.fine("--> checkEquality end");
-    }
-
-    // --------------------------------------------------------- //
-
-
-    @Test
-    @DisplayName("주어진 내용 그대로 새로운 댓글 생성")
-    void saveNewReviewComment() {
-        log.info("<- saveNewReviewComment");
-
-        ReviewCommentEntity testEntity = genTestEntity(testGroupId, testCommentId, testLikes);
-
-        log.info("Saving new review comment");
-        ReviewCommentEntity result = reviewCommentRepo.saveNewReviewComment(testEntity);
-
-        // result 의 pk, userId, 댓글 내용, reviewId, 생성일 확인
-        checkNonNullValidation(result);
-
-        // result 의 groupId, commentRef, like 확인
-        // testEntity 에 주어진 내용 그대로인지 확인
-        checkEquality(result, testEntity.getGroupId(), testEntity.getCommentRef(),
-                testEntity.getLike());
-
-        log.info(
-                "-> saveNewReviewComment test passed");
+        testChild = IntStream.range(0, TEST_SIZE).parallel()
+                .boxed()
+                .map(i -> genComment(testUser.getUserId(), testReview.getReviewId(),
+                        null, null, TEST_SIZE - i))
+                .toList();
     }
 
     @Test
     @DisplayName("새로운 부모 댓글 생성")
     void saveNewParentReviewComment() {
-        log.info(
-                "<- saveNewParentReviewComment");
+        log.info("<- saveNewParentReviewComment");
 
-        ReviewCommentEntity testEntity = genTestEntity(testGroupId, testCommentId, testLikes);
+        Long randomGroup = new Random().nextLong();
 
-        log.info("Saving new parent review comment");
-        ReviewCommentEntity result = reviewCommentRepo.saveNewParentReviewComment(reviewId, userId,
-                testEntity);
+        // insert 할 엔티티 생성
+        ReviewCommentEntity testComment = genComment(null, null,
+                randomGroup, null, 100);
 
-        // result 의 pk, userId, 댓글 내용, reviewId, 생성일 확인
-        checkNonNullValidation(result);
+        // DB 저장
+        ReviewCommentEntity result = reviewCommentRepo.saveNewParentReviewComment(
+                testReview.getReviewId(), testUser.getUserId(), testComment);
 
-        // result 의 groupId, commentRef, like 확인
-        // 부모 댓글의 groupId 는 null, 댓글 생성시 like 는 0
-        checkEquality(result, null, testEntity.getCommentRef(), 0);
+        // 확인
+        assertThat(result).satisfies(
+                r -> assertThat(r).isNotNull(),
+                r -> assertThat(r.getReviewCommentId()).isNotNull(),
+                r -> assertThat(r.getReviewId()).isEqualTo(testReview.getReviewId()).isNotNull(),
+                r -> assertThat(r.getUserId()).isEqualTo(testUser.getUserId()).isNotNull(),
+                r -> assertThat(r.getContent()).isEqualTo(TESTING),
+                r -> assertThat(r.getGroupId()).isNull(),
+                r -> assertThat(r.getLike()).isEqualTo(0),
+                r -> assertThat(r.getCommentRef()).isNull(),
+                r -> assertThat(r.getCreatedAt()).isNotNull(),
+                r -> assertThat(r.isUpdated()).isFalse()
+        );
 
-        log.info("ResultEntity : " + result);
-        log.info(
-                "-> saveNewParentReviewComment test passed");
+        log.info("-> saveNewParentReviewComment");
     }
 
     @Test
@@ -196,24 +169,33 @@ class ReviewCommentRepositoryTest {
     void saveNewChildReviewComment() {
         log.info("<- saveNewChildReviewComment");
 
-        // invalid groupId were given
-        ReviewCommentEntity testEntity = genTestEntity(883828L, testCommentId, testLikes);
+        long parentCommentId = reviewCommentRepo.saveNewParentReviewComment(
+                testReview.getReviewId(), testUser.getUserId(),
+                genComment(null, null, random.nextLong(), null, 0)
+        ).getReviewCommentId();
 
-        log.info("Saving new child review comment");
-        ReviewCommentEntity result = reviewCommentRepo.saveNewChildReviewComment(testGroupId,
-                userId, testEntity);
+        // insert 할 엔티티 생성
+        ReviewCommentEntity testComment = genComment(null, testReview.getReviewId(),
+                null, null, 100);
 
-        // result 의 pk, userId, 댓글 내용, reviewId, 생성일 확인
-        checkNonNullValidation(result);
+        // DB 저장
+        ReviewCommentEntity result = reviewCommentRepo.saveNewChildReviewComment(parentCommentId,
+                testUser.getUserId(), testComment);
 
-        // result 의 groupId, commentRef, like 확인
-        // 자식 댓글의 groupId 는 parent Id, 댓글 생성시 like 는 0
-        // testEntity 의 groupId 가 invalid 해도 주어진 걸로 제대로 되는지 확인
-        checkEquality(result, testGroupId, testEntity.getCommentRef(), 0);
+        // 확인
+        assertThat(result).satisfies(
+                r -> assertThat(r).isNotNull(),
+                r -> assertThat(r.getReviewCommentId()).isNotNull(),
+                r -> assertThat(r.getReviewId()).isEqualTo(testReview.getReviewId()).isNotNull(),
+                r -> assertThat(r.getUserId()).isEqualTo(testUser.getUserId()).isNotNull(),
+                r -> assertThat(r.getContent()).isEqualTo(TESTING),
+                r -> assertThat(r.getGroupId()).isEqualTo(parentCommentId).isNotNull(),
+                r -> assertThat(r.getCommentRef()).isNull(),
+                r -> assertThat(r.getCreatedAt()).isNotNull(),
+                r -> assertThat(r.isUpdated()).isFalse()
+        );
 
-        log.info("ResultEntity : " + result);
-        log.info(
-                "-> saveNewChildReviewComment test passed");
+        log.info("-> saveNewChildReviewComment");
     }
 
     @Test
@@ -221,353 +203,399 @@ class ReviewCommentRepositoryTest {
     void findByReviewCommentId() {
         log.info("<- findByReviewCommentId");
 
-        // DB 에 아무 정보 저장
-        ReviewCommentEntity testEntity = reviewCommentRepo.saveNewReviewComment(genTestEntity());
+        ReviewCommentEntity testComment = reviewCommentRepo.saveNewParentReviewComment(
+                testReview.getReviewId(), testUser.getUserId(),
+                genComment(null, null, null, null, 0)
+        );
 
-        // 못찾으면 throw
-        ReviewCommentEntity searchResult = reviewCommentRepo.findByReviewCommentId(
-                testEntity.getReviewCommentId()).orElseThrow();
+        ReviewCommentEntity result = reviewCommentRepo.findByReviewCommentId(
+                testComment.getReviewCommentId()).orElseThrow();
 
-        // 다양한 non null 확인
-        checkNonNullValidation(searchResult);
+        assertThat(result).isEqualTo(testComment);
 
-        // DB 에 넣었던 정보랑 일치하는지 확인
-        assertThat(searchResult).isEqualTo(testEntity);
+        // 없을 땐 empty
+        long random = new Random().nextLong();
+        assertThat(reviewCommentRepo.findByReviewCommentId(random)).isEmpty();
 
-        log.info(
-                "-> findByReviewCommentId test passed");
-    }
-
-    /**
-     * 테스트 용 데이터 db 에 넣고 받기
-     */
-    private List<ReviewCommentEntity> insertTestEntities(Long groupId, Long commentRef,
-            Comparator<ReviewCommentEntity> sortOrder) {
-        return IntStream.range(0, testSampleNum)
-                .boxed()
-                .map(i -> genTestEntity(groupId, commentRef, 15 - i))
-                .map(reviewCommentRepo::saveNewReviewComment)
-                .sorted(sortOrder)
-                .toList();
-    }
-
-    private List<ReviewCommentEntity> insertTestEntities(
-            Comparator<ReviewCommentEntity> sortOrder) {
-        return insertTestEntities(null, null, sortOrder);
+        log.info("-> findByReviewCommentId");
     }
 
     @Test
     @DisplayName("어느 영화 리뷰에 달린 모든 부모 댓글을 검색")
     void findParentCommentByReviewId() {
-        log.info(
-                "<- findParentCommentByReviewId");
+        log.info("<- findParentCommentByReviewId");
 
-        // 확인 용 데이터 insert
-        log.info("Saving new parent review comments");
-
-        // reviewCommentId 순으로 정렬해 비교할 꺼임
-        List<ReviewCommentEntity> testEntities = insertTestEntities(
-                Comparator.comparing(ReviewCommentEntity::getReviewCommentId));
-
-        // 검색 결과 reviewCommentId 순으로 정렬해 받음.
-        List<ReviewCommentEntity> searchResult = reviewCommentRepo.findParentCommentByReviewId(
-                        reviewId, 0, testSampleNum)
-                .stream()
-                .sorted(Comparator.comparing(ReviewCommentEntity::getReviewCommentId))
+        // testParent DB 에 저장, sorted 해서 변수로 가져옴.
+        List<ReviewCommentEntity> testList = testParent.stream()
+                .map(t -> reviewCommentRepo.saveNewParentReviewComment(
+                        testReview.getReviewId(), testUser.getUserId(), t))
+                .sorted(comparing(ReviewCommentEntity::getReviewCommentId).reversed())
                 .toList();
 
-        // 모든 검색 결과 non null 확인
-        searchResult.forEach(this::checkNonNullValidation);
+        testList.forEach(t -> log.fine(t.toString()));
 
-        // 모두 부모 댓글인지 확인
-        searchResult.forEach(r -> assertThat(r.getGroupId()).isNull());
+        // DB 에서 페이징 된 거 가져옴
+        List<ReviewCommentEntity> result1 = reviewCommentRepo.findParentCommentByReviewId(
+                testReview.getReviewId(), 0, TEST_SIZE / 2);
 
-        // 검색 결과에 넣었던 데이터 모두 존재하는지 확인
-        assertThat(searchResult).containsAll(testEntities);
+        result1.forEach(r -> log.fine(r.toString()));
 
-        log.info(
-                "-> findParentCommentByReviewId test passed");
+        // 원하는 개수 만큼, 내용 제대로 가져왔는지 확인
+        assertThat(result1).hasSize(TEST_SIZE / 2);
+        assertThat(testList).containsAll(result1);
+
+        // 부모 댓글인지 확인
+        result1.forEach(r -> assertThat(r.getGroupId()).isNull());
+
+        List<ReviewCommentEntity> result2 = reviewCommentRepo.findParentCommentByReviewId(
+                testReview.getReviewId(), TEST_SIZE / 2, TEST_SIZE / 2);
+
+        result2.forEach(r -> log.fine(r.toString()));
+
+        assertThat(result2).hasSize(TEST_SIZE / 2);
+        assertThat(testList).containsAll(result2);
+
+        result2.forEach(r -> assertThat(r.getGroupId()).isNull());
+
+        // result1 이랑 result2 겹치는 거 없는지 확인
+        assertThat(result1).doesNotContainAnyElementsOf(result2);
+
+        // 없을 땐 empty
+        long random = new Random().nextLong();
+        assertThat(reviewCommentRepo.findParentCommentByReviewId(random, 0, TEST_SIZE))
+                .isEmpty();
+
+        log.info("-> findParentCommentByReviewId");
     }
-
-    private final Comparator<ReviewCommentEntity> latestAndIdDescending = Comparator.comparing(
-                    ReviewCommentEntity::getCreatedAt).reversed()   // 날짜 최신순
-            .thenComparing(Comparator.comparing(ReviewCommentEntity::getReviewCommentId)
-                    .reversed());   // id 내림차순
-
-    private final Comparator<ReviewCommentEntity> likesAndIdDescending = Comparator.comparing(
-                    ReviewCommentEntity::getLike).reversed()        // 좋아요 많은 순
-            .thenComparing(                                         // id 내림차순
-                    Comparator.comparing(ReviewCommentEntity::getReviewCommentId).reversed());
 
     @Test
     @DisplayName("어느 영화 리뷰의 모든 부모 댓글을 최신순으로 검색")
     void findParentCommentByReviewIdOnDateDescend() {
         log.info("<- findParentCommentByReviewIdOnDateDescend");
 
-        // 날짜 최신순, id 내림차순
-        Comparator<ReviewCommentEntity> requiredOrder = latestAndIdDescending;
+        // DB 에 댓글 저장, sorted 해서 변수로 가져옴.
+        List<ReviewCommentEntity> testList = testParent.stream()
+                .map(t -> reviewCommentRepo.saveNewParentReviewComment(
+                        testReview.getReviewId(), testUser.getUserId(), t))
+                .sorted(dateDescend)
+                .toList();
 
-        // 확인 용 데이터 insert
-        log.info("Saving new parent review comments");
+        List<ReviewCommentEntity> result1 = reviewCommentRepo
+                .findParentCommentByReviewIdOnDateDescend(
+                        testReview.getReviewId(), 0, TEST_SIZE / 2);
 
-        List<ReviewCommentEntity> testEntities = insertTestEntities(requiredOrder);
+        List<ReviewCommentEntity> result2 = reviewCommentRepo
+                .findParentCommentByReviewIdOnDateDescend(
+                        testReview.getReviewId(), TEST_SIZE / 2, TEST_SIZE / 2);
 
-        // 검색 결과 받음
-        List<ReviewCommentEntity> searchResult = reviewCommentRepo.findParentCommentByReviewIdOnDateDescend(
-                reviewId, 0, testSampleNum);
+        testList.forEach(t -> log.fine(t.toString()));
+        result1.forEach(t -> log.fine(t.toString()));
+        result2.forEach(t -> log.fine(t.toString()));
 
-        // 모든 검색 결과 not null 확인
-        searchResult.forEach(this::checkNonNullValidation);
+        // 가져온 개수, 내용, 정렬 잘 됐는지 확인
+        assertThat(result1).hasSize(TEST_SIZE / 2);
+        assertThat(testList).containsAll(result1);
+        assertThat(result1).isSortedAccordingTo(dateDescend);
 
-        // 모두 부모 댓글인지 확인
-        searchResult.forEach(r -> assertThat(r.getGroupId()).isNull());
+        // 부모 댓글인지 확인
+        result1.forEach(r -> assertThat(r.getGroupId()).isNull());
 
-        // 검색 결과가 내림차순인지 확인
-        assertThat(searchResult).isSortedAccordingTo(requiredOrder);
+        assertThat(result2).hasSize(TEST_SIZE / 2);
+        assertThat(testList).containsAll(result2);
+        assertThat(result2).isSortedAccordingTo(dateDescend);
 
-        // 검색 결과에 넣었던 데이터 모두 존재하는지 확인
-        assertThat(searchResult).containsAll(testEntities);
+        result2.forEach(r -> assertThat(r.getGroupId()).isNull());
 
-        searchResult = reviewCommentRepo.findParentCommentByReviewIdOnDateDescend(reviewId, 1,
-                testSampleNum / 2);
+        // 겹치는 거 없는지 확인
+        assertThat(result1).doesNotContainAnyElementsOf(result2);
 
-        searchResult.forEach(this::checkNonNullValidation);
-        searchResult.forEach(r -> assertThat(r.getGroupId()).isNull());
-        assertThat(searchResult).isSortedAccordingTo(requiredOrder);
+        // 없을 땐 empty
+        long random = new Random().nextLong();
+        assertThat(reviewCommentRepo
+                .findParentCommentByReviewIdOnDateDescend(random, 0, TEST_SIZE))
+                .isEmpty();
 
-        assertThat(testEntities).containsAll(searchResult);
-        for (int i = 0; i < searchResult.size(); i++) {
-            assertThat(searchResult.get(i)).isEqualTo(testEntities.get(1 + i));
-        }
-
-        log.info(
-                "-> findParentCommentByReviewIdOnDateDescend test passed");
+        log.info("-> findParentCommentByReviewIdOnDateDescend");
     }
 
     @Test
     @DisplayName("어느 영화 리뷰의 모든 부모 댓글을 좋아요 순으로 검색")
     void findParentCommentByReviewIdOnLikeDescend() {
-        log.info(
-                "<- findParentCommentByReviewIdOnLikeDescend");
+        log.info("<- findParentCommentByReviewIdOnLikeDescend");
 
-        // 좋아요 많은 순, id 내림차순
-        Comparator<ReviewCommentEntity> requiredOrder = likesAndIdDescending;
+        // DB 에 댓글 저장, sorted 해서 변수로 가져옴.
+        List<ReviewCommentEntity> testList = testParent.stream()
+                .map(t -> reviewCommentRepo.saveNewParentReviewComment(
+                        testReview.getReviewId(), testUser.getUserId(), t))
+                .sorted(likeDescend)
+                .toList();
 
-        // 확인 용 데이터 insert
-        log.info("Saving new parent review comments");
+        List<ReviewCommentEntity> result1 = reviewCommentRepo
+                .findParentCommentByReviewIdOnLikeDescend(
+                        testReview.getReviewId(), 0, TEST_SIZE / 2);
 
-        List<ReviewCommentEntity> testEntities = insertTestEntities(requiredOrder);
+        List<ReviewCommentEntity> result2 = reviewCommentRepo
+                .findParentCommentByReviewIdOnLikeDescend(
+                        testReview.getReviewId(), TEST_SIZE / 2, TEST_SIZE / 2);
 
-        // 검색 결과 받음
-        List<ReviewCommentEntity> searchResult = reviewCommentRepo.findParentCommentByReviewIdOnLikeDescend(
-                reviewId, 0, testSampleNum);
+        testList.forEach(t -> log.fine(t.toString()));
+        result1.forEach(t -> log.fine(t.toString()));
+        result2.forEach(t -> log.fine(t.toString()));
 
-        // 모든 검색 결과 not null 확인
-        searchResult.forEach(this::checkNonNullValidation);
+        // 가져온 개수, 내용, 정렬 잘 됐는지 확인
+        assertThat(result1).hasSize(TEST_SIZE / 2);
+        assertThat(testList).containsAll(result1);
+        assertThat(result1).isSortedAccordingTo(likeDescend);
 
-        // 모두 부모 댓글인지 확인
-        searchResult.forEach(r -> assertThat(r.getGroupId()).isNull());
+        // 부모 댓글인지 확인
+        result1.forEach(r -> assertThat(r.getGroupId()).isNull());
 
-        // 검색 결과가 내림차순인지 확인
-        assertThat(searchResult).isSortedAccordingTo(requiredOrder);
+        assertThat(result2).hasSize(TEST_SIZE / 2);
+        assertThat(testList).containsAll(result2);
+        assertThat(result2).isSortedAccordingTo(likeDescend);
 
-        // 검색 결과에 넣었던 데이터 모두 존재하는지 확인
-        assertThat(searchResult).containsAll(testEntities);
+        result2.forEach(r -> assertThat(r.getGroupId()).isNull());
 
-        log.info(
-                "-> findParentCommentByReviewIdOnLikeDescend test passed");
+        // 겹치는 거 없는지 확인
+        assertThat(result1).doesNotContainAnyElementsOf(result2);
+
+        // 없을 땐 empty
+        long random = new Random().nextLong();
+        assertThat(reviewCommentRepo
+                .findParentCommentByReviewIdOnLikeDescend(random, 0, TEST_SIZE))
+                .isEmpty();
+
+        log.info("-> findParentCommentByReviewIdOnLikeDescend");
     }
 
     @Test
     @DisplayName("특정 부모 댓글의 모든 자식 댓글을 검색 (최신순 정렬 default)")
     void findChildCommentsByGroupId() {
-        log.info(
-                "<- findChildCommentsByGroupId");
+        log.info("<- findChildCommentsByGroupId");
 
-        Comparator<ReviewCommentEntity> requiredOrder = latestAndIdDescending;
+        // DB 에 댓글 저장
+        Long testGroupId = reviewCommentRepo.saveNewParentReviewComment(
+                        testReview.getReviewId(), testUser.getUserId(),
+                        genComment(null, null, null, null, 0))
+                .getReviewCommentId();
 
-        // 확인 용 데이터 insert
-        log.info("Saving new child review comments");
+        List<ReviewCommentEntity> testList = testChild.stream()
+                .map(t -> reviewCommentRepo.saveNewChildReviewComment(
+                        testGroupId, testUser.getUserId(),
+                        genComment(null, testReview.getReviewId(),
+                                null, null, 0)
+                )).toList();
 
-        List<ReviewCommentEntity> testEntities = insertTestEntities(testGroupId, null,
-                requiredOrder);
+        List<ReviewCommentEntity> result1 = reviewCommentRepo
+                .findChildCommentsByGroupId(testGroupId, 0, TEST_SIZE / 2);
 
-        // 검색 결과 받음
-        List<ReviewCommentEntity> searchResult = reviewCommentRepo.findChildCommentsByGroupId(
-                testGroupId, 0, testSampleNum);
+        List<ReviewCommentEntity> result2 = reviewCommentRepo
+                .findChildCommentsByGroupId(testGroupId, TEST_SIZE / 2, TEST_SIZE / 2);
 
-        // 모든 검색 결과 not null 확인
-        searchResult.forEach(this::checkNonNullValidation);
+        testList.forEach(t -> log.fine(t.toString()));
+        result1.forEach(t -> log.fine(t.toString()));
+        result2.forEach(t -> log.fine(t.toString()));
 
-        // 모두 자식 댓글이고 부모 ID 잘 들어갔는지 확인
-        searchResult.forEach(r -> assertThat(r.getGroupId()).isNotNull().isEqualTo(testGroupId));
+        // 가져온 개수, 내용, 정렬 잘 됐는지 확인
+        assertThat(result1).hasSize(TEST_SIZE / 2);
+        assertThat(testList).containsAll(result1);
+        assertThat(result1).isSortedAccordingTo(dateDescend);
 
-        // 검색 결과가 내림차순인지 확인
-        assertThat(searchResult).isSortedAccordingTo(requiredOrder);
+        // 올바른 자식 댓글인지 확인
+        result1.forEach(r -> assertThat(r.getGroupId()).isEqualTo(testGroupId));
 
-        // 검색 결과에 넣었던 데이터 모두 존재하는지 확인
-        assertThat(searchResult).containsAll(testEntities);
+        assertThat(result2).hasSize(TEST_SIZE / 2);
+        assertThat(testList).containsAll(result2);
+        assertThat(result2).isSortedAccordingTo(dateDescend);
 
-        log.info(
-                "-> findChildCommentsByGroupId test passed");
+        result2.forEach(r -> assertThat(r.getGroupId()).isEqualTo(testGroupId));
+
+        // 겹치는 거 없는지 확인
+        assertThat(result1).doesNotContainAnyElementsOf(result2);
+
+        // 없을 땐 empty
+        long random = new Random().nextLong();
+        assertThat(reviewCommentRepo
+                .findParentCommentByReviewIdOnLikeDescend(random, 0, TEST_SIZE))
+                .isEmpty();
+
+        log.info("-> findChildCommentsByGroupId");
     }
-
-    @Test
-    @DisplayName("DB 의 모든 부모 댓글을 검색")
-    void selectAllParentComments() {
-        log.info("<- selectAllParentComments");
-
-        Comparator<ReviewCommentEntity> idAcs = Comparator.comparing(
-                ReviewCommentEntity::getReviewCommentId);
-
-        // 확인 용 데이터 insert
-        log.info("Saving dummy review comments");
-
-        List<ReviewCommentEntity> parentTestEntities = insertTestEntities(idAcs);
-        List<ReviewCommentEntity> childTestEntities = insertTestEntities(testGroupId, null, idAcs);
-
-        // 검색 결과 받기
-        List<ReviewCommentEntity> searchResult = reviewCommentRepo.selectAllParentComments()
-                .stream()
-                .sorted(idAcs)
-                .toList();
-
-        // 모든 검색 결과 not null 확인
-        searchResult.forEach(this::checkNonNullValidation);
-
-        // 모두 부모 댓글인지 확인
-        searchResult.forEach(r -> assertThat(r.getGroupId()).isNull());
-
-        // 입력한 모든 부모 댓글이 있는지 확인
-        assertThat(searchResult).containsAll(parentTestEntities);
-
-        // 자식 댓글이 없는지 확인
-        assertThat(searchResult).doesNotContainAnyElementsOf(childTestEntities);
-
-        log.info(
-                "-> selectAllParentComments test passed");
-    }
-
-    @Test
-    @DisplayName("DB 의 모든 댓글을 검색")
-    void selectAll() {
-        log.info("<- selectAll");
-
-        Comparator<ReviewCommentEntity> idAcs = Comparator.comparing(
-                ReviewCommentEntity::getReviewCommentId);
-
-        // 확인 용 데이터 insert
-        log.info("Saving dummy review comments");
-
-        List<ReviewCommentEntity> testEntities = new ArrayList<>(insertTestEntities(idAcs));
-        testEntities.addAll(insertTestEntities(testGroupId, null, idAcs));
-
-        // 검색 결과 받기
-        List<ReviewCommentEntity> searchResult = reviewCommentRepo.selectAll()
-                .stream()
-                .sorted(idAcs)
-                .toList();
-
-        // 모든 검색 결과 not null 확인
-        searchResult.forEach(this::checkNonNullValidation);
-
-        // 입력한 모든 댓글이 있는지 확인
-        assertThat(searchResult).containsAll(testEntities);
-
-        log.info(
-                "-> selectAll test passed");
-    }
-
-    private static final UUID userId2 = UUID.fromString("cd1fcf52-7e5e-11ef-acea-00d861a152a7");
-    private static final Long reviewId2 = 3L;
 
     @Test
     @DisplayName("특정 댓글의 정보를 변경")
     void editReviewCommentInfo() {
         log.info("<- editReviewCommentInfo");
 
-        ReviewCommentEntity testEntity = reviewCommentRepo.saveNewReviewComment(genTestEntity());
+        Random random = new Random();
 
-        String replacedContent = "Replaced content!!1243512i3458uy2394";
-        Long replacedCommentRef = 772342L;
+        // DB 에 글 저장
+        ReviewCommentEntity testComment1 = reviewCommentRepo.saveNewParentReviewComment(
+                testReview.getReviewId(), testUser.getUserId(),
+                genComment(null, null, random.nextLong(), null, 0)
+        );
 
-        ReviewCommentEntity replacement = ReviewCommentEntity.builder().
-                content(replacedContent)
-                .commentRef(replacedCommentRef)
+        ReviewCommentEntity testComment2 = reviewCommentRepo.saveNewParentReviewComment(
+                testReview.getReviewId(), testUser.getUserId(),
+                genComment(null, null, random.nextLong(), null, 0)
+        );
+
+        Long randomCommentRef = random.nextLong();
+
+        ReviewCommentEntity replacement = ReviewCommentEntity.builder()
+                .content("replacement-content")
+                .userId(UUID.randomUUID())
+                .reviewCommentId(random.nextLong())
+                .reviewId(random.nextLong())
+                .commentRef(randomCommentRef)
                 .build();
 
-        ReviewCommentEntity editResult = reviewCommentRepo.editReviewCommentInfo(
-                testEntity.getReviewCommentId(), replacement);
+        log.fine(testComment1.toString());
+        log.fine(testComment2.toString());
+        log.fine(replacement.toString());
 
-        // not null 확인
-        checkNonNullValidation(editResult);
-
-        // 기존 정보 훼손 안됐는지 확인
-        assertThat(editResult).satisfies(
-                r -> assertThat(r.getReviewCommentId()).isEqualTo(testEntity.getReviewCommentId()),
-                r -> assertThat(r.getReviewId()).isEqualTo(testEntity.getReviewId()),
-                r -> assertThat(r.getUserId()).isEqualTo(testEntity.getUserId()),
-                r -> assertThat(r.getGroupId()).isEqualTo(testEntity.getGroupId()),
-                r -> assertThat(r.getLike()).isEqualTo(testEntity.getLike()),
-                r -> assertThat(r.getCreatedAt()).isEqualTo(testEntity.getCreatedAt())
+        // DB 에 글 수정
+        ReviewCommentEntity result1
+                = reviewCommentRepo.editReviewCommentInfo(
+                testComment1.getReviewCommentId(), replacement, false
+        );
+        ReviewCommentEntity result2
+                = reviewCommentRepo.editReviewCommentInfo(
+                testComment2.getReviewCommentId(), replacement, true
         );
 
-        // 다른 정보 수정 되었는지 확인
-        assertThat(editResult).satisfies(
-                r -> assertThat(r.getContent()).isEqualTo(replacedContent),
-                r -> assertThat(r.getCommentRef()).isEqualTo(replacedCommentRef),
-                r -> assertThat(r.isUpdated()).isEqualTo(true)
-        );
+        log.fine(result1.toString());
+        log.fine(result2.toString());
 
-        log.info(
-                "-> editReviewCommentInfo test passed");
+        // 기본 불변값들 확인
+        BiConsumer<ReviewCommentEntity, ReviewCommentEntity> checkAssertion = (test, result) ->
+                assertThat(result).satisfies(
+                        r -> assertThat(r.getReviewCommentId())
+                                .isEqualTo(test.getReviewCommentId()).isNotNull(),
+                        r -> assertThat(r.getReviewId())
+                                .isEqualTo(test.getReviewId()).isNotNull(),
+                        r -> assertThat(r.getUserId())
+                                .isEqualTo(test.getUserId()).isNotNull(),
+                        r -> assertThat(r.getGroupId())
+                                .isEqualTo(test.getGroupId()),
+                        r -> assertThat(r.getLike())
+                                .isEqualTo(test.getLike()),
+                        r -> assertThat(r.getCreatedAt())
+                                .isEqualTo(test.getCreatedAt()).isNotNull()
+                );
+
+        checkAssertion.accept(testComment1, result1);
+        checkAssertion.accept(testComment2, result2);
+
+        // 내용 변경 됐는지 확인
+        assertThat(result1.getContent()).isEqualTo(replacement.getContent());
+        assertThat(result2.getContent()).isEqualTo(replacement.getContent());
+
+        assertThat(result1.getCommentRef()).isEqualTo(randomCommentRef);
+        assertThat(result2.getCommentRef()).isEqualTo(randomCommentRef);
+
+        assertThat(result1.isUpdated()).isFalse();
+        assertThat(result2.isUpdated()).isTrue();
+
+        // 없을 땐 에러
+        long randomComment = random.nextLong();
+        assertThatThrownBy(
+                () -> reviewCommentRepo.editReviewCommentInfo(randomComment, replacement, true))
+                .isInstanceOf(Exception.class);
+
+        log.info("-> editReviewCommentInfo");
+    }
+
+    private interface TripleConsumer<T1, T2, T3> {
+
+        void accept(T1 t1, T2 t2, T3 t3);
     }
 
     @Test
     @DisplayName("특정 포스팅 댓글의 좋아요를 수정")
     void updateReviewCommentLikes() {
-        ReviewCommentEntity testEntity = reviewCommentRepo.saveNewReviewComment(genTestEntity());
+        log.info("<- updateReviewCommentLikes");
 
-        ReviewCommentEntity result = reviewCommentRepo.updateReviewCommentLikes(
-                testEntity.getReviewCommentId(), 10);
-
-        checkNonNullValidation(result);
-
-        assertThat(result).satisfies(
-                r -> assertThat(r.getReviewCommentId()).isEqualTo(testEntity.getReviewCommentId()),
-                r -> assertThat(r.getReviewId()).isEqualTo(testEntity.getReviewId()),
-                r -> assertThat(r.getUserId()).isEqualTo(testEntity.getUserId()),
-                r -> assertThat(r.getContent()).isEqualTo(testEntity.getContent()),
-                r -> assertThat(r.getGroupId()).isEqualTo(testEntity.getGroupId()),
-                r -> assertThat(r.getCommentRef()).isEqualTo(testEntity.getCommentRef()),
-                r -> assertThat(r.getCreatedAt()).isEqualTo(testEntity.getCreatedAt()),
-                r -> assertThat(r.isUpdated()).isEqualTo(testEntity.isUpdated())
+        // DB 에 글 저장
+        ReviewCommentEntity test = reviewCommentRepo.saveNewParentReviewComment(
+                testReview.getReviewId(), testUser.getUserId(),
+                genComment(null, null, null, null, 0)
         );
+
+        log.fine(test.toString());
+
+        int targetLikes = 100;
+
+        // 좋아요 변경
+        ReviewCommentEntity result = reviewCommentRepo.updateReviewCommentLikes(
+                test.getReviewCommentId(), targetLikes);
+
+        log.fine(result.toString());
+
+        TripleConsumer<ReviewCommentEntity, ReviewCommentEntity,
+                Function<ReviewCommentEntity, Object>>
+                checkEqualsAndNonNull = (t, r, func) -> assertThat(
+                func.apply(r)).isEqualTo(func.apply(t)).isNotNull();
+
+        // 기본 불변값들 확인
+        checkEqualsAndNonNull.accept(test, result, ReviewCommentEntity::getReviewCommentId);
+        checkEqualsAndNonNull.accept(test, result, ReviewCommentEntity::getReviewId);
+        checkEqualsAndNonNull.accept(test, result, ReviewCommentEntity::getUserId);
+        checkEqualsAndNonNull.accept(test, result, ReviewCommentEntity::getContent);
+        checkEqualsAndNonNull.accept(test, result, ReviewCommentEntity::getCreatedAt);
+        checkEqualsAndNonNull.accept(test, result, ReviewCommentEntity::isUpdated);
+
+        // 좋아요 변경 됬는지 확인
+        assertThat(result.getLike()).isEqualTo(targetLikes);
+
+        // 없을 땐 에러
+        long randomComment = new Random().nextLong();
+        assertThatThrownBy(
+                () -> reviewCommentRepo.updateReviewCommentLikes(randomComment, targetLikes))
+                .isInstanceOf(Exception.class);
+
+        log.info("-> updateReviewCommentLikes");
     }
 
     @Test
-    @DisplayName("부모 댓글 개수 세기")
-    void countParentCommentByReviewId() {
-        long parentInit = reviewCommentRepo.countParentCommentByReviewId(testReview.getReviewId());
+    @DisplayName("댓글의 개수를 파악")
+    void countComments() {
 
-        List<ReviewCommentEntity> testEntityList1 = insertTestEntities(latestAndIdDescending);
-        List<ReviewCommentEntity> testEntityList2 = insertTestEntities(testGroupId, null,
-                latestAndIdDescending);
+        // 테스트용 부모 댓글 DB 저장
+        testParent.forEach(t -> reviewCommentRepo.saveNewParentReviewComment(
+                testReview.getReviewId(), testUser.getUserId(), t
+        ));
 
-        assertThat(reviewCommentRepo.countParentCommentByReviewId(testReview.getReviewId()))
-                .isEqualTo(parentInit + testEntityList1.size());
-    }
+        // 부모 댓글 수 확인
+        assertThat(reviewCommentRepo
+                .countParentCommentByReviewId(testReview.getReviewId()))
+                .isEqualTo(testParent.size());
 
-    @Test
-    @DisplayName("자식 댓글 개수 세기")
-    void countChildCommentByGroupId() {
-        long childInit = reviewCommentRepo.countChildCommentByGroupId(testGroupId);
+        // 테스트용 자식 댓글 DB 저장
+        Long testGroupId = reviewCommentRepo.saveNewParentReviewComment(
+                        testReview.getReviewId(), testUser.getUserId(),
+                        genComment(null, null,
+                                null, null, 0))
+                .getReviewCommentId();
 
-        List<ReviewCommentEntity> testEntityList1 = insertTestEntities(latestAndIdDescending);
-        List<ReviewCommentEntity> testEntityList2 = insertTestEntities(testGroupId, null,
-                latestAndIdDescending);
+        testChild.forEach(t -> reviewCommentRepo.saveNewChildReviewComment(
+                testGroupId, testUser.getUserId(),
+                genComment(null, testReview.getReviewId(), null, null, 0)
+        ));
 
-        assertThat(reviewCommentRepo.countChildCommentByGroupId(testGroupId))
-                .isEqualTo(childInit + testEntityList2.size());
+        // 자식 댓글 수 확인
+        assertThat(reviewCommentRepo
+                .countChildCommentByGroupId(testGroupId))
+                .isEqualTo(testChild.size());
+
+        // 없을땐 0
+        Random random = new Random();
+        assertThat(reviewCommentRepo
+                .countParentCommentByReviewId(random.nextLong()))
+                .isEqualTo(0);
+
+        assertThat(reviewCommentRepo
+                .countChildCommentByGroupId(random.nextLong()))
+                .isEqualTo(0);
     }
 }

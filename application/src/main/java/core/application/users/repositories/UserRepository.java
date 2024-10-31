@@ -22,7 +22,7 @@ public interface UserRepository {
      * @param newUser 새 유저 정보
      * @return {@link UserEntity} 등록된 유저 정보
      */
-    int saveNewUser(UserEntity newUser);
+    UserEntity saveNewUser(UserEntity newUser);
 
 
     //<editor-fold desc="READ">

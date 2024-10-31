@@ -1,8 +1,11 @@
 package core.application.filter;
 
 import core.application.api.exception.InvalidLoginException;
-import core.application.security.JwtTokenUtil;
-import core.application.security.CustomUserDetails;
+import core.application.api.response.ApiResponse;
+import core.application.api.response.code.Message;
+import core.application.security.token.JwtTokenUtil;
+import core.application.security.auth.CustomUserDetails;
+import core.application.security.model.TokenCategory;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -80,7 +82,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
             throw new InvalidLoginException("잘못된 아이디 또는 비밀번호입니다.");
         } catch (IOException | JSONException e) {
             // JSON 파싱 또는 IO 오류 처리
-            log.info("Invalid request format: " + e.getMessage());
+            log.info("Invalid request format: {}", e.getMessage());
             request.setAttribute("exception", new InvalidLoginException("잘못된 형식입니다."));
             throw new InvalidLoginException("잘못된 형식입니다.");
         }
@@ -89,12 +91,11 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     /**
      * 쿠키를 생성합니다.
      *
-     * @param key 쿠키의 키
      * @param value 쿠키의 값
      * @return 생성된 Cookie 객체
      */
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
+    private Cookie createCookie(String value) {
+        Cookie cookie = new Cookie("refreshToken", value);
         cookie.setMaxAge(14*24*60*60); // 쿠키의 최대 수명 설정
         cookie.setHttpOnly(true); // JavaScript에서 접근할 수 없도록 설정
         return cookie;
@@ -123,12 +124,12 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         // token 발급
-        String accessToken = jwtUtil.creatAccessToken(userEmail, userId, role, "access");
-        String refreshToken = jwtUtil.creatRefreshToken(userEmail, "refresh");
+        String accessToken = jwtUtil.creatAccessToken(userEmail, userId, role, TokenCategory.access.toString());
+        String refreshToken = jwtUtil.creatRefreshToken(userEmail, TokenCategory.refresh.toString());
 
         response.setHeader("accessToken", accessToken); // 액세스 토큰을 응답 헤더에 추가
-        response.addCookie(createCookie("refreshToken", refreshToken)); // 리프레시 토큰을 쿠키에 추가
-        response.setStatus(HttpStatus.OK.value()); // 응답 상태를 OK로 설정
+        response.addCookie(createCookie(refreshToken)); // 리프레시 토큰을 쿠키에 추가
+        ApiResponse.onCreateSuccess(Message.createMessage("Access Token, Refresh Token을 생성 성공했습니다."));
     }
 
     /**

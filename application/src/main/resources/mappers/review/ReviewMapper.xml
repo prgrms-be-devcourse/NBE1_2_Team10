@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="core.application.reviews.repositories.mapper.ReviewMapper">
+<mapper namespace="core.application.reviews.repositories.mybatis.mappers.ReviewMapper">
 
     <insert id="saveNewReview" parameterType="map" useGeneratedKeys="true" keyProperty="review.reviewId" keyColumn="review_id">
         INSERT INTO review_table
@@ -65,6 +65,13 @@
         ORDER BY `like` DESC, review_id DESC
         LIMIT #{num} OFFSET #{offset}
     </select>
+
+    <select id="countByMovieId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM review_table
+        WHERE movie_id = #{movieId}
+    </select>
+
 
     <select id="findByUserId" resultMap="ReviewResultMap">
         SELECT * FROM REVIEW_TABLE WHERE user_id = #{userId}
