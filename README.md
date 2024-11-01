@@ -19,7 +19,7 @@ CineVerse(영화 소개 및 평론 사이트)
 ---
 ### 개발 도구
 
-[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1728542745170?alt=media&token=684f61eb-f61e-4ef8-8989-1e145ca4099a)](https://github.com/msdio/stackticon)
+[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1730444174348?alt=media&token=c6490168-90eb-48bc-8f38-9166b4c082b7)](https://github.com/msdio/stackticon)
 
 ### 백엔드 기술 스택
 | 소프트웨어           | 비고       |
