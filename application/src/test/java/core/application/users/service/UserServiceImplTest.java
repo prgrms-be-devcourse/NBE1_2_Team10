@@ -1,119 +1,200 @@
 package core.application.users.service;
 
-import core.application.security.service.AuthenticatedUserService;
-import core.application.users.models.dto.MessageResponseDTO;
+import core.application.users.exception.UserNotFoundException;
 import core.application.users.models.dto.SignupReqDTO;
 import core.application.users.models.dto.UserDTO;
 import core.application.users.models.dto.UserUpdateReqDTO;
 import core.application.users.models.entities.UserEntity;
 import core.application.users.models.entities.UserRole;
 import core.application.users.repositories.UserRepository;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import static org.mockito.Mockito.when;
+import java.util.UUID;
 
-@ExtendWith(MockitoExtension.class)
-public class UserServiceImplTest {
-    @Mock
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+class UserServiceImplTest {
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
     private UserRepository userRepository;
 
-    @Mock
-    private AuthenticatedUserService authenticatedUserService;
-
-    @InjectMocks
-    private UserServiceImpl userService;
-
-    SignupReqDTO signupReqDTO;
-
-    UserUpdateReqDTO userUpdateReqDTO;
-
-    UserEntity userEntity;
-
-    @BeforeEach
-    public void init() {
-        signupReqDTO = SignupReqDTO.builder()
-                .userEmail("anyone@naver.com")
-                .userPw("ilive123!123")
-                .userName("anyany")
-                .alias("anyone")
-                .phoneNum("010-1111-1111")
-                .role(UserRole.USER)
-                .build();
-
-        userUpdateReqDTO = UserUpdateReqDTO.builder()
-                .userEmail("anyone@naver.com")
-                .userPw("ilive123!123")
-                .userName("anyany")
-                .alias("anyone")
-                .phoneNum("010-1111-1111")
-                .build();
-
-        userEntity = UserEntity.builder()
-                .userEmail("anyone@naver.com")
-                .userPw("ilive123!123")
-                .userName("anyany")
-                .alias("anyone")
-                .phoneNum("010-1111-1111")
-                .role(UserRole.USER)
-                .build();
-    }
-
     @Test
+    @Transactional
+    @Rollback(false) // 롤백하지 않도록 설정
     @DisplayName("회원 가입 시 정상적으로 데이터 저장")
-    public void userService_signup_returnMessageResponseDTO() {
-        when(userRepository.saveNewUser(Mockito.any(UserEntity.class))).thenReturn(userEntity);
-        when(userRepository.findByUserEmail(signupReqDTO.getUserEmail())).thenReturn(Optional.of(userEntity));
+    void signup() {
+        // given
+        // 사용자 객체 생성
+        SignupReqDTO newUser = SignupReqDTO.builder()
+                .userEmail("winter@naver.com")
+                .userPw("ilive123!")
+                .userName("winter")
+                .phoneNum("010-1111-1111")
+                .role(UserRole.valueOf("USER"))
+                .alias("winter")
+                .build();
 
-        MessageResponseDTO messageResponseDTO = userService.signup(signupReqDTO);
+        newUser.encodePassword();
 
-        Assertions.assertThat(messageResponseDTO).isNotNull();
+        UserEntity userEntity = newUser.toEntity();
+
+        // when
+        System.out.println(userRepository.saveNewUser(newUser.toEntity()));;
+
+        // then
+        Optional<UserEntity> savedUser = userRepository.findByUserEmail("winter@naver.com");
+        if (savedUser.isEmpty()) {
+            throw new UserNotFoundException("회원 가입을 실패했습니다.");
+        }
+        System.out.println(savedUser.get().getUserId());
+
+        assertEquals(savedUser.get().getUserEmail(), newUser.getUserEmail());
     }
 
     @Test
-    public void userService_updateUser_returnMessageResponseDTO() {
-        when(authenticatedUserService.getAuthenticatedUserEmail()).thenReturn(userUpdateReqDTO.getUserEmail());
-        when(userRepository.findByUserEmail(signupReqDTO.getUserEmail())).thenReturn(Optional.of(userEntity));
-        when(userRepository.editUserInfo(Mockito.any(UserEntity.class))).thenReturn(1);
+    @DisplayName("회원 가입 시 데이터 중복으로 exception 발생")
+    void signupWithExistingEmail_shouldThrowDuplicateException() {
+        // given
+        // 사용자 객체 생성
+        SignupReqDTO newUser = SignupReqDTO.builder()
+                .userEmail("karina@naver.com")
+                .userPw("ilive123!")
+                .userName("karina")
+                .phoneNum("010-1111-1111")
+                .role(UserRole.valueOf("USER"))
+                .alias("karina")
+                .build();
 
-        MessageResponseDTO messageResponseDTO = userService.updateUserInfo(userUpdateReqDTO);
+        newUser.encodePassword();
 
-        Assertions.assertThat(messageResponseDTO).isNotNull();
+        // 사용자 객체 최초로 저장
+        userRepository.saveNewUser(newUser.toEntity());
+
+        // when & then
+        assertThrows(DataIntegrityViolationException.class, () -> {
+            // 중복된 유저를 다시 저장하려고 시도 (두 번째 저장)
+            userRepository.saveNewUser(newUser.toEntity());
+        });
     }
 
     @Test
-    public void userService_deleteUser_returnMessageResponseDTO() {
-        when(authenticatedUserService.getAuthenticatedUserId()).thenReturn(userEntity.getUserId());
-        when(userRepository.deleteUser(userEntity.getUserId())).thenReturn(1);
+    void updateUser() {
+        // given
+        // 회원 가입
+        SignupReqDTO newUser = SignupReqDTO.builder()
+                .userEmail("anyone@naver.com")
+                .userPw("ilive123!")
+                .userName("any")
+                .phoneNum("010-1111-1111")
+                .role(UserRole.valueOf("USER"))
+                .alias("anyone")
+                .build();
 
-        MessageResponseDTO messageResponseDTO = userService.deleteUser();
+        userService.signup(newUser);
 
-        Assertions.assertThat(messageResponseDTO).isNotNull();
+        // 사용자 객체 생성
+        UserUpdateReqDTO updateReqUser = UserUpdateReqDTO.builder()
+                .userEmail("anyone@naver.com")
+                .userPw("ilive123!123")
+                .userName("anyany")
+                .alias("anyone")
+                .phoneNum("010-1111-1111")
+                .build();
+
+        String userEmail = updateReqUser.getUserEmail();
+
+        // 기존 객체
+        Optional<UserEntity> originUserEntity = userRepository.findByUserEmail(userEmail);
+        if (originUserEntity.isEmpty()) {
+            throw new UserNotFoundException("기존에 입력된 회원 정보가 존재하지 않습니다.");
+        }
+
+        // 정보 갱신 반영을 위한 객체 생성
+        UserDTO updatedUser = UserDTO.builder()
+                .userEmail(originUserEntity.get().getUserEmail())
+                .userId(originUserEntity.get().getUserId()) // 기존 userId 유지
+                .userPw(updateReqUser.getUserPw() != null ? updateReqUser.getUserPw() : originUserEntity.get().getUserPw())
+                .alias(updateReqUser.getAlias() != null ? updateReqUser.getAlias() : originUserEntity.get().getAlias())
+                .role(originUserEntity.get().getRole())
+                .phoneNum(updateReqUser.getPhoneNum() != null ? updateReqUser.getPhoneNum() : originUserEntity.get().getPhoneNum())
+                .userName(updateReqUser.getUserName() != null ? updateReqUser.getUserName() : originUserEntity.get().getUserName())
+                .build();
+
+        updatedUser.encodePassword();
+
+        // when
+        userRepository.editUserInfo(updatedUser.toEntity());
+
+        // then
+        Optional<UserEntity> savedUser = userRepository.findByUserEmail(originUserEntity.get().getUserEmail());
+        if (savedUser.isEmpty()) {
+            throw new UserNotFoundException("회원 가입을 실패했습니다.");
+        }
+        assertEquals(savedUser.get().getUserPw(), updatedUser.toEntity().getUserPw());
     }
 
     @Test
-    public void userService_getUserByUserId_returnUserEntity() {
-        when(userRepository.findByUserId(userEntity.getUserId())).thenReturn(Optional.of(userEntity));
-
-        Optional<UserEntity> userEntityReturn = userService.getUserByUserId(userEntity.getUserId());
-
-        Assertions.assertThat(userEntityReturn).isPresent();
+    void deleteUser() { // spring security와 관련해서 test 코드를 작성해야 하므로 추후 작성
     }
 
     @Test
-    public void userService_getUserByUserEmail_returnUserEntity() {
-        when(userRepository.findByUserEmail(userEntity.getUserEmail())).thenReturn(Optional.of(userEntity));
+    void getUserByUserId() {
+        // given
+        // 사용자 객체 생성
+        SignupReqDTO newUser = SignupReqDTO.builder()
+                .userEmail("ningning@naver.com")
+                .userPw("ilive123!")
+                .userName("ningning")
+                .phoneNum("010-1111-1111")
+                .role(UserRole.valueOf("USER"))
+                .alias("ningning")
+                .build();
 
-        Optional<UserEntity> userEntityReturn = userService.getUserByUserEmail(userEntity.getUserEmail());
+        newUser.encodePassword();
 
-        Assertions.assertThat(userEntityReturn).isPresent();
+        userRepository.saveNewUser(newUser.toEntity());
+
+        UUID userId = userRepository.findByUserEmail("ningning@naver.com").get().getUserId();
+
+        // when
+        Optional<UserEntity> savedUser = userRepository.findByUserId(userId);
+
+        // then
+        assertEquals(savedUser.get().getUserPw(), newUser.toEntity().getUserPw());
+    }
+
+    @Test
+    void getUserByUserEmail() {
+        // given
+        // 사용자 객체 생성
+        SignupReqDTO newUser = SignupReqDTO.builder()
+                .userEmail("giselle@naver.com")
+                .userPw("ilive123!")
+                .userName("giselle")
+                .phoneNum("010-1111-1111")
+                .role(UserRole.valueOf("USER"))
+                .alias("giselle")
+                .build();
+
+        newUser.encodePassword();
+
+        userRepository.saveNewUser(newUser.toEntity());
+
+        // when
+        Optional<UserEntity> savedUser = userRepository.findByUserEmail("giselle@naver.com");
+
+        // then
+        assertEquals(savedUser.get().getUserPw(), newUser.toEntity().getUserPw());
     }
 }
