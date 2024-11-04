@@ -1,10 +1,9 @@
 package core.application.filter;
 
 import core.application.api.exception.CommonForbiddenException;
-import core.application.security.model.TokenCategory;
 import core.application.users.models.entities.UserEntity;
-import core.application.security.auth.CustomUserDetails;
-import core.application.security.token.TokenService;
+import core.application.security.CustomUserDetails;
+import core.application.security.TokenService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -51,50 +50,27 @@ public class JWTFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 로컬 로그인 Access Token
         String accessToken = request.getHeader("accessToken");
-        System.out.println(accessToken);
 
-        // OAuth Access Token
+        // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
-            accessToken = tokenService.getOAuthAccessToken(request);
-        }
-
-        // OAuth 로그인 시 데이터
-        String naverCode = request.getParameter("code");
-        String googleAuthInfo = request.getParameter("Authorization");
-
-        // Access Token이 없거나 OAuth 로그인이 되어 있지 않다면 다음 필터로 넘김
-        if (accessToken == null && naverCode == null && googleAuthInfo == null) {
             log.info("[Access Token이 없는 사용자의 요청] 접근 URL : {}", request.getRequestURL());
             request.setAttribute("exception", new CommonForbiddenException("Access Token이 존재하지 않습니다."));
             filterChain.doFilter(request, response);
         }
         else {
             try {
-                // Access Token에 담긴 사용자 정보
-                UserEntity userEntity = tokenService.getUserByAccessToken(accessToken).get();
+                Optional<UserEntity> userEntity = tokenService.getUserByAccessToken(accessToken);
 
-                Authentication authToken = null;
+                // UserDetails에 회원 정보 객체 담기
+                CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
 
-                // 토큰의 사용자 정보를 추출해 UsernamePasswordAuthenticationToken을 생성하여 인증 객체 설정
-                if (tokenService.checkCategoryFromAccessToken(accessToken, TokenCategory.access.toString())) {
-                    CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
-                    authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null,
-                            customUserDetails.getAuthorities());
-                }
+                // 스프링 시큐리티 인증 토큰 생성
+                Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null,
+                    customUserDetails.getAuthorities());
 
-                // 토큰의 사용자 정보를 추출해 UsernamePasswordAuthenticationToken을 생성하여 인증 객체 설정
-                else if (tokenService.checkCategoryFromAccessToken(accessToken, TokenCategory.OAuth.toString())) {
-                    Optional<UserEntity> oAuthUser = tokenService.getUserByAccessToken(accessToken);
-                    if (oAuthUser.isPresent()) {
-                        CustomUserDetails customUserDetails = new CustomUserDetails(oAuthUser.get());
-                        authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
-                    }
-                }
                 // 세션에 사용자 등록
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-
             } catch (ExpiredJwtException e) {
                 log.error(e.getMessage());
                 request.setAttribute("exception", e);
@@ -108,11 +84,5 @@ public class JWTFilter extends OncePerRequestFilter {
             // 다음 필터로 요청 전달
             filterChain.doFilter(request, response);
         }
-    }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        return path.equals("/users/signin") || path.equals("/users/signup"); // /users/signin과 /users/signup 경로는 필터링 제외
     }
 }

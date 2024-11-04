@@ -16,10 +16,4 @@ public class UserExceptionHandler {
 		log.error("중복된 EMAIL 회원가입 시도");
 		return ApiResponse.onFailure(ErrorStatus.DUPLICATE_EMAIL.getCode(), e.getMessage(), null);
 	}
-
-	@ExceptionHandler(UserNotFoundException.class)
-	public ApiResponse<?> handleUserNotFoundException(UserNotFoundException e) {
-		log.error("찾을 수 없는 사용자");
-		return ApiResponse.onFailure(ErrorStatus.NOT_FOUND_USER.getCode(), e.getMessage(), null);
-	}
 }

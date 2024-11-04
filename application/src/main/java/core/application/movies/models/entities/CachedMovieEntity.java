@@ -1,8 +1,5 @@
 package core.application.movies.models.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,13 +12,10 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @ToString
-@Entity
-@Table(name = "cached_movie_table")
 public class CachedMovieEntity {
 	/**
 	 * {@code 알파벳}-{@code 숫자} 형태 {@code (KMDB 영화 ID 형태)}
 	 */
-	@Id
 	private String movieId;
 	private String title;
 	private String posterUrl;

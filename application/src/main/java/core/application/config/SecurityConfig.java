@@ -3,12 +3,10 @@ package core.application.config;
 import core.application.filter.CustomLoginFilter;
 import core.application.filter.CustomLogoutFilter;
 import core.application.filter.JWTFilter;
-import core.application.security.auth.CustomUserDetailsService;
-import core.application.security.oauth.CustomOAuth2UserService;
-import core.application.security.oauth.CustomOAuthSuccessHandler;
-import core.application.security.service.JwtAuthenticationEntryPoint;
-import core.application.security.token.JwtTokenUtil;
-import core.application.security.token.TokenService;
+import core.application.security.CustomUserDetailsService;
+import core.application.security.JwtAuthenticationEntryPoint;
+import core.application.security.JwtTokenUtil;
+import core.application.security.TokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -32,10 +30,9 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
     private final AuthenticationConfiguration authenticationConfiguration;
     private final CustomUserDetailsService userDetailsService;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final CustomOAuthSuccessHandler customSuccessHandler;
     private final JwtTokenUtil jwtUtil;
     private final JwtAuthenticationEntryPoint entryPoint;
 
@@ -43,21 +40,16 @@ public class SecurityConfig {
      * 의존성 주입을 위한 생성자.
      *
      * @param authenticationConfiguration AuthenticationConfiguration 객체
-     * @param userDetailsService 사용자 세부 정보 서비스를 위한 객체
-     * @param customOAuth2UserService OAuth 사용자 세부 정보 서비스를 위한 객체
-     * @param jwtUtil JWT 관련 작업을 위한 유틸리티 클래스
-     * @param customSuccessHandler OAuth 인증 성공 시 access token을 반환하는 핸들러
+     * @param userDetailsService          사용자 세부 정보 서비스를 위한 객체
+     * @param jwtUtil                     JWT 관련 작업을 위한 유틸리티 클래스
      */
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
-            CustomUserDetailsService userDetailsService,
-            CustomOAuth2UserService customOAuth2UserService, JwtTokenUtil jwtUtil,
-            JwtAuthenticationEntryPoint entryPoint, CustomOAuthSuccessHandler customSuccessHandler) {
+            CustomUserDetailsService userDetailsService, JwtTokenUtil jwtUtil,
+            JwtAuthenticationEntryPoint entryPoint) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.userDetailsService = userDetailsService;
-        this.customOAuth2UserService = customOAuth2UserService;
         this.jwtUtil = jwtUtil;
         this.entryPoint = entryPoint;
-        this.customSuccessHandler = customSuccessHandler;
     }
 
     /**
@@ -104,14 +96,6 @@ public class SecurityConfig {
 
         // HTTP 기본 인증 비활성화
         http.httpBasic(AbstractHttpConfigurer::disable);
-
-        // OAuth2
-        http.oauth2Login((outh2) -> outh2
-                .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
-                        .userService(customOAuth2UserService))
-                .successHandler(customSuccessHandler))
-                .addFilterAfter(new JWTFilter(tokenService), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new CustomLoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), CustomLoginFilter.class);
 
         // 다양한 엔드포인트에 대한 인가 규칙 정의
         http.authorizeRequests((auth) -> auth

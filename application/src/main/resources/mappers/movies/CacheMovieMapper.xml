@@ -29,7 +29,7 @@
                director, dib_count, review_count, comment_count, sum_of_rating
         from cached_movie_table
         order by dib_count desc
-            limit #{num}
+        limit #{num}
     </select>
 
     <select id="selectOnAVGRatingDescend" resultType="core.application.movies.models.entities.CachedMovieEntity">
@@ -44,12 +44,12 @@
                director, dib_count, review_count, comment_count, sum_of_rating
         from cached_movie_table
         order by round(sum_of_rating / comment_count, 1) desc
-            limit #{num}
+        limit #{num}
     </select>
 
     <select id="selectOnReviewCountDescend" resultType="core.application.movies.models.entities.CachedMovieEntity">
         select movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
-               director, dib_count, review_count, comment_count, sum_of_rating
+            director, dib_count, review_count, comment_count, sum_of_rating
         from cached_movie_table
         order by review_count desc
             limit #{num}
@@ -61,14 +61,8 @@
         from cached_movie_table
         where genre like concat('%', #{genre}, '%') and sum_of_rating > 0
         order by round(sum_of_rating / comment_count, 1) desc
-            limit 10
+        limit 10
         offset #{offset}
-    </select>
-
-    <select id="selectGenreMovieCount">
-        select count(*)
-        from cached_movie_table
-        where genre like concat('%', #{genre}, '%')
     </select>
 
     <update id="update">

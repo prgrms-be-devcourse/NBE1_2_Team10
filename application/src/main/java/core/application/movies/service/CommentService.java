@@ -1,8 +1,8 @@
 package core.application.movies.service;
 
+import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +21,6 @@ import core.application.movies.repositories.comment.CommentDislikeRepository;
 import core.application.movies.repositories.comment.CommentLikeRepository;
 import core.application.movies.repositories.comment.CommentRepository;
 import core.application.movies.repositories.movie.CachedMovieRepository;
-import core.application.users.models.entities.UserEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,30 +34,31 @@ public class CommentService {
 	private final CommentDislikeRepository dislikeRepository;
 
 	@Transactional(readOnly = true)
-	public Page<CommentRespDTO> getComments(String movieId, int page, CommentSort sort, UUID userId) {
-		return switch (sort) {
-			case LIKE -> commentRepository.findByMovieIdOnLikeDescend(movieId, userId, page);
-			case LATEST -> commentRepository.findByMovieIdOnDateDescend(movieId, userId, page);
-			default -> commentRepository.findByMovieIdOnDislikeDescend(movieId, userId, page);
-		};
+	public List<CommentRespDTO> getComments(String movieId, int page, CommentSort sort, UUID userId) {
+		if (sort.equals(CommentSort.LIKE)) {
+			return commentRepository.findByMovieIdOnLikeDescend(movieId, userId, page * 10);
+		}
+		if (sort.equals(CommentSort.LATEST)) {
+			return commentRepository.findByMovieIdOnDateDescend(movieId, userId, page * 10);
+		}
+		return commentRepository.findByMovieIdOnDislikeDescend(movieId, userId, page * 10);
 	}
 
 	@Transactional
-	public CommentRespDTO writeCommentOnMovie(CommentWriteReqDTO writeReqDTO, UserEntity user, String movieId) {
+	public CommentRespDTO writeCommentOnMovie(CommentWriteReqDTO writeReqDTO, UUID userId, String movieId) {
 		// 이미 작성한 기록이 있는지 확인한다.
-		log.info("user = {}", user);
-		if (commentRepository.existsByMovieIdAndUserId(movieId, user.getUserId())) {
+		if (commentRepository.existsByMovieIdAndUserId(movieId, userId)) {
 			throw new InvalidWriteCommentException("한줄평은 1회 작성만 가능합니다.");
 		}
-		CommentEntity newComment = CommentEntity.of(writeReqDTO, movieId, user.getUserId());
-		CommentEntity save = commentRepository.saveNewComment(movieId, user.getUserId(), newComment);
+		CommentEntity newComment = CommentEntity.of(writeReqDTO, movieId, userId);
+		CommentEntity save = commentRepository.saveNewComment(movieId, userId, newComment);
 		CachedMovieEntity movie = movieRepository.findByMovieId(movieId)
 			.orElseThrow(() -> new NoMovieException("존재하지 않는 영화입니다."));
 		log.info("수정 전 영화 총 평점 : {}, 수정 전 영화 한줄평 개수 : {}", movie.getSumOfRating(), movie.getCommentCount());
 		movie.isCommentedWithRating(newComment.getRating());
 		log.info("수정된 영화 총 평점 : {}, 수정된 영화 한줄평 개수 : {}", movie.getSumOfRating(), movie.getCommentCount());
 		movieRepository.editMovie(movieId, movie);
-		return CommentRespDTO.of(save, user.getAlias());
+		return CommentRespDTO.from(save);
 	}
 
 	@Transactional
@@ -71,16 +71,13 @@ public class CommentService {
 		if (!comment.getMovieId().equals(movieId)) {
 			throw new NotMatchMovieCommentException("해당 영화의 한줄평이 아닙니다.");
 		}
-
 		commentRepository.deleteComment(commentId);
 		CachedMovieEntity movie = movieRepository.findByMovieId(movieId)
 			.orElseThrow(() -> new NoMovieException("존재하는 영화가 아닙니다."));
 		log.info("[MovieService.deleteCommentOnMovie] 영화 정보 수정");
-		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(),
-			movie.getCommentCount());
+		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(), movie.getCommentCount());
 		movie.deleteComment(comment.getRating());
-		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(),
-			movie.getCommentCount());
+		log.info("[MovieService.deleteCommentOnMovie] before rating : {}, commentCount : {}", movie.getSumOfRating(), movie.getCommentCount());
 		movieRepository.editMovie(movieId, movie);
 	}
 

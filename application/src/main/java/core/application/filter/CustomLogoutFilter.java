@@ -1,8 +1,6 @@
 package core.application.filter;
 
-import core.application.api.response.ApiResponse;
-import core.application.api.response.code.Message;
-import core.application.security.token.TokenService;
+import core.application.security.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -69,17 +67,17 @@ public class CustomLogoutFilter extends GenericFilterBean {
         String refreshToken = tokenService.getRefreshToken(request);
 
         // Refresh 토큰 유효성 검증
-        if (tokenService.isRefreshTokenValid(refreshToken)) {
+        if (tokenService.validateRefreshToken(refreshToken).equals("valid token")) {
             // 로그아웃 진행 -> Refresh 토큰 DB에서 제거
             tokenService.inactiveRefreshToken(request);
         }
 
         // Refresh 토큰 쿠키 값을 0으로 설정하여 삭제
-        Cookie cookie = new Cookie("refreshToken", null);
+        Cookie cookie = new Cookie("refresh", null);
         cookie.setMaxAge(0);
         cookie.setPath("/");
 
         response.addCookie(cookie); // 쿠키 추가
-        ApiResponse.onDeleteSuccess(Message.createMessage("Refresh Token 삭제를 완료했습니다."));
+        response.setStatus(HttpServletResponse.SC_OK); // 응답 상태를 OK로 설정
     }
 }

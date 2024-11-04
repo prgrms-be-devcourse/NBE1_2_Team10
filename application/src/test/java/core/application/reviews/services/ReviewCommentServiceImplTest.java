@@ -1,28 +1,41 @@
 package core.application.reviews.services;
 
-import static java.util.Comparator.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static java.util.Comparator.comparing;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
-import core.application.reviews.exceptions.*;
-import core.application.reviews.models.entities.*;
-import core.application.reviews.repositories.*;
-import java.time.*;
-import java.util.*;
-import java.util.logging.*;
-import java.util.stream.*;
-import org.junit.jupiter.api.*;
-import org.mockito.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.boot.test.context.*;
-import org.springframework.boot.test.mock.mockito.*;
-import org.springframework.transaction.annotation.*;
+import core.application.reviews.exceptions.NoReviewCommentFoundException;
+import core.application.reviews.exceptions.NoReviewFoundException;
+import core.application.reviews.models.entities.ReviewCommentEntity;
+import core.application.reviews.models.entities.ReviewEntity;
+import core.application.reviews.repositories.ReviewCommentRepository;
+import core.application.reviews.repositories.ReviewRepository;
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
+import java.util.logging.Logger;
+import java.util.stream.LongStream;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.AdditionalMatchers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootTest
 @Transactional
 class ReviewCommentServiceImplTest {
 
     private final Logger log = Logger.getLogger(ReviewCommentServiceImplTest.class.getName());
+
+    @MockBean
+    private WebClient webClient;
 
     @Autowired
     private ReviewCommentService reviewCommentService;
@@ -34,14 +47,14 @@ class ReviewCommentServiceImplTest {
     private ReviewRepository reviewRepo;
 
     private static final Random random = new Random();
-    private static final int testSize = 100;
+    private static final int testSize = 10;
 
-    private static final Comparator<ReviewCommentEntity> latestOrder = comparing(
+    private static Comparator<ReviewCommentEntity> latestOrder = comparing(
             ReviewCommentEntity::getCreatedAt).reversed()
             .thenComparing(comparing(ReviewCommentEntity::getReviewCommentId).reversed());
-    private static final Comparator<ReviewCommentEntity> mostLikeOrder = comparing(
+    private static Comparator<ReviewCommentEntity> mostLikeOrder = comparing(
             ReviewCommentEntity::getLike)
-            .thenComparing(comparing(ReviewCommentEntity::getReviewCommentId).reversed());
+            .thenComparing(comparing(ReviewCommentEntity::getReviewCommentId));
 
 
     private ReviewCommentEntity genComment(Long reviewCommentId, Long reviewId, UUID userId,
@@ -67,6 +80,10 @@ class ReviewCommentServiceImplTest {
 
     private List<ReviewCommentEntity> genParentComments(Long reviewId) {
         return genComments(reviewId, null, null);
+    }
+
+    private List<ReviewCommentEntity> genChildComments(Long reviewId, Long groupId) {
+        return genComments(reviewId, groupId, null);
     }
 
     private void setupRepo(Long reviewId, Long reviewCommentId) {
@@ -128,13 +145,15 @@ class ReviewCommentServiceImplTest {
         assertThat(onLatest).isSortedAccordingTo(latestOrder);
         assertThat(onLikes).isSortedAccordingTo(mostLikeOrder);
 
-        assertThatThrownBy(() -> reviewCommentService.getParentReviewComments(
-                random.nextLong(), ReviewCommentSortOrder.LATEST, 0, testSize))
-                .isInstanceOf(NoReviewFoundException.class);
+        assertThatThrownBy(() -> {
+            reviewCommentService.getParentReviewComments(random.nextLong(),
+                    ReviewCommentSortOrder.LATEST, 0, testSize);
+        }).isInstanceOf(NoReviewFoundException.class);
 
-        assertThatThrownBy(() -> reviewCommentService.getParentReviewComments(
-                random.nextLong(), ReviewCommentSortOrder.LIKE, 0, testSize))
-                .isInstanceOf(NoReviewFoundException.class);
+        assertThatThrownBy(() -> {
+            reviewCommentService.getParentReviewComments(random.nextLong(),
+                    ReviewCommentSortOrder.LIKE, 0, testSize);
+        }).isInstanceOf(NoReviewFoundException.class);
 
         log.info("--> getParentReviewComments test passed");
     }
@@ -149,9 +168,10 @@ class ReviewCommentServiceImplTest {
 
         setupRepo(reviewId, random.nextLong());
 
-        assertThatThrownBy(() -> reviewCommentService.addNewParentReviewComment(
-                random.nextLong(), UUID.randomUUID(), temp))
-                .isInstanceOf(NoReviewFoundException.class);
+        assertThatThrownBy(() -> {
+            reviewCommentService.addNewParentReviewComment(random.nextLong(), UUID.randomUUID(),
+                    temp);
+        }).isInstanceOf(NoReviewFoundException.class);
 
         reviewCommentService.addNewParentReviewComment(reviewId, UUID.randomUUID(), temp);
 
@@ -170,13 +190,15 @@ class ReviewCommentServiceImplTest {
 
         setupRepo(reviewId, groupId);
 
-        assertThatThrownBy(() -> reviewCommentService.addNewChildReviewComment(
-                random.nextLong(), groupId, UUID.randomUUID(), temp))
-                .isInstanceOf(NoReviewFoundException.class);
+        assertThatThrownBy(() -> {
+            reviewCommentService.addNewChildReviewComment(random.nextLong(), groupId,
+                    UUID.randomUUID(), temp);
+        }).isInstanceOf(NoReviewFoundException.class);
 
-        assertThatThrownBy(() -> reviewCommentService.addNewChildReviewComment(
-                reviewId, random.nextLong(), UUID.randomUUID(), temp))
-                .isInstanceOf(NoReviewCommentFoundException.class);
+        assertThatThrownBy(() -> {
+            reviewCommentService.addNewChildReviewComment(reviewId, random.nextLong(),
+                    UUID.randomUUID(), temp);
+        }).isInstanceOf(NoReviewCommentFoundException.class);
 
         reviewCommentService.addNewChildReviewComment(reviewId, groupId, UUID.randomUUID(), temp);
 
@@ -196,13 +218,13 @@ class ReviewCommentServiceImplTest {
         setupRepo(random.nextLong(), reviewCommentId);
         setupRepo(random.nextLong(), refId);
 
-        assertThatThrownBy(() -> reviewCommentService.editReviewComment(
-                random.nextLong(), null, replacement))
-                .isInstanceOf(NoReviewCommentFoundException.class);
+        assertThatThrownBy(() -> {
+            reviewCommentService.editReviewComment(random.nextLong(), null, replacement);
+        }).isInstanceOf(NoReviewCommentFoundException.class);
 
-        assertThatThrownBy(() -> reviewCommentService.editReviewComment(
-                reviewCommentId, random.nextLong(), replacement))
-                .isInstanceOf(NoReviewCommentFoundException.class);
+        assertThatThrownBy(() -> {
+            reviewCommentService.editReviewComment(reviewCommentId, random.nextLong(), replacement);
+        }).isInstanceOf(NoReviewCommentFoundException.class);
 
         when(reviewCommentRepo.findByReviewCommentId(reviewCommentId)).thenReturn(
                 Optional.of(ReviewCommentEntity.builder().build()));
@@ -220,8 +242,9 @@ class ReviewCommentServiceImplTest {
         Long reviewCommentId = random.nextLong();
         setupRepo(random.nextLong(), reviewCommentId);
 
-        assertThatThrownBy(() -> reviewCommentService.deleteReviewComment(random.nextLong()))
-                .isInstanceOf(NoReviewCommentFoundException.class);
+        assertThatThrownBy(() -> {
+            reviewCommentService.deleteReviewComment(random.nextLong());
+        }).isInstanceOf(NoReviewCommentFoundException.class);
 
         reviewCommentService.deleteReviewComment(reviewCommentId);
 
@@ -237,8 +260,9 @@ class ReviewCommentServiceImplTest {
 
         setupRepo(random.nextLong(), reviewCommentId);
 
-        assertThatThrownBy(() -> reviewCommentService.increaseCommentLike(random.nextLong()))
-                .isInstanceOf(NoReviewCommentFoundException.class);
+        assertThatThrownBy(() -> {
+            reviewCommentService.increaseCommentLike(random.nextLong());
+        }).isInstanceOf(NoReviewCommentFoundException.class);
 
         reviewCommentService.increaseCommentLike(reviewCommentId);
 
@@ -254,8 +278,9 @@ class ReviewCommentServiceImplTest {
 
         setupRepo(random.nextLong(), reviewCommentId);
 
-        assertThatThrownBy(() -> reviewCommentService.decreaseCommentLike(random.nextLong()))
-                .isInstanceOf(NoReviewCommentFoundException.class);
+        assertThatThrownBy(() -> {
+            reviewCommentService.decreaseCommentLike(random.nextLong());
+        }).isInstanceOf(NoReviewCommentFoundException.class);
 
         reviewCommentService.decreaseCommentLike(reviewCommentId);
 

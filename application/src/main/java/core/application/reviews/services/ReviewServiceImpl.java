@@ -1,15 +1,17 @@
 package core.application.reviews.services;
 
-import core.application.movies.exception.*;
-import core.application.movies.repositories.movie.*;
-import core.application.reviews.exceptions.*;
-import core.application.reviews.models.entities.*;
-import core.application.reviews.repositories.*;
-import java.util.*;
-import lombok.*;
-import lombok.extern.slf4j.*;
-import org.springframework.stereotype.*;
-import org.springframework.transaction.annotation.*;
+import core.application.movies.exception.NoMovieException;
+import core.application.movies.repositories.movie.CachedMovieRepository;
+import core.application.reviews.exceptions.NoReviewFoundException;
+import core.application.reviews.models.entities.ReviewEntity;
+import core.application.reviews.repositories.ReviewRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -50,17 +52,6 @@ public class ReviewServiceImpl implements ReviewService {
                                 null;       // ReviewSortOrder LATEST 또는 LIKE 아님? 그럼 null
 
         return func != null ? func.apply(movieId, offset, num) : null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public long getNumberOfReviewsOnMovieId(String movieId) throws NoMovieException {
-
-        this.checkWhetherMovieExist(movieId);
-
-        return reviewRepo.countByMovieId(movieId);
     }
 
     /**

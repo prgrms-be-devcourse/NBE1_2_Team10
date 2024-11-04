@@ -2,11 +2,26 @@ package core.application.movies.repositories.comment;
 
 import java.util.UUID;
 
-public interface CommentDislikeRepository {
+import org.springframework.stereotype.Repository;
 
-    void saveCommentDislike(Long commentId, UUID userId);
+import core.application.movies.repositories.mapper.CommentDislikeMapper;
+import lombok.RequiredArgsConstructor;
 
-    boolean isExistDislike(Long commentId, UUID userId);
+@Repository
+@RequiredArgsConstructor
+public class CommentDislikeRepository {
+	private final CommentDislikeMapper commentDislikeMapper;
 
-    void deleteCommentDislike(Long commentId, UUID userId);
+	public void saveCommentDislike(Long commentId, UUID userId) {
+		commentDislikeMapper.save(commentId, userId);
+	}
+
+	public boolean isExistDislike(Long commentId, UUID userId) {
+		int count = commentDislikeMapper.countLikeByUser(commentId, userId);
+		return count != 0;
+	}
+
+	public void deleteCommentDislike(Long commentId, UUID userId) {
+		commentDislikeMapper.delete(commentId, userId);
+	}
 }

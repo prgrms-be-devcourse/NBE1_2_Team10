@@ -50,8 +50,7 @@ public class UserDTO {
                 .build();
     }
 
-    public void encodePassword() {
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+    public void encodePassword(BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userPw = bCryptPasswordEncoder.encode(this.userPw);
     }
 }

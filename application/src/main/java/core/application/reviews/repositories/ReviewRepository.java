@@ -1,8 +1,10 @@
 package core.application.reviews.repositories;
 
 
-import core.application.reviews.models.entities.*;
-import java.util.*;
+import core.application.reviews.models.entities.ReviewEntity;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * {@code REVIEW_TABLE} 과 관련된 {@code Repository}
@@ -111,14 +113,6 @@ public interface ReviewRepository {
      */
     List<ReviewEntity> findByMovieIdWithoutContentOnLikeDescend(String movieId, int offset,
             int num);
-
-    /**
-     * 특정 영화의 후기 포스팅들 개수를 검색
-     *
-     * @param movieId 검색할 영화 ID
-     * @return 영화에 달린 포스팅 총 개수
-     */
-    Long countByMovieId(String movieId);
     //</editor-fold>
 
     /**
